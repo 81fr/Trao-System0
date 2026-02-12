@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>نقطة البيع - تراوف</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
+</head>
+
+<body>
+
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <img src="assets/logo.png" alt="TRAOF Logo" style="max-height:56px;">
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html"><i class="fas fa-home"></i> لوحة التحكم</a></li>
+            <li><a href="cards.html"><i class="fas fa-credit-card"></i> البطاقات</a></li>
+            <li><a href="wallets.html"><i class="fas fa-wallet"></i> المحافظ</a></li>
+            <li><a href="merchants.html"><i class="fas fa-store"></i> المتاجر</a></li>
+            <li><a href="pos.html" class="active"><i class="fas fa-cash-register"></i> نقطة البيع</a></li>
+            <li><a href="reports.html"><i class="fas fa-chart-bar"></i> التقارير</a></li>
+            <li><a href="users.html"><i class="fas fa-users-cog"></i> المستخدمين</a></li>
+            <li><a href="settings.html"><i class="fas fa-cog"></i> الإعدادات</a></li>
+            <li><a href="support.html"><i class="fas fa-headset"></i> الدعم الفني</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <p>صنع في تراوف</p>
+            <img src="assets/logo.png" alt="TRAOF Logo" style="max-height:40px;">
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header>
+            <h1><i class="fas fa-cash-register"></i> نقطة البيع (POS)</h1>
+            <div class="user-profile"><span>مرحباً</span>
+                <div class="avatar">م</div>
+            </div>
+        </header>
+
+        <div class="form-container pos-container" style="max-width:520px;">
+            <div class="form-group">
+                <label>رقم البطاقة</label>
+                <input id="cardNumber" type="text" placeholder="أدخل رقم البطاقة">
+            </div>
+            <button class="secondary" onclick="POS.verifyCard()"><i class="fas fa-search"></i> تحقق</button>
+            <div id="cardStatusDisplay" style="margin-top:10px; min-height:24px;"></div>
+
+            <hr style="margin:16px 0; border:none; border-top:1px solid var(--border)">
+
+            <div class="form-group">
+                <label>المبلغ</label>
+                <div style="font-size:2rem; font-weight:800; color:var(--brand-ink);">
+                    <span id="amountDisplay">0.00</span> <small>ريال</small>
+                </div>
+            </div>
+
+            <div class="keypad">
+                <button onclick="POS.addToAmount(1)">1</button>
+                <button onclick="POS.addToAmount(2)">2</button>
+                <button onclick="POS.addToAmount(3)">3</button>
+                <button onclick="POS.addToAmount(4)">4</button>
+                <button onclick="POS.addToAmount(5)">5</button>
+                <button onclick="POS.addToAmount(6)">6</button>
+                <button onclick="POS.addToAmount(7)">7</button>
+                <button onclick="POS.addToAmount(8)">8</button>
+                <button onclick="POS.addToAmount(9)">9</button>
+                <button class="secondary" onclick="POS.clearAmount()">مسح</button>
+                <button onclick="POS.addToAmount(0)">0</button>
+                <button class="secondary" onclick="POS.addToAmount('.')">.</button>
+                <button class="wide" style="background:var(--brand-green);" onclick="POS.processPayment()">
+                    <i class="fas fa-check"></i> تنفيذ العملية
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <div id="successModal" class="modal" style="display:none;"></div>
+
+    <script>
+        document.getElementById('successModal').classList.add = new Proxy(document.getElementById('successModal').classList.add, {
+            apply(target, thisArg, args) { thisArg.style.display = 'block'; return Reflect.apply(target, thisArg, args); }
+        });
+        document.getElementById('successModal').classList.remove = new Proxy(document.getElementById('successModal').classList.remove, {
+            apply(target, thisArg, args) { thisArg.style.display = 'none'; return Reflect.apply(target, thisArg, args); }
+        });
+    </script>
+
+    <div id="receiptContent" style="display:none;"></div>
+    <script src="script.js"></script>
+</body>
+
+</html>

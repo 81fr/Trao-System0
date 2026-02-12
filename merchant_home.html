@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>لوحة التاجر - تراوف</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
+</head>
+
+<body>
+
+    <nav class="sidebar">
+        <div class="sidebar-header"><img src="assets/logo.png" alt=""></div>
+        <ul class="nav-links">
+            <li><a href="merchant_home.html" class="active"><i class="fas fa-store"></i> لوحة التاجر</a></li>
+            <li><a href="pos.html"><i class="fas fa-cash-register"></i> نقطة البيع</a></li>
+            <li><a href="reports.html"><i class="fas fa-chart-bar"></i> التقارير</a></li>
+            <li><a href="#" onclick="Auth.logout()"><i class="fas fa-sign-out-alt"></i> تسجيل خروج</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <header>
+            <h1><i class="fas fa-store"></i> مرحباً بالتاجر</h1>
+            <div class="user-profile"><span>مرحباً</span>
+                <div class="avatar">ت</div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-exchange-alt"></i></div>
+                <h3>عدد العمليات</h3>
+                <div class="value" id="merchantTxCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-wallet"></i></div>
+                <h3>مبيعات اليوم</h3>
+                <div class="value" id="merchantToday">0</div>
+            </div>
+        </div>
+
+        <h3>آخر العمليات</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>البطاقة</th>
+                        <th>المبلغ</th>
+                        <th>التاريخ</th>
+                    </tr>
+                </thead>
+                <tbody id="merchantTxTable"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        // تهيئة بسيطة للتاجر (تجريبية)
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = Auth.user;
+            if (!user || user.role !== 'merchant') return;
+
+            const tx = Storage.get('transactions') || [];
+            const myTx = tx; // مبدئياً كل العمليات؛ مستقبلاً نربط المتجر بالحساب
+            document.getElementById('merchantTxCount').innerText = myTx.length;
+
+            // مبيعات اليوم (بدون فلترة تاريخ دقيقة في هذا النموذج)
+            const total = myTx.reduce((s, t) => s + Number(t.amount || 0), 0);
+            document.getElementById('merchantToday').innerText = total.toFixed(2);
+
+            const tbody = document.getElementById('merchantTxTable');
+            tbody.innerHTML = myTx.map(t => `
+        <tr>
+          <td>#${t.id}</td>
+          <td>${t.card}</td>
+          <td style="color:var(--brand-ink)"><strong>${Number(t.amount || 0).toFixed(2)} ريال</strong></td>
+          <td>${t.date}</td>
+        </tr>
+      `).join('');
+        });
+    </script>
+</body>
+
+</html>

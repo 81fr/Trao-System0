@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>بوابة المستفيد - تراوف</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
+</head>
+
+<body>
+
+    <nav class="sidebar">
+        <div class="sidebar-header"><img src="assets/logo.png" alt=""></div>
+        <ul class="nav-links">
+            <li><a class="active" href="#"><i class="fas fa-id-card"></i> بطاقتي</a></li>
+            <li><a href="support.html"><i class="fas fa-headset"></i> الدعم الفني</a></li>
+            <li><a href="#" onclick="Auth.logout()"><i class="fas fa-sign-out-alt"></i> تسجيل خروج</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <p>صنع في تراؤف</p><img src="assets/logo.png" alt="">
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <header>
+            <h1><i class="fas fa-user-circle"></i> بوابة المستفيد</h1>
+            <div class="user-profile"><span id="welcomeName">مرحباً</span>
+                <div class="avatar">م</div>
+            </div>
+        </header>
+
+        <!-- لا توجد بطاقة -->
+        <div id="noCardState" style="text-align:center; display:none;">
+            <i class="fas fa-info-circle" style="font-size:3rem; color:#bbb; margin-bottom:20px;"></i>
+            <h3>لا توجد بطاقة نشطة مرتبطة بحسابك حالياً.</h3>
+        </div>
+
+        <!-- بطاقة فعّالة -->
+        <div id="cardDetailsSection">
+            <div class="card-preview">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="opacity:.8">رقم البطاقة</span>
+                    <span id="cardStatusBadge"
+                        style="background:rgba(0,0,0,.2); padding:5px 10px; border-radius:5px; font-size:.8rem;">نشط</span>
+                </div>
+                <h2 id="cardNumberDisplay">0000 0000</h2>
+                <div class="balance-display">
+                    الرصيد المتاح: <strong id="cardBalanceDisplay">0.00</strong> ريال
+                </div>
+                <br>
+                <div class="qr-placeholder"><i class="fas fa-qrcode"></i></div>
+                <p style="font-size:.9rem; opacity:.9">أبرز هذا الكود عند البائع لإتمام الشراء</p>
+            </div>
+
+            <h3><i class="fas fa-history"></i> آخر العمليات</h3>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>المتجر</th>
+                            <th>المبلغ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="beneficiaryTransactionsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        function initBeneficiary() {
+            const user = Auth.user;
+            if (!user || user.role !== 'beneficiary') return;
+
+            const welcome = document.getElementById('welcomeName');
+            if (welcome) welcome.innerText = `مرحباً، ${user.name}`;
+
+            const cards = Storage.get('cards') || [];
+            const myCard = cards.find(c => c.beneficiary === user.name && (c.status === 'نشط' || c.status === 'Active'));
+
+            const cardSection = document.getElementById('cardDetailsSection');
+            const noCard = document.getElementById('noCardState');
+
+            if (myCard) {
+                document.getElementById('cardNumberDisplay').innerText = myCard.number;
+                document.getElementById('cardBalanceDisplay').innerText = Number(myCard.balance || 0).toFixed(2);
+
+                const transactions = Storage.get('transactions') || [];
+                const myTrans = transactions.filter(t => t.card === myCard.number);
+                const tbody = document.getElementById('beneficiaryTransactionsTable');
+
+                if (tbody) {
+                    if (myTrans.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">لا توجد عمليات سابقة</td></tr>';
+                    } else {
+                        tbody.innerHTML = myTrans.map(t => `
+              <tr>
+                <td>${t.date}</td>
+                <td>${t.merchant}</td>
+                <td style="color:red; font-weight:bold">-${Number(t.amount || 0).toFixed(2)} ريال</td>
+              </tr>
+            `).join('');
+                    }
+                }
+                if (cardSection) cardSection.style.display = '';
+                if (noCard) noCard.style.display = 'none';
+            } else {
+                if (cardSection) cardSection.style.display = 'none';
+                if (noCard) noCard.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+
+</html>

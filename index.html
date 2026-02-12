@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لوحة التحكم - تراوف</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css" />
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <img src="assets/logo.png" alt="TRAOF Logo" style="max-height:56px;">
+        </div>
+        <ul class="nav-links">
+            <li><a href="index.html" class="active"><i class="fas fa-home"></i> لوحة التحكم</a></li>
+            <li><a href="cards.html"><i class="fas fa-credit-card"></i> البطاقات</a></li>
+            <li><a href="wallets.html"><i class="fas fa-wallet"></i> المحافظ</a></li>
+            <li><a href="merchants.html"><i class="fas fa-store"></i> المتاجر</a></li>
+            <li><a href="pos.html"><i class="fas fa-cash-register"></i> نقطة البيع</a></li>
+            <li><a href="reports.html"><i class="fas fa-chart-bar"></i> التقارير</a></li>
+            <li><a href="users.html"><i class="fas fa-users-cog"></i> المستخدمين</a></li>
+            <li><a href="settings.html"><i class="fas fa-cog"></i> الإعدادات</a></li>
+            <li><a href="support.html"><i class="fas fa-headset"></i> الدعم الفني</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <p>صنع في تراوف</p>
+            <img src="assets/logo.png" alt="TRAOF Logo" style="max-height:40px;">
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header>
+            <h1><i class="fas fa-home"></i> نظرة عامة</h1>
+            <div class="user-profile">
+                <span>مرحباً، المشرف</span>
+                <div class="avatar">م</div>
+            </div>
+        </header>
+
+        <!-- Stats -->
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-users"></i></div>
+                <h3>المستفيدين</h3>
+                <div class="value" id="totalBeneficiaries">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-credit-card"></i></div>
+                <h3>البطاقات النشطة</h3>
+                <div class="value" id="activeCards">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-exchange-alt"></i></div>
+                <h3>إجمالي العمليات</h3>
+                <div class="value" id="totalTransactions">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fas fa-store"></i></div>
+                <h3>المتاجر المسجلة</h3>
+                <div class="value">45</div>
+            </div>
+        </div>
+
+        <!-- Quick Access -->
+        <h2>الوصول السريع</h2>
+        <div class="dashboard-grid">
+            <div class="stat-card" style="cursor:pointer" onclick="window.location.href='cards.html'">
+                <div class="icon"><i class="fas fa-plus"></i></div>
+                <h3>إصدار بطاقة جديدة</h3>
+            </div>
+            <div class="stat-card" style="cursor:pointer" onclick="window.location.href='pos.html'">
+                <div class="icon"><i class="fas fa-cash-register"></i></div>
+                <h3>فتح نقطة البيع</h3>
+            </div>
+            <div class="stat-card" style="cursor:pointer" onclick="window.location.href='reports.html'">
+                <div class="icon"><i class="fas fa-file-invoice"></i></div>
+                <h3>عرض التقرير اليومي</h3>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+
+</html>
