@@ -184,7 +184,13 @@ const Settings = {
             label_beneficiaries: 'المستفيدين'
         };
         Settings.applyLabels();
+
+        // Load layout setting
+        const layout = localStorage.getItem('layoutMode') || 'side';
         if (window.location.pathname.includes('settings.html')) {
+            const radio = document.querySelector(`input[name="layoutMode"][value="${layout}"]`);
+            if (radio) radio.checked = true;
+
             document.getElementById('label_cards').value = Settings.labels.label_cards;
             document.getElementById('label_wallets').value = Settings.labels.label_wallets;
             document.getElementById('label_merchants').value = Settings.labels.label_merchants;
@@ -193,6 +199,20 @@ const Settings = {
             Settings.renderBeneficiaries();
         }
         Settings.populateDropdowns();
+    },
+
+    saveLayout: (mode) => {
+        localStorage.setItem('layoutMode', mode);
+        Settings.applyLayout();
+    },
+
+    applyLayout: () => {
+        const mode = localStorage.getItem('layoutMode') || 'side';
+        if (mode === 'top') {
+            document.body.classList.add('layout-top');
+        } else {
+            document.body.classList.remove('layout-top');
+        }
     },
 
     saveLabels: () => {
@@ -585,6 +605,7 @@ const POS = {
 window.onload = () => {
     try {
         initData();
+        Settings.applyLayout(); // Apply saved layout preference
         Settings.load?.();
         Auth.checkSession();
 

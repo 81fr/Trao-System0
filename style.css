@@ -418,3 +418,74 @@ tbody tr:hover {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===========================
+   TOP LAYOUT MODE
+=========================== */
+body.layout-top .sidebar {
+  width: 100%;
+  height: auto;
+  min-height: auto;
+  position: relative;
+  flex-direction: row;
+  align-items: center;
+  border-inline-end: none;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 0 20px;
+}
+
+body.layout-top .sidebar-header {
+  padding: 10px 0;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+body.layout-top .sidebar-header img {
+  max-height: 50px;
+}
+
+body.layout-top .nav-links {
+  display: flex;
+  flex-direction: row;
+  margin: 0 20px 0 0;
+  padding: 0;
+  gap: 5px;
+  overflow-x: auto;
+  align-items: center;
+  flex-grow: 1;
+}
+
+body.layout-top .nav-links li {
+  margin: 0;
+  white-space: nowrap;
+}
+
+body.layout-top .nav-links a {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+
+body.layout-top .sidebar-footer {
+  display: none;
+}
+
+body.layout-top .main-content {
+  margin-inline-start: 0;
+  padding: 20px;
+}
+
+/* Responsive adjustments for Top Layout */
+@media (max-width: 992px) {
+  body.layout-top .sidebar {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 10px;
+  }
+
+  body.layout-top .nav-links {
+    margin: 10px 0 0 0;
+    justify-content: center;
+    width: 100%;
+  }
+}
