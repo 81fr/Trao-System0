@@ -1158,11 +1158,19 @@ const Support = {
 
         tbody.innerHTML = tickets.map(t => {
             let actions = '';
+            let noteDisplay = '';
+
+            if (t.adminNote) {
+                noteDisplay = `<div style="margin-top:5px; padding:5px; background:#fff3cd; color:#856404; font-size:0.85rem; border-radius:4px;"><strong><i class="fas fa-exclamation-circle"></i> ملاحظة المشرف:</strong> ${t.adminNote}</div>`;
+            }
 
             // Logic for Actions Column
             if (Auth.user.role === 'admin') {
                 if (t.status !== 'مغلق') {
-                    actions = `<button onclick="Support.closeTicket(${t.id})" style="padding:5px 10px; background:#dc3545; color:#fff; border:none; border-radius:4px;">إغلاق التذكرة</button>`;
+                    actions = `
+                        <button onclick="Support.closeTicket(${t.id})" style="padding:5px 10px; background:#dc3545; color:#fff; border:none; border-radius:4px; margin-left:5px;">إغلاق</button>
+                        <button onclick="Support.returnTicket(${t.id})" style="padding:5px 10px; background:#ffc107; color:#333; border:none; border-radius:4px;">إعادة</button>
+                    `;
                 } else {
                     actions = `<span style="color:gray"><i class="fas fa-check-circle"></i> مغلقة</span>`;
                 }
@@ -1192,9 +1200,9 @@ const Support = {
             <tr>
                 <td>#${t.id}</td>
                 <td>${t.sender}</td>
-                <td><strong>${t.title}</strong><br><small style="color:#777">${t.desc}</small></td>
+                <td><strong>${t.title}</strong><br><small style="color:#777">${t.desc}</small>${noteDisplay}</td>
                 <td>${t.date}</td>
-                <td><span class="status-badge ${t.status === 'مغلق' ? 'status-inactive' : 'status-active'}">${t.status}</span></td>
+                <td><span class="status-badge ${t.status === 'مغلق' ? 'status-inactive' : (t.status === 'مسترجع' ? 'status-warning' : 'status-active')}">${t.status}</span></td>
                 <td>${actions}</td>
             </tr>
         `}).join('');
@@ -1207,6 +1215,21 @@ const Support = {
         if (idx !== -1) {
             tickets[idx].status = 'مغلق';
             Storage.set('tickets', tickets);
+            Support.loadTickets();
+        }
+    },
+
+    returnTicket: (id) => {
+        const note = prompt("الرجاء إدخال سبب الإعادة أو الملاحظات:");
+        if (!note) return;
+
+        const tickets = Storage.get('tickets') || [];
+        const idx = tickets.findIndex(t => t.id === id);
+        if (idx !== -1) {
+            tickets[idx].status = 'مسترجع';
+            tickets[idx].adminNote = note;
+            Storage.set('tickets', tickets);
+            alert('تم إعادة التذكرة للمستخدم مع الملاحظة.');
             Support.loadTickets();
         }
     },
