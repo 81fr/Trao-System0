@@ -569,7 +569,11 @@ function buildReportsChart() {
     _reportsChart = new Chart(el.getContext('2d'), {
         type: 'doughnut',
         data: { labels, datasets: [{ label: 'إجمالي بالمتاجر', data, backgroundColor: ['#00A59B', '#8CC240', '#3E4559', '#5ec9c3', '#a9d66e'] }] },
-        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        options: {
+            responsive: true,
+            cutout: '60%',
+            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } } }
+        }
     });
 }
 

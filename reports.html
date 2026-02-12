@@ -50,9 +50,11 @@
             <button onclick="exportTransactionsPDF()"><i class="fas fa-file-pdf"></i> تصدير PDF</button>
         </div>
 
-        <div class="chart-card" style="margin-bottom:16px;">
+        <div class="chart-card" style="margin-bottom:16px; text-align:center;">
             <h3 style="margin-top:0"><i class="fas fa-chart-pie"></i> توزيع المبالغ حسب المتجر</h3>
-            <canvas id="reportsChart" height="140"></canvas>
+            <div style="max-width:320px; margin:0 auto;">
+                <canvas id="reportsChart"></canvas>
+            </div>
         </div>
 
         <div class="table-container">
