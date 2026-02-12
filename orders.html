@@ -83,6 +83,39 @@
         </footer>
     </main>
 
+    <!-- Withdraw Modal -->
+    <div id="withdrawModal" class="modal-backdrop">
+        <div class="modal">
+            <header>
+                <h2><i class="fas fa-hand-paper"></i> سحب الطلب</h2>
+                <button onclick="Orders.closeWithdrawModal()" style="background:none; color:#999; font-size:1.2rem;"><i
+                        class="fas fa-times"></i></button>
+            </header>
+            <div class="modal-body">
+                <p>ما الإجراء الذي تود اتخاذه لهذا الطلب؟</p>
+
+                <div style="margin-bottom:20px;">
+                    <label style="display:block; margin-bottom:8px; font-weight:bold;">1. إسناد لشريك آخر:</label>
+                    <div style="display:flex; gap:10px;">
+                        <select id="reassignPartnerSelect" style="flex:1;">
+                            <option value="">اختر شريكاً جديداً...</option>
+                        </select>
+                        <button onclick="Orders.confirmReassign()" style="white-space:nowrap;">إسناد</button>
+                    </div>
+                </div>
+
+                <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+
+                <div>
+                    <label style="display:block; margin-bottom:8px; font-weight:bold;">2. أو إلغاء الطلب
+                        نهائياً:</label>
+                    <button onclick="Orders.confirmCancel()" style="background:#dc3545; width:100%;">إلغاء
+                        الطلب</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 

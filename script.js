@@ -1152,8 +1152,73 @@ const Orders = {
     },
 
     withdraw: (id) => {
-        if (!confirm('هل أنت متأكد من سحب هذا الطلب؟ لن يظهر للشريك بعد الآن.')) return;
-        Orders.updateStatus(id, 'Withdrawn');
+        // Open Modal
+        const modal = document.getElementById('withdrawModal');
+        if (!modal) return;
+
+        Orders.currentWithdrawId = id;
+
+        // Populate reassignment dropdown
+        const select = document.getElementById('reassignPartnerSelect');
+        if (select) {
+            select.innerHTML = '<option value="">اختر شريكاً جديداً...</option>';
+            const merchants = Storage.get('merchants') || [];
+            merchants.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.name;
+                opt.text = m.name;
+                select.appendChild(opt);
+            });
+        }
+
+        modal.classList.add('active'); // active class triggers display block in css
+        if (modal.style.display !== 'block') modal.style.display = 'block'; // Fallback if css class missing
+    },
+
+    closeWithdrawModal: () => {
+        const modal = document.getElementById('withdrawModal');
+        if (modal) {
+            modal.classList.remove('active');
+            modal.style.display = 'none';
+        }
+        Orders.currentWithdrawId = null;
+    },
+
+    confirmReassign: () => {
+        const id = Orders.currentWithdrawId;
+        const newPartner = document.getElementById('reassignPartnerSelect').value;
+
+        if (!newPartner) return alert('يرجى اختيار شريك جديد للإسناد');
+
+        if (!confirm(`هل أنت متأكد من إسناد الطلب للشريك الجديد: ${newPartner}؟`)) return;
+
+        let orders = Storage.get('supply_orders') || [];
+        const index = orders.findIndex(o => o.id === id);
+        if (index !== -1) {
+            orders[index].partner = newPartner;
+            orders[index].status = 'Pending'; // Reset to Pending just in case
+            delete orders[index].rejectionReason;
+
+            Storage.set('supply_orders', orders);
+            alert('تم إسناد الطلب للشريك الجديد بنجاح');
+            Orders.closeWithdrawModal();
+            location.reload();
+        }
+    },
+
+    confirmCancel: () => {
+        const id = Orders.currentWithdrawId;
+        if (!confirm('هل أنت متأكد من إلغاء هذا الطلب نهائياً؟')) return;
+
+        let orders = Storage.get('supply_orders') || [];
+        const index = orders.findIndex(o => o.id === id);
+        if (index !== -1) {
+            orders[index].status = 'Cancelled';
+            Storage.set('supply_orders', orders);
+            alert('تم إلغاء الطلب بنجاح');
+            Orders.closeWithdrawModal();
+            location.reload();
+        }
     },
 
     reject: (id) => {
