@@ -57,10 +57,7 @@
             </div>
             <div class="form-group">
                 <label>الدور</label>
-                <select id="newUserRole" onchange="(this.value==='merchant')?Settings.populateDropdown('merchants', document.getElementById('linkedEntitySelect'))
-                   :(this.value==='beneficiary')?Settings.populateDropdown('beneficiaries', document.getElementById('linkedEntitySelect'))
-                   :document.getElementById('linkedEntitySelect').innerHTML='<option value=\" \">-- غير مرتبط --
-                    </option>';">
+                <select id="newUserRole">
                     <option value="admin">مدير</option>
                     <option value="merchant">تاجر</option>
                     <option value="beneficiary">مستفيد</option>
