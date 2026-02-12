@@ -608,7 +608,71 @@ window.onload = () => {
         // صفحة المستفيد (لو دالتها معرفة)
         if (typeof initBeneficiary === 'function') initBeneficiary();
 
+        // نظام الدعم الفني
+        Support.init();
+
     } catch (e) {
         console.error('Initialization Error:', e);
+    }
+};
+
+/* ===========================
+   SUPPORT SYSTEM
+=========================== */
+const Support = {
+    init: () => {
+        if (!Auth.user) return;
+        if (Auth.user.role === 'admin') {
+            const adminView = document.getElementById('adminTicketView');
+            if (adminView) {
+                adminView.style.display = 'block';
+                Support.loadTickets();
+            }
+        }
+    },
+
+    submitTicket: () => {
+        const title = document.getElementById('ticketTitle').value.trim();
+        const desc = document.getElementById('ticketDesc').value.trim();
+
+        if (!title || !desc) return alert('يرجى تعبئة جميع الحقول');
+
+        const ticket = {
+            id: Date.now(),
+            sender: Auth.user.name + ' (' + Auth.user.role + ')',
+            title: title,
+            desc: desc,
+            date: new Date().toLocaleDateString('ar-SA'),
+            status: 'جديد'
+        };
+
+        Storage.add('tickets', ticket);
+        alert('تم إرسال تذكرتك بنجاح! سيتم التواصل معك قريباً.');
+        document.getElementById('ticketTitle').value = '';
+        document.getElementById('ticketDesc').value = '';
+
+        // If admin submits (test), reload to see it
+        if (Auth.user.role === 'admin') Support.loadTickets();
+    },
+
+    loadTickets: () => {
+        const tbody = document.getElementById('ticketsTableBody');
+        if (!tbody) return;
+
+        const tickets = Storage.get('tickets') || [];
+        if (tickets.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">لا توجد تذاكر جديدة</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = tickets.map(t => `
+            <tr>
+                <td>#${t.id}</td>
+                <td>${t.sender}</td>
+                <td><strong>${t.title}</strong><br><small style="color:#777">${t.desc}</small></td>
+                <td>${t.date}</td>
+                <td><span class="status-badge status-active">${t.status}</span></td>
+            </tr>
+        `).join('');
     }
 };
