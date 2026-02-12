@@ -929,9 +929,20 @@ window.onload = () => {
         if (typeof loadCardsTable === 'function') loadCardsTable();
         if (typeof loadWalletsTable === 'function') loadWalletsTable();
         if (typeof loadMerchantsTable === 'function') loadMerchantsTable();
-        if (typeof loadUsersTable === 'function') loadUsersTable();
-
-        if (typeof loadUsersTable === 'function') loadUsersTable();
+        if (typeof loadUsersTable === 'function') {
+            loadUsersTable();
+            const roleSelect = document.getElementById('newUserRole');
+            if (roleSelect) {
+                roleSelect.addEventListener('change', (e) => {
+                    const entitySelect = document.getElementById('linkedEntitySelect');
+                    if (entitySelect) {
+                        if (e.target.value === 'merchant') Settings.populateDropdown('merchants', entitySelect);
+                        else if (e.target.value === 'beneficiary') Settings.populateDropdown('beneficiaries', entitySelect);
+                        else entitySelect.innerHTML = '<option value="">-- غير مرتبط --</option>';
+                    }
+                });
+            }
+        }
 
         // Fill reports table and build reports chart
         if (fillTransactionsTableIfAny()) {
