@@ -722,6 +722,154 @@ const POS = {
 };
 
 /* ===========================
+   SUPPLY ORDERS
+=========================== */
+const Orders = {
+    create: () => {
+        const item = document.getElementById('orderItem').value;
+        const partner = document.getElementById('orderPartner').value;
+        const cost = document.getElementById('orderCost').value;
+        const notes = document.getElementById('orderNotes').value;
+
+        if (!item || !partner || !cost) return alert('يرجى تعبئة جميع الحقول المطلوبة');
+
+        const order = {
+            id: Date.now().toString().slice(-6),
+            item,
+            partner,
+            cost: Number(cost),
+            notes,
+            date: new Date().toLocaleDateString('ar-SA'),
+            status: 'Pending' // Pending, Completed
+        };
+
+        Storage.add('supply_orders', order);
+        alert('تم إنشاء أمر التوريد بنجاح');
+        location.reload();
+    },
+
+    load: () => {
+        const tbody = document.getElementById('ordersTableBody');
+        if (!tbody) return;
+
+        const orders = Storage.get('supply_orders') || [];
+        tbody.innerHTML = orders.map(o => `
+            <tr>
+                <td>#${o.id}</td>
+                <td>${o.item}</td>
+                <td>${o.partner}</td>
+                <td>${Number(o.cost).toFixed(2)} ريال</td>
+                <td>${o.date}</td>
+                <td><span class="status-badge ${o.status === 'Completed' ? 'status-active' : 'status-inactive'}">${o.status === 'Completed' ? 'منفذ' : 'قيد الانتظار'}</span></td>
+                <td>
+                    ${o.status !== 'Completed' ? `<button onclick="Orders.execute('${o.id}')" style="padding:5px 10px; font-size:0.8rem;">تنفيذ</button>` : ''}
+                    <button class="secondary" onclick="Orders.printInvoice('${o.id}')" style="padding:5px 10px; font-size:0.8rem;"><i class="fas fa-print"></i> فاتورة</button>
+                    ${o.status !== 'Completed' ? `<button class="secondary" onclick="Orders.delete('${o.id}')" style="padding:5px 10px; font-size:0.8rem; color:red; border-color:red;">حذف</button>` : ''}
+                </td>
+            </tr>
+        `).join('');
+
+        Orders.populateMerchants();
+    },
+
+    execute: (id) => {
+        if (!confirm('هل أنت متأكد من تنفيذ هذا الأمر؟ سيتحول إلى مكتمل.')) return;
+        const orders = Storage.get('supply_orders') || [];
+        const order = orders.find(o => o.id === id);
+        if (order) {
+            order.status = 'Completed';
+            Storage.set('supply_orders', orders);
+            Orders.load();
+        }
+    },
+
+    delete: (id) => {
+        if (!confirm('هل أنت متأكد من حذف هذا الأمر؟')) return;
+        let orders = Storage.get('supply_orders') || [];
+        orders = orders.filter(o => o.id !== id);
+        Storage.set('supply_orders', orders);
+        Orders.load();
+    },
+
+    printInvoice: (id) => {
+        const orders = Storage.get('supply_orders') || [];
+        const order = orders.find(o => o.id === id);
+        if (!order) return;
+
+        const printWindow = window.open('', '', 'width=800,height=600');
+        printWindow.document.write(`
+            <html lang="ar" dir="rtl">
+            <head>
+                <title>فاتورة أمر توريد #${order.id}</title>
+                <style>
+                    body { font-family: 'Tahoma', sans-serif; padding: 20px; }
+                    .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 20px; }
+                    .details { margin-bottom: 20px; font-size: 1.1rem; line-height: 1.8; }
+                    .footer { margin-top: 50px; text-align: center; font-size: 0.9rem; color: #555; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    th, td { border: 1px solid #ddd; padding: 10px; text-align: right; }
+                    th { background-color: #f9f9f9; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h2>فاتورة أمر توريد</h2>
+                    <p>جمعية رعاية الأيتام - تراوف</p>
+                </div>
+                <div class="details">
+                    <p><strong>رقم الأمر:</strong> #${order.id}</p>
+                    <p><strong>تاريخ الأمر:</strong> ${order.date}</p>
+                    <p><strong>الشريك المنفذ:</strong> ${order.partner}</p>
+                    <p><strong>حالة الطلب:</strong> ${order.status === 'Completed' ? 'منفذ ومكتمل' : 'قيد الانتظار'}</p>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الصنف / الخدمة</th>
+                            <th>الملاحظات</th>
+                            <th>التكلفة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>${order.item}</td>
+                            <td>${order.notes || '-'}</td>
+                            <td>${Number(order.cost).toFixed(2)} ريال</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="2">الإجمالي</th>
+                            <th>${Number(order.cost).toFixed(2)} ريال</th>
+                        </tr>
+                    </tfoot>
+                </table>
+                <div class="footer">
+                    <p>تم استخراج هذه الفاتورة إلكترونياً من نظام تراوف</p>
+                </div>
+                <script>window.print();</script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    },
+
+    populateMerchants: () => {
+        const select = document.getElementById('orderPartner');
+        if (!select) return;
+        const merchants = Storage.get('merchants') || [];
+        if (select.options.length <= 1) {
+            merchants.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.name;
+                opt.text = m.name;
+                select.appendChild(opt);
+            });
+        }
+    }
+};
+
+/* ===========================
    ONLOAD CONTROLLER
 =========================== */
 window.onload = () => {
@@ -752,6 +900,9 @@ window.onload = () => {
 
         // نظام الدعم الفني
         Support.init();
+
+        // أوامر التوريد
+        if (typeof Orders !== 'undefined') Orders.load();
 
     } catch (e) {
         console.error('Initialization Error:', e);
