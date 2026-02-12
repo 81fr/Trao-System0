@@ -420,16 +420,72 @@ const Settings = {
 =========================== */
 const Actions = {
     addCard: () => {
+        const id = document.getElementById('editingCardId').value;
         const number = document.getElementById('cardNumInput').value;
         const wallet = document.getElementById('cardWalletInput').value;
         const balance = parseFloat(document.getElementById('cardBalanceInput').value);
         const beneficiary = document.getElementById('cardBeneficiaryInput').value;
+
         if (!number || !wallet || isNaN(balance)) return alert('يرجى ملء جميع الحقول بشكل صحيح');
 
-        Storage.add('cards', {
-            id: Date.now(), number, wallet, balance, status: 'نشط', beneficiary: beneficiary || 'غير محدد'
-        });
-        alert('تم إصدار البطاقة بنجاح!');
+        let cards = Storage.get('cards') || [];
+
+        if (id) {
+            // Edit Mode
+            const index = cards.findIndex(c => c.id == id);
+            if (index !== -1) {
+                cards[index] = { ...cards[index], number, wallet, balance, beneficiary: beneficiary || 'غير محدد' };
+                Storage.set('cards', cards);
+                alert('تم تحديث البطاقة بنجاح');
+            }
+        } else {
+            // Create Mode
+            if (cards.some(c => c.number === number)) return alert('رقم البطاقة موجود بالفعل');
+            Storage.add('cards', {
+                id: Date.now(), number, wallet, balance, status: 'نشط', beneficiary: beneficiary || 'غير محدد'
+            });
+            alert('تم إصدار البطاقة بنجاح!');
+        }
+
+        Actions.cancelCardEdit();
+        location.reload();
+    },
+
+    editCard: (id) => {
+        const cards = Storage.get('cards') || [];
+        const card = cards.find(c => c.id == id);
+        if (!card) return;
+
+        document.getElementById('editingCardId').value = card.id;
+        document.getElementById('cardNumInput').value = card.number;
+        document.getElementById('cardBalanceInput').value = card.balance;
+
+        // Populate dropdowns first if empty (though usually they are populated on load)
+        // We assume they are populated. We just set values.
+        document.getElementById('cardWalletInput').value = card.wallet;
+        document.getElementById('cardBeneficiaryInput').value = card.beneficiary === 'غير محدد' ? '' : card.beneficiary;
+
+        document.getElementById('saveCardBtn').innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
+        document.getElementById('cancelCardEditBtn').style.display = 'inline-block';
+        window.scrollTo(0, 0);
+    },
+
+    cancelCardEdit: () => {
+        document.getElementById('editingCardId').value = '';
+        document.getElementById('cardNumInput').value = '';
+        document.getElementById('cardBalanceInput').value = '';
+        document.getElementById('cardWalletInput').value = '';
+        document.getElementById('cardBeneficiaryInput').value = '';
+
+        document.getElementById('saveCardBtn').innerHTML = '<i class="fas fa-plus"></i> إصدار البطاقة';
+        document.getElementById('cancelCardEditBtn').style.display = 'none';
+    },
+
+    deleteCard: (id) => {
+        if (!confirm('هل أنت متأكد من حذف هذه البطاقة؟')) return;
+        let cards = Storage.get('cards') || [];
+        cards = cards.filter(c => c.id != id);
+        Storage.set('cards', cards);
         location.reload();
     },
 
@@ -593,7 +649,10 @@ function loadCardsTable() {
       <td>${card.beneficiary || '-'}</td>
       <td>${card.balance} ريال</td>
       <td><span class="status-badge ${statusClass}">${card.status}</span></td>
-      <td><button class="secondary" onclick="alert('خاصية التعديل قادمة قريباً')">تعديل</button></td>`;
+      <td>
+        <button class="secondary" onclick="Actions.editCard(${card.id})" style="padding:5px 10px; font-size:0.8rem; margin-left:5px;">تعديل</button>
+        <button class="delete-btn" onclick="Actions.deleteCard(${card.id})" style="padding:5px 10px; font-size:0.8rem;"><i class="fas fa-trash"></i></button>
+      </td>`;
         tbody.appendChild(tr);
     });
 }
@@ -1103,9 +1162,10 @@ window.onload = () => {
    SUPPORT SYSTEM
 =========================== */
 const Support = {
+    currentTicketId: null,
+
     init: () => {
         if (!Auth.user) return;
-        // Always show ticket list, but content depends on role
         const container = document.getElementById('ticketListContainer');
         if (container) {
             container.style.display = 'block';
@@ -1121,21 +1181,22 @@ const Support = {
 
         const ticket = {
             id: Date.now(),
-            sender: Auth.user.name + ' (' + Auth.user.role + ')',
-            senderUsername: Auth.user.username || Auth.user.identity, // Store unique ID
+            sender: Auth.user.name,
+            senderRole: Auth.user.role,
+            senderUsername: Auth.user.username || Auth.user.identity,
             title: title,
             desc: desc,
             date: new Date().toLocaleDateString('ar-SA'),
-            status: 'جديد',
-            rating: 0
+            status: 'جديد', // جديد, مسترجع, محدث, مغلق
+            rating: 0,
+            replies: [] // Array of { sender, role, text, date }
         };
 
         Storage.add('tickets', ticket);
         alert('تم إرسال تذكرتك بنجاح!');
         document.getElementById('ticketTitle').value = '';
         document.getElementById('ticketDesc').value = '';
-
-        Support.loadTickets(); // Reload table
+        Support.loadTickets();
     },
 
     loadTickets: () => {
@@ -1144,11 +1205,10 @@ const Support = {
 
         let tickets = Storage.get('tickets') || [];
 
-        // Filter: Admin sees all, User sees own
+        // Show tickets based on role
         if (Auth.user.role !== 'admin') {
             const myId = Auth.user.username || Auth.user.identity;
-            tickets = tickets.filter(t => t.senderUsername === myId || (!t.senderUsername && t.sender.includes(Auth.user.name)));
-            // Fallback for old tickets: check name/role string if username missing
+            tickets = tickets.filter(t => t.senderUsername === myId || (!t.senderUsername && t.sender === Auth.user.name));
         }
 
         if (tickets.length === 0) {
@@ -1157,81 +1217,215 @@ const Support = {
         }
 
         tbody.innerHTML = tickets.map(t => {
-            let actions = '';
-            let noteDisplay = '';
-
-            if (t.adminNote) {
-                noteDisplay = `<div style="margin-top:5px; padding:5px; background:#fff3cd; color:#856404; font-size:0.85rem; border-radius:4px;"><strong><i class="fas fa-exclamation-circle"></i> ملاحظة المشرف:</strong> ${t.adminNote}</div>`;
-            }
-
-            // Logic for Actions Column
-            if (Auth.user.role === 'admin') {
-                if (t.status !== 'مغلق') {
-                    actions = `
-                        <button onclick="Support.closeTicket(${t.id})" style="padding:5px 10px; background:#dc3545; color:#fff; border:none; border-radius:4px; margin-left:5px;">إغلاق</button>
-                        <button onclick="Support.returnTicket(${t.id})" style="padding:5px 10px; background:#ffc107; color:#333; border:none; border-radius:4px;">إعادة</button>
-                    `;
-                } else {
-                    actions = `<span style="color:gray"><i class="fas fa-check-circle"></i> مغلقة</span>`;
-                }
-            } else {
-                // Regular User
-                if (t.status === 'مغلق') {
-                    if (!t.rating || t.rating === 0) {
-                        actions = `
-                            <select onchange="Support.rateTicket(${t.id}, this.value)" style="padding:5px;">
-                                <option value="">-- قيّم --</option>
-                                <option value="5">⭐⭐⭐⭐⭐ ممتاز</option>
-                                <option value="4">⭐⭐⭐⭐ جيد جداً</option>
-                                <option value="3">⭐⭐⭐ جيد</option>
-                                <option value="2">⭐⭐ مقبول</option>
-                                <option value="1">⭐ سيء</option>
-                            </select>
-                        `;
-                    } else {
-                        actions = '⭐'.repeat(t.rating);
-                    }
-                } else {
-                    actions = '<span style="color:#00a59b">قيد المعالجة...</span>';
-                }
-            }
+            const statusColors = {
+                'جديد': 'status-active',
+                'محدث': 'status-active',
+                'مسترجع': 'status-warning',
+                'مغلق': 'status-inactive'
+            };
+            const statusBadge = `<span class="status-badge ${statusColors[t.status] || ''}">${t.status}</span>`;
 
             return `
             <tr>
                 <td>#${t.id}</td>
-                <td>${t.sender}</td>
-                <td><strong>${t.title}</strong><br><small style="color:#777">${t.desc}</small>${noteDisplay}</td>
+                <td>${t.sender} (${t.senderRole || 'مستخدم'})</td>
+                <td>${t.title}</td>
                 <td>${t.date}</td>
-                <td><span class="status-badge ${t.status === 'مغلق' ? 'status-inactive' : (t.status === 'مسترجع' ? 'status-warning' : 'status-active')}">${t.status}</span></td>
-                <td>${actions}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    <button class="secondary" onclick="Support.openTicket(${t.id})" style="padding:5px 10px; font-size:0.85rem;">
+                        <i class="fas fa-eye"></i> عرض التفاصيل
+                    </button>
+                </td>
             </tr>
         `}).join('');
     },
 
-    closeTicket: (id) => {
-        if (!confirm('هل أنت متأكد من إغلاق التذكرة؟')) return;
+    openTicket: (id) => {
         const tickets = Storage.get('tickets') || [];
-        const idx = tickets.findIndex(t => t.id === id);
-        if (idx !== -1) {
-            tickets[idx].status = 'مغلق';
-            Storage.set('tickets', tickets);
-            Support.loadTickets();
+        const t = tickets.find(x => x.id === id);
+        if (!t) return;
+
+        Support.currentTicketId = id;
+
+        // Populate Modal
+        document.getElementById('modalTicketTitle').innerText = `تذكرة #${t.id}: ${t.title}`;
+
+        // Build History HTML
+        const historyContainer = document.getElementById('ticketHistory');
+        let html = `
+            <div class="message-box original">
+                <div class="msg-header"><strong>${t.sender}</strong> <small>${t.date}</small></div>
+                <div class="msg-body">${t.desc}</div>
+            </div>
+        `;
+
+        if (t.replies && t.replies.length > 0) {
+            html += t.replies.map(r => `
+                <div class="message-box ${r.role === 'admin' ? 'admin-reply' : 'user-reply'}">
+                    <div class="msg-header"><strong>${r.sender}</strong> <small>${r.date}</small></div>
+                    <div class="msg-body">${r.text}</div>
+                </div>
+            `).join('');
+        }
+        historyContainer.innerHTML = html;
+        historyContainer.scrollTop = historyContainer.scrollHeight;
+
+        // Configure Buttons based on Role & Status
+        const btnReturn = document.getElementById('btnReturn');
+        const btnClose = document.getElementById('btnCloseTicket');
+        const btnReply = document.getElementById('btnReply');
+        const replyText = document.getElementById('replyText');
+
+        // Create new buttons if they don't exist
+        let btnAccept = document.getElementById('btnAccept');
+        if (!btnAccept) {
+            btnAccept = document.createElement('button');
+            btnAccept.id = 'btnAccept';
+            btnAccept.style.backgroundColor = '#28a745'; // Green
+            btnAccept.innerHTML = '<i class="fas fa-check"></i> قبول التذكرة';
+            btnAccept.onclick = Support.acceptTicket;
+            btnAccept.style.marginLeft = '10px';
+            const actionDiv = document.getElementById('ticketActionArea').querySelector('div');
+            if (actionDiv) actionDiv.prepend(btnAccept);
+        }
+
+        let btnExecute = document.getElementById('btnExecute');
+        if (!btnExecute) {
+            btnExecute = document.createElement('button');
+            btnExecute.id = 'btnExecute';
+            btnExecute.style.backgroundColor = '#17a2b8'; // Blue
+            btnExecute.innerHTML = '<i class="fas fa-tools"></i> تنفيذ التذكرة';
+            btnExecute.onclick = Support.executeTicket;
+            btnExecute.style.marginLeft = '10px';
+            const actionDiv = document.getElementById('ticketActionArea').querySelector('div');
+            if (actionDiv) actionDiv.insertBefore(btnExecute, btnReturn);
+        }
+
+        replyText.value = '';
+        btnReturn.style.display = 'none';
+        btnClose.style.display = 'none';
+        btnReply.style.display = 'none';
+        btnAccept.style.display = 'none';
+        btnExecute.style.display = 'none';
+        replyText.style.display = 'none';
+
+        if (t.status === 'مغلق') {
+            // Closed: Read only
+            const ratingHtml = (t.rating > 0) ? '⭐'.repeat(t.rating) : 'لم يتم التقييم';
+            historyContainer.innerHTML += `<div style="text-align:center; padding:10px; border-top:1px solid #eee; margin-top:10px;"><strong>التذكرة مغلقة</strong><br>التقييم: ${ratingHtml}</div>`;
+
+            if (Auth.user.role !== 'admin' && !t.rating) {
+                historyContainer.innerHTML += `
+                 <div style="text-align:center; margin-top:10px;">
+                    <p>قيم لخدمة:</p>
+                    <select onchange="Support.rateTicket(${t.id}, this.value)" style="padding:5px;">
+                        <option value="">-- اختر --</option>
+                        <option value="5">5 ممتاز</option>
+                        <option value="4">4 جيد جدا</option>
+                        <option value="3">3 جيد</option>
+                        <option value="2">2 مقبول</option>
+                        <option value="1">1 سيء</option>
+                    </select>
+                 </div>`;
+            }
+        } else {
+            // Open Action Area
+            replyText.style.display = 'block';
+
+            if (Auth.user.role === 'admin') {
+                btnReturn.style.display = 'inline-block';
+                btnReply.style.display = 'inline-block';
+                btnReply.innerHTML = '<i class="fas fa-reply"></i> رد عادي';
+
+                // Status Flow Logic
+                if (t.status === 'جديد' || t.status === 'محدث' || t.status === 'مسترجع') {
+                    // Stage 1: Accept
+                    btnAccept.style.display = 'inline-block';
+                } else if (t.status === 'قيد التنفيذ') {
+                    // Stage 2: Execute
+                    btnExecute.style.display = 'inline-block';
+                } else if (t.status === 'تم التنفيذ') {
+                    // Stage 3: Close
+                    btnClose.style.display = 'inline-block';
+                }
+            } else {
+                // User
+                btnReply.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال رد';
+                btnReply.style.display = 'inline-block';
+            }
+        }
+
+        // Show Modal
+        document.getElementById('ticketModal').style.display = 'block';
+    },
+
+    closeModal: () => {
+        document.getElementById('ticketModal').style.display = 'none';
+        Support.currentTicketId = null;
+    },
+
+    sendReply: () => {
+        const text = document.getElementById('replyText').value.trim();
+        if (!text) return alert('اكتب الرد أولاً');
+
+        let newStatus = 'قيد المعالجة';
+        // Need to check current status to avoid resetting flow
+        const tickets = Storage.get('tickets') || [];
+        const t = tickets.find(x => x.id === Support.currentTicketId);
+        if (t) newStatus = t.status;
+
+        if (Auth.user.role !== 'admin') {
+            newStatus = 'محدث';
+        }
+
+        Support.addReplyToAction(text, newStatus);
+    },
+
+    acceptTicket: () => {
+        const text = document.getElementById('replyText').value.trim();
+        Support.addReplyToAction(text || 'تم قبول التذكرة وجاري العمل عليها.', 'قيد التنفيذ');
+    },
+
+    executeTicket: () => {
+        const text = document.getElementById('replyText').value.trim();
+        Support.addReplyToAction(text || 'تم تنفيذ الطلب بنجاح.', 'تم التنفيذ');
+    },
+
+    returnTicketAction: () => {
+        const text = document.getElementById('replyText').value.trim();
+        if (!text) return alert('يرجى كتابة سبب الإعادة في خانة الرد');
+        Support.addReplyToAction(text, 'مسترجع');
+    },
+
+    closeTicketAction: () => {
+        const text = document.getElementById('replyText').value.trim();
+        if (confirm('هل أنت متأكد من إغلاق التذكرة نهائياً؟')) {
+            Support.addReplyToAction(text || 'تم إغلاق التذكرة.', 'مغلق');
         }
     },
 
-    returnTicket: (id) => {
-        const note = prompt("الرجاء إدخال سبب الإعادة أو الملاحظات:");
-        if (!note) return;
-
+    addReplyToAction: (text, newStatus) => {
+        const id = Support.currentTicketId;
         const tickets = Storage.get('tickets') || [];
         const idx = tickets.findIndex(t => t.id === id);
-        if (idx !== -1) {
-            tickets[idx].status = 'مسترجع';
-            tickets[idx].adminNote = note;
-            Storage.set('tickets', tickets);
-            alert('تم إعادة التذكرة للمستخدم مع الملاحظة.');
-            Support.loadTickets();
-        }
+        if (idx === -1) return;
+
+        const reply = {
+            sender: Auth.user.name,
+            role: Auth.user.role,
+            text: text,
+            date: new Date().toLocaleDateString('ar-SA') + ' ' + new Date().toLocaleTimeString('ar-SA')
+        };
+
+        if (!tickets[idx].replies) tickets[idx].replies = [];
+        tickets[idx].replies.push(reply);
+        tickets[idx].status = newStatus;
+
+        Storage.set('tickets', tickets);
+        alert('تم تنفيذ الإجراء بنجاح');
+        Support.closeModal();
+        Support.loadTickets();
     },
 
     rateTicket: (id, rating) => {
@@ -1242,7 +1436,7 @@ const Support = {
             tickets[idx].rating = parseInt(rating);
             Storage.set('tickets', tickets);
             alert('شكراً لتقييمك!');
-            Support.loadTickets();
+            Support.openTicket(id); // Reload modal to show stars
         }
     }
 };

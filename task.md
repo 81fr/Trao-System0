@@ -1,3 +1,8 @@
-- [ ] Create Supply Orders page (orders.html) <!-- id: 22 -->
-- [ ] Implement Supply Orders Logic (JS) <!-- id: 23 -->
-- [ ] Update Sidebars with new link <!-- id: 24 -->
+- [x] Create Supply Orders page (orders.html) <!-- id: 22 -->
+- [x] Implement Supply Orders Logic (JS) <!-- id: 23 -->
+- [x] Update Sidebars with new link <!-- id: 24 -->
+- [x] Implement Support Ticket System (support.html) <!-- id: 25 -->
+- [x] Implement Support Logic (JS) <!-- id: 26 -->
+- [x] Move 'Made in Traof' and Logo to Main Content Footer <!-- id: 30 -->
+- [x] Update Logo in Footer <!-- id: 31 -->
+- [x] Implement Edit/Delete for Cards <!-- id: 32 -->

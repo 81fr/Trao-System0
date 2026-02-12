@@ -99,23 +99,44 @@ html[dir="rtl"] body {
   color: #fff;
 }
 
-/* Footer */
-.sidebar-footer {
-  margin-top: auto;
-  padding: 14px;
+/* Footer (Main Content) */
+.main-footer {
   text-align: center;
+  padding: 20px;
+  margin-top: 40px;
   border-top: 1px solid var(--border);
 }
 
-.sidebar-footer img {
-  max-height: 40px;
-  opacity: .7
+.main-footer p {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.main-footer img {
+  height: 80px;
+  margin: 0 auto;
+  display: block;
+}
+
+/* Legacy Sidebar Footer (Removed from HTML) */
+.sidebar-footer {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 /* ===== Main ===== */
 .main-content {
   margin-inline-start: 280px;
   padding: 26px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 header {
@@ -421,7 +442,7 @@ tbody tr:hover {
 
 /* ===========================
    TOP LAYOUT MODE
-=========================== */
+   =========================== */
 body.layout-top .sidebar {
   width: 100%;
   height: auto;
@@ -489,9 +510,10 @@ body.layout-top .main-content {
     width: 100%;
   }
 }
+
 /* ===========================
    MODAL & CHARTS
-=========================== */
+   =========================== */
 .modal-backdrop {
   position: fixed;
   inset: 0;
