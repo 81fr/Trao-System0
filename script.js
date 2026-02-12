@@ -259,6 +259,28 @@ const Settings = {
         Settings.renderCategories();
     },
 
+    populateDropdown: (type, selectElement) => {
+        if (!selectElement) return;
+        selectElement.innerHTML = '<option value="">-- اختر --</option>';
+        if (type === 'merchants') {
+            const merchants = Storage.get('merchants') || [];
+            merchants.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.name;
+                opt.text = m.name;
+                selectElement.appendChild(opt);
+            });
+        } else if (type === 'beneficiaries') {
+            const beneficiaries = Storage.get('beneficiaries') || [];
+            beneficiaries.forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b.name;
+                opt.text = b.name;
+                selectElement.appendChild(opt);
+            });
+        }
+    },
+
     renderCategories: () => {
         const list = document.getElementById('categoriesList');
         if (!list) return;
