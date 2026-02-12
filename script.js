@@ -90,7 +90,7 @@ const Auth = {
 
         if (!Auth.user) return window.location.href = 'login.html';
 
-        if (!Auth.user) return window.location.href = 'login.html';
+
 
         // Pages restricted to ADMIN only (Merchants can access POS/Reports/Orders)
         const strictAdminPages = ['index.html', 'cards.html', 'wallets.html', 'merchants.html', 'settings.html', 'users.html'];
@@ -1069,12 +1069,11 @@ window.onload = () => {
 const Support = {
     init: () => {
         if (!Auth.user) return;
-        if (Auth.user.role === 'admin') {
-            const adminView = document.getElementById('adminTicketView');
-            if (adminView) {
-                adminView.style.display = 'block';
-                Support.loadTickets();
-            }
+        // Always show ticket list, but content depends on role
+        const container = document.getElementById('ticketListContainer');
+        if (container) {
+            container.style.display = 'block';
+            Support.loadTickets();
         }
     },
 
@@ -1087,39 +1086,104 @@ const Support = {
         const ticket = {
             id: Date.now(),
             sender: Auth.user.name + ' (' + Auth.user.role + ')',
+            senderUsername: Auth.user.username || Auth.user.identity, // Store unique ID
             title: title,
             desc: desc,
             date: new Date().toLocaleDateString('ar-SA'),
-            status: 'جديد'
+            status: 'جديد',
+            rating: 0
         };
 
         Storage.add('tickets', ticket);
-        alert('تم إرسال تذكرتك بنجاح! سيتم التواصل معك قريباً.');
+        alert('تم إرسال تذكرتك بنجاح!');
         document.getElementById('ticketTitle').value = '';
         document.getElementById('ticketDesc').value = '';
 
-        // If admin submits (test), reload to see it
-        if (Auth.user.role === 'admin') Support.loadTickets();
+        Support.loadTickets(); // Reload table
     },
 
     loadTickets: () => {
         const tbody = document.getElementById('ticketsTableBody');
         if (!tbody) return;
 
-        const tickets = Storage.get('tickets') || [];
+        let tickets = Storage.get('tickets') || [];
+
+        // Filter: Admin sees all, User sees own
+        if (Auth.user.role !== 'admin') {
+            const myId = Auth.user.username || Auth.user.identity;
+            tickets = tickets.filter(t => t.senderUsername === myId || (!t.senderUsername && t.sender.includes(Auth.user.name)));
+            // Fallback for old tickets: check name/role string if username missing
+        }
+
         if (tickets.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">لا توجد تذاكر جديدة</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">لا توجد تذاكر</td></tr>';
             return;
         }
 
-        tbody.innerHTML = tickets.map(t => `
+        tbody.innerHTML = tickets.map(t => {
+            let actions = '';
+
+            // Logic for Actions Column
+            if (Auth.user.role === 'admin') {
+                if (t.status !== 'مغلق') {
+                    actions = `<button onclick="Support.closeTicket(${t.id})" style="padding:5px 10px; background:#dc3545; color:#fff; border:none; border-radius:4px;">إغلاق التذكرة</button>`;
+                } else {
+                    actions = `<span style="color:gray"><i class="fas fa-check-circle"></i> مغلقة</span>`;
+                }
+            } else {
+                // Regular User
+                if (t.status === 'مغلق') {
+                    if (!t.rating || t.rating === 0) {
+                        actions = `
+                            <select onchange="Support.rateTicket(${t.id}, this.value)" style="padding:5px;">
+                                <option value="">-- قيّم --</option>
+                                <option value="5">⭐⭐⭐⭐⭐ ممتاز</option>
+                                <option value="4">⭐⭐⭐⭐ جيد جداً</option>
+                                <option value="3">⭐⭐⭐ جيد</option>
+                                <option value="2">⭐⭐ مقبول</option>
+                                <option value="1">⭐ سيء</option>
+                            </select>
+                        `;
+                    } else {
+                        actions = '⭐'.repeat(t.rating);
+                    }
+                } else {
+                    actions = '<span style="color:#00a59b">قيد المعالجة...</span>';
+                }
+            }
+
+            return `
             <tr>
                 <td>#${t.id}</td>
                 <td>${t.sender}</td>
                 <td><strong>${t.title}</strong><br><small style="color:#777">${t.desc}</small></td>
                 <td>${t.date}</td>
-                <td><span class="status-badge status-active">${t.status}</span></td>
+                <td><span class="status-badge ${t.status === 'مغلق' ? 'status-inactive' : 'status-active'}">${t.status}</span></td>
+                <td>${actions}</td>
             </tr>
-        `).join('');
+        `}).join('');
+    },
+
+    closeTicket: (id) => {
+        if (!confirm('هل أنت متأكد من إغلاق التذكرة؟')) return;
+        const tickets = Storage.get('tickets') || [];
+        const idx = tickets.findIndex(t => t.id === id);
+        if (idx !== -1) {
+            tickets[idx].status = 'مغلق';
+            Storage.set('tickets', tickets);
+            Support.loadTickets();
+        }
+    },
+
+    rateTicket: (id, rating) => {
+        if (!rating) return;
+        const tickets = Storage.get('tickets') || [];
+        const idx = tickets.findIndex(t => t.id === id);
+        if (idx !== -1) {
+            tickets[idx].rating = parseInt(rating);
+            Storage.set('tickets', tickets);
+            alert('شكراً لتقييمك!');
+            Support.loadTickets();
+        }
     }
 };

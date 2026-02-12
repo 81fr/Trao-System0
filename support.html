@@ -58,8 +58,9 @@
             <button onclick="Support.submitTicket()"><i class="fas fa-paper-plane"></i> إرسال</button>
         </div>
 
-        <div id="adminTicketView" class="form-container" style="display:none; border-top: 4px solid var(--brand-teal);">
-            <h3><i class="fas fa-inbox"></i> التذاكر الواردة</h3>
+        <div id="ticketListContainer" class="form-container"
+            style="display:none; border-top: 4px solid var(--brand-teal);">
+            <h3><i class="fas fa-inbox"></i> قائمة التذاكر</h3>
             <div class="table-container">
                 <table>
                     <thead>
@@ -69,6 +70,7 @@
                             <th>العنوان</th>
                             <th>التاريخ</th>
                             <th>الحالة</th>
+                            <th>إجراءات / تقييم</th>
                         </tr>
                     </thead>
                     <tbody id="ticketsTableBody"></tbody>
