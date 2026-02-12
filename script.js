@@ -121,6 +121,42 @@ const Auth = {
         if (profileName && Auth.user) {
             profileName.innerText = `مرحباً، ${Auth.user.name}`;
         }
+        Auth.updateSidebar();
+    },
+
+    updateSidebar: () => {
+        if (!Auth.user || Auth.user.role === 'admin') return;
+
+        const links = document.querySelectorAll('.nav-links li a');
+        const role = Auth.user.role;
+
+        let allowed = [];
+        let dashboardLink = 'index.html';
+
+        if (role === 'merchant') {
+            allowed = ['merchant_home.html', 'pos.html', 'reports.html', 'orders.html', 'support.html'];
+            dashboardLink = 'merchant_home.html';
+        } else if (role === 'beneficiary') {
+            allowed = ['beneficiary_home.html', 'support.html'];
+            dashboardLink = 'beneficiary_home.html';
+        }
+
+        links.forEach(link => {
+            const href = link.getAttribute('href');
+            if (href === '#' || href.includes('logout')) return; // Skip logout/placeholder
+
+            // Fix Dashboard Link
+            if (href === 'index.html' || href === 'merchant_home.html' || href === 'beneficiary_home.html') {
+                link.setAttribute('href', dashboardLink);
+                // Keep dashboard visible
+                return;
+            }
+
+            // Hide unauthorized
+            if (!allowed.some(p => href.includes(p))) {
+                link.parentElement.style.display = 'none';
+            }
+        });
     }
 };
 
