@@ -1489,11 +1489,19 @@ const Support = {
         }
 
         // Show Modal
-        document.getElementById('ticketModal').style.display = 'block';
+        const modal = document.getElementById('ticketModal');
+        if (modal) {
+            modal.classList.add('active');
+            if (modal.style.display !== 'block') modal.style.display = 'block';
+        }
     },
 
     closeModal: () => {
-        document.getElementById('ticketModal').style.display = 'none';
+        const modal = document.getElementById('ticketModal');
+        if (modal) {
+            modal.classList.remove('active');
+            modal.style.display = 'none';
+        }
         Support.currentTicketId = null;
     },
 

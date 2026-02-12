@@ -76,28 +76,37 @@
         </div>
 
         <!-- Ticket Details Modal -->
-        <div id="ticketModal" class="modal">
-            <div class="modal-content" style="max-width: 700px;">
-                <span class="close-modal" onclick="Support.closeModal()">&times;</span>
-                <h2 id="modalTicketTitle">تفاصيل التذكرة</h2>
-                <div id="ticketHistory" class="ticket-history"
-                    style="margin: 20px 0; max-height: 300px; overflow-y: auto; background: #f9f9f9; padding: 15px; border-radius: 8px;">
-                    <!-- Conversation loads here -->
-                </div>
+        <div id="ticketModal" class="modal-backdrop">
+            <div class="modal">
+                <header
+                    style="display:flex; justify-content:space-between; align-items:center; padding: 15px 20px; border-bottom: 1px solid #eee;">
+                    <h2 id="modalTicketTitle" style="margin:0;">تفاصيل التذكرة</h2>
+                    <span class="close-modal" onclick="Support.closeModal()"
+                        style="cursor:pointer; font-size:1.5rem;">&times;</span>
+                </header>
 
-                <div id="ticketActionArea" style="border-top: 1px solid #ddd; padding-top: 15px;">
-                    <textarea id="replyText" rows="3" placeholder="اكتب ردك أو ملاحظاتك هنا..."
-                        style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; margin-bottom:10px;"></textarea>
-                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                        <button id="btnReply" onclick="Support.sendReply()"
-                            style="background-color: var(--brand-teal);"><i class="fas fa-paper-plane"></i> إرسال
-                            رد</button>
-                        <button id="btnReturn" onclick="Support.returnTicketAction()"
-                            style="background-color: #ffc107; color: #333; display: none;"><i class="fas fa-undo"></i>
-                            إعادة التذكرة</button>
-                        <button id="btnCloseTicket" onclick="Support.closeTicketAction()"
-                            style="background-color: #dc3545; display: none;"><i class="fas fa-times-circle"></i> إغلاق
-                            التذكرة</button>
+                <div class="modal-body" style="padding: 20px;">
+                    <div id="ticketHistory" class="ticket-history"
+                        style="margin: 0 0 20px 0; max-height: 300px; overflow-y: auto; background: #f9f9f9; padding: 15px; border-radius: 8px;">
+                        <!-- Conversation loads here -->
+                    </div>
+
+                    <div id="ticketActionArea" style="border-top: 1px solid #ddd; padding-top: 15px;">
+                        <textarea id="replyText" rows="3" placeholder="اكتب ردك أو ملاحظاتك هنا..."
+                            style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; margin-bottom:10px;"></textarea>
+                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                            <button id="btnReply" onclick="Support.sendReply()"
+                                style="background-color: var(--brand-teal);"><i class="fas fa-paper-plane"></i> إرسال
+                                رد</button>
+                            <button id="btnReturn" onclick="Support.returnTicketAction()"
+                                style="background-color: #ffc107; color: #333; display: none;"><i
+                                    class="fas fa-undo"></i>
+                                إعادة التذكرة</button>
+                            <button id="btnCloseTicket" onclick="Support.closeTicketAction()"
+                                style="background-color: #dc3545; display: none;"><i class="fas fa-times-circle"></i>
+                                إغلاق
+                                التذكرة</button>
+                        </div>
                     </div>
                 </div>
             </div>
