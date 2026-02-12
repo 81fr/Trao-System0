@@ -47,7 +47,6 @@ html[dir="rtl"] body {
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
 }
 
 .sidebar-header {
@@ -102,6 +101,7 @@ html[dir="rtl"] body {
 
 /* Footer */
 .sidebar-footer {
+  margin-top: auto;
   padding: 14px;
   text-align: center;
   border-top: 1px solid var(--border);
