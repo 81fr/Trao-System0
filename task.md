@@ -6,3 +6,4 @@
 - [x] Move 'Made in Traof' and Logo to Main Content Footer <!-- id: 30 -->
 - [x] Update Logo in Footer <!-- id: 31 -->
 - [x] Implement Edit/Delete for Cards <!-- id: 32 -->
+- [x] Enhance Supply Orders (Withdraw, Reject Reason, Admin Actions) <!-- id: 33 -->
