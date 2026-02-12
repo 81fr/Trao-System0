@@ -962,15 +962,45 @@ const Orders = {
             return;
         }
 
-        tbody.innerHTML = myOrders.map(o => `
+        tbody.innerHTML = myOrders.map(o => {
+            let actions = '';
+            if (o.status === 'Pending' || o.status === 'قيد الانتظار') {
+                actions = `
+                    <button onclick="Orders.updateStatus('${o.id}', 'Accepted')" style="padding:5px 10px; font-size:0.8rem; background-color:#28a745; color:white; border:none; border-radius:4px; margin-left:5px;">قبول</button>
+                    <button onclick="Orders.updateStatus('${o.id}', 'Rejected')" style="padding:5px 10px; font-size:0.8rem; background-color:#dc3545; color:white; border:none; border-radius:4px;">رفض</button>
+                `;
+            } else if (o.status === 'Accepted') {
+                actions = `<button onclick="Orders.updateStatus('${o.id}', 'Completed')" style="padding:5px 10px; font-size:0.8rem; background-color:#007bff; color:white; border:none; border-radius:4px;">تنفيذ</button>`;
+            } else if (o.status === 'Completed') {
+                actions = '<span style="color:green;"><i class="fas fa-check"></i> مكتمل</span>';
+            } else if (o.status === 'Rejected') {
+                actions = '<span style="color:red;"><i class="fas fa-times"></i> مرفوض</span>';
+            }
+
+            return `
             <tr>
                 <td>#${o.id}</td>
                 <td>${o.item}</td>
                 <td>${Number(o.cost).toFixed(2)} ريال</td>
                 <td>${o.date}</td>
-                <td><span class="status-badge ${o.status === 'Completed' ? 'status-active' : 'status-inactive'}">${o.status === 'Completed' ? 'منفذ' : 'قيد الانتظار'}</span></td>
+                <td><span class="status-badge ${o.status === 'Completed' ? 'status-active' : 'status-inactive'}">${o.status === 'Completed' ? 'منفذ' : (o.status === 'Accepted' ? 'مقبول' : (o.status === 'Rejected' ? 'مرفوض' : 'قيد الانتظار'))}</span></td>
+                <td>${actions}</td>
             </tr>
-        `).join('');
+        `}).join('');
+    },
+
+    updateStatus: (id, newStatus) => {
+        const actionName = newStatus === 'Accepted' ? 'قبول' : (newStatus === 'Rejected' ? 'رفض' : 'تنفيذ');
+        if (!confirm(`هل أنت متأكد من ${actionName} هذا الطلب؟`)) return;
+
+        const allOrders = Storage.get('supply_orders') || [];
+        const orderIndex = allOrders.findIndex(o => o.id === id);
+        if (orderIndex !== -1) {
+            allOrders[orderIndex].status = newStatus;
+            Storage.set('supply_orders', allOrders);
+            alert(`تم ${actionName} الطلب بنجاح`);
+            location.reload();
+        }
     }
 };
 
