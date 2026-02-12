@@ -425,6 +425,7 @@ const Actions = {
         const wallet = document.getElementById('cardWalletInput').value;
         const balance = parseFloat(document.getElementById('cardBalanceInput').value);
         const beneficiary = document.getElementById('cardBeneficiaryInput').value;
+        const status = document.getElementById('cardStatusInput').value;
 
         if (!number || !wallet || isNaN(balance)) return alert('يرجى ملء جميع الحقول بشكل صحيح');
 
@@ -434,7 +435,7 @@ const Actions = {
             // Edit Mode
             const index = cards.findIndex(c => c.id == id);
             if (index !== -1) {
-                cards[index] = { ...cards[index], number, wallet, balance, beneficiary: beneficiary || 'غير محدد' };
+                cards[index] = { ...cards[index], number, wallet, balance, status, beneficiary: beneficiary || 'غير محدد' };
                 Storage.set('cards', cards);
                 alert('تم تحديث البطاقة بنجاح');
             }
@@ -442,7 +443,7 @@ const Actions = {
             // Create Mode
             if (cards.some(c => c.number === number)) return alert('رقم البطاقة موجود بالفعل');
             Storage.add('cards', {
-                id: Date.now(), number, wallet, balance, status: 'نشط', beneficiary: beneficiary || 'غير محدد'
+                id: Date.now(), number, wallet, balance, status: status || 'نشط', beneficiary: beneficiary || 'غير محدد'
             });
             alert('تم إصدار البطاقة بنجاح!');
         }
@@ -459,6 +460,7 @@ const Actions = {
         document.getElementById('editingCardId').value = card.id;
         document.getElementById('cardNumInput').value = card.number;
         document.getElementById('cardBalanceInput').value = card.balance;
+        document.getElementById('cardStatusInput').value = card.status || 'نشط';
 
         // Populate dropdowns first if empty (though usually they are populated on load)
         // We assume they are populated. We just set values.
@@ -476,6 +478,7 @@ const Actions = {
         document.getElementById('cardBalanceInput').value = '';
         document.getElementById('cardWalletInput').value = '';
         document.getElementById('cardBeneficiaryInput').value = '';
+        document.getElementById('cardStatusInput').value = 'نشط';
 
         document.getElementById('saveCardBtn').innerHTML = '<i class="fas fa-plus"></i> إصدار البطاقة';
         document.getElementById('cancelCardEditBtn').style.display = 'none';

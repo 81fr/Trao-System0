@@ -60,6 +60,13 @@
                 <label>الرصيد الأولي</label>
                 <input type="number" id="cardBalanceInput" placeholder="0.00" />
             </div>
+            <div class="form-group">
+                <label>الحالة</label>
+                <select id="cardStatusInput">
+                    <option value="نشط">نشط</option>
+                    <option value="غير نشط">غير نشط</option>
+                </select>
+            </div>
             <div style="display:flex; gap:10px;">
                 <button id="saveCardBtn" onclick="Actions.addCard()"><i class="fas fa-plus"></i> إصدار البطاقة</button>
                 <button id="cancelCardEditBtn" onclick="Actions.cancelCardEdit()"
