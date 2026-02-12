@@ -101,8 +101,14 @@
       `).join('');
 
             // Load Supply Orders for this merchant
+            const merchantName = user.linkedEntity || user.name;
+
+            // Display the target name for confirmation (optional, helps debugging)
+            const header = document.querySelector('h3[style*="margin-top:24px"]');
+            if (header) header.innerHTML = `أوامر التوريد الواردة <small style="font-size:0.8em; color:var(--text-secondary)">(${merchantName})</small>`;
+
             if (typeof Orders !== 'undefined' && Orders.loadForMerchant) {
-                Orders.loadForMerchant(user.name);
+                Orders.loadForMerchant(merchantName);
             }
         });
     </script>
