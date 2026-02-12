@@ -536,23 +536,58 @@ let _dashboardChart, _reportsChart;
 function buildDashboardChart() {
     const el = document.getElementById('dashboardChart');
     if (!el) return;
-    const tx = Storage.get('transactions') || [];
-    // Last 7 days aggregation
+
+    // Check if Chart.js is loaded
+    if (typeof Chart === 'undefined') {
+        el.parentNode.innerHTML = '<p style="color:red; text-align:center; padding:20px;">فشل تحميل المكتبة الرسومية. تأكد من الاتصال بالإنترنت.</p>';
+        return;
+    }
+
+    let tx = Storage.get('transactions') || [];
+
+    // DEMO DATA: If no transactions exist, show some empty state or dummy data?
+    // Let's rely on actual data but ensure the chart renders even with 0s.
+
     const labels = [], data = [];
     const now = new Date();
+
+    // Use 'en-GB' for consistent key matching if 'ar-SA' varies, 
+    // BUT we must match what is stored. Stored data uses 'ar-SA'.
+    // We will attempt to match exactly what `new Date().toLocaleDateString('ar-SA')` produces on this machine.
+
     for (let i = 6; i >= 0; i--) {
         const d = new Date(now);
         d.setDate(now.getDate() - i);
+        // FORCE 'ar-SA' to match POS saved format
         const key = d.toLocaleDateString('ar-SA');
-        labels.push(key);
+
+        // Simplified label for display (Day/Month)
+        const displayLabel = d.toLocaleDateString('ar-SA', { day: 'numeric', month: 'numeric' });
+        labels.push(displayLabel);
+
         const sum = tx.filter(t => t.date === key).reduce((s, t) => s + Number(t.amount || 0), 0);
         data.push(sum);
     }
+
     if (_dashboardChart) _dashboardChart.destroy();
+
     _dashboardChart = new Chart(el.getContext('2d'), {
         type: 'bar',
-        data: { labels, datasets: [{ label: 'مبيعات/العمليات (ريال)', data, backgroundColor: '#00A59B' }] },
-        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        data: {
+            labels,
+            datasets: [{
+                label: 'المبيعات (ريال)',
+                data,
+                backgroundColor: '#00A59B',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, suggestedMax: 100 } }
+        }
     });
 }
 
