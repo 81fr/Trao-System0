@@ -90,8 +90,16 @@ const Auth = {
 
         if (!Auth.user) return window.location.href = 'login.html';
 
-        const adminPages = ['index.html', 'cards.html', 'wallets.html', 'merchants.html', 'settings.html', 'users.html', 'reports.html', 'pos.html'];
-        if (Auth.user.role === 'merchant' && adminPages.includes(page)) return window.location.href = 'merchant_home.html';
+        if (!Auth.user) return window.location.href = 'login.html';
+
+        // Pages restricted to ADMIN only (Merchants can access POS/Reports/Orders)
+        const strictAdminPages = ['index.html', 'cards.html', 'wallets.html', 'merchants.html', 'settings.html', 'users.html'];
+
+        if (Auth.user.role === 'merchant') {
+            // Allow: merchant_home.html, pos.html, reports.html, orders.html
+            // Block: strictAdminPages
+            if (strictAdminPages.includes(page)) return window.location.href = 'merchant_home.html';
+        }
 
         // Allow beneficiaries to access support.html
         if (Auth.user.role === 'beneficiary' && page !== 'beneficiary_home.html' && page !== 'support.html')
