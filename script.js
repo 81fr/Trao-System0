@@ -644,14 +644,15 @@ function loadCardsTable() {
     if (!tbody) return;
     tbody.innerHTML = '';
     cards.forEach(card => {
-        const statusClass = (card.status === 'نشط' || card.status === 'Active') ? 'status-active' : 'status-inactive';
+        const status = card.status || 'نشط';
+        const statusClass = (status === 'نشط' || status === 'Active') ? 'status-active' : 'status-inactive';
         const tr = document.createElement('tr');
         tr.innerHTML = `
       <td>${card.number}</td>
       <td>${card.wallet}</td>
       <td>${card.beneficiary || '-'}</td>
       <td>${card.balance} ريال</td>
-      <td><span class="status-badge ${statusClass}">${card.status}</span></td>
+      <td><span class="status-badge ${statusClass}">${status}</span></td>
       <td>
         <button class="secondary" onclick="Actions.editCard(${card.id})" style="padding:5px 10px; font-size:0.8rem; margin-left:5px;">تعديل</button>
         <button class="delete-btn" onclick="Actions.deleteCard(${card.id})" style="padding:5px 10px; font-size:0.8rem;"><i class="fas fa-trash"></i></button>
