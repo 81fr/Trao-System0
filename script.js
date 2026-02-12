@@ -407,7 +407,8 @@ const Actions = {
         location.reload();
     },
 
-    addUser: () => {
+    saveUser: () => {
+        const id = document.getElementById('editingUserId').value;
         const username = document.getElementById('newUsername').value.trim();
         const name = document.getElementById('newName').value.trim();
         const password = document.getElementById('newPassword').value.trim();
@@ -417,13 +418,67 @@ const Actions = {
         if (!username || !name || !password) return alert('يرجى تعبئة الحقول الأساسية');
         if ((role === 'merchant' || role === 'beneficiary') && !linkedEntity) return alert('يرجى اختيار الجهة المرتبطة بهذا الحساب');
 
-        const users = Storage.get('users') || [];
-        if (users.some(u => u.username === username)) return alert('اسم المستخدم مسجل مسبقاً');
+        let users = Storage.get('users') || [];
 
-        const newUser = { id: Date.now(), name, username, password, role, linkedEntity: linkedEntity || null };
-        Storage.add('users', newUser);
-        alert('تم إنشاء المستخدم بنجاح!');
+        if (id) {
+            // Edit Mode
+            const index = users.findIndex(u => u.id == id);
+            if (index !== -1) {
+                users[index] = { ...users[index], name, username, password, role, linkedEntity };
+                Storage.set('users', users);
+                alert('تم تحديث بيانات المستخدم بنجاح');
+            }
+        } else {
+            // Create Mode
+            if (users.some(u => u.username === username)) return alert('اسم المستخدم مسجل مسبقاً');
+            const newUser = { id: Date.now(), name, username, password, role, linkedEntity: linkedEntity || null };
+            Storage.add('users', newUser);
+            alert('تم إنشاء المستخدم بنجاح');
+        }
+
+        Actions.cancelEdit(); // Reset form
         location.reload();
+    },
+
+    editUser: (id) => {
+        const users = Storage.get('users') || [];
+        const user = users.find(u => u.id === id);
+        if (!user) return;
+
+        document.getElementById('editingUserId').value = user.id;
+        document.getElementById('newUsername').value = user.username;
+        document.getElementById('newName').value = user.name;
+        document.getElementById('newPassword').value = user.password;
+
+        const roleSelect = document.getElementById('newUserRole');
+        roleSelect.value = user.role;
+
+        // Trigger population
+        const entitySelect = document.getElementById('linkedEntitySelect');
+        if (user.role === 'merchant') Settings.populateDropdown('merchants', entitySelect);
+        else if (user.role === 'beneficiary') Settings.populateDropdown('beneficiaries', entitySelect);
+        else entitySelect.innerHTML = '<option value="">-- غير مرتبط --</option>';
+
+        // Set value after population (timeout to let DOM update if needed, though redundant with sync code)
+        setTimeout(() => {
+            entitySelect.value = user.linkedEntity || '';
+        }, 50);
+
+        document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
+        document.getElementById('cancelEditBtn').style.display = 'inline-block';
+        window.scrollTo(0, 0);
+    },
+
+    cancelEdit: () => {
+        document.getElementById('editingUserId').value = '';
+        document.getElementById('newUsername').value = '';
+        document.getElementById('newName').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('newUserRole').value = 'admin';
+        document.getElementById('linkedEntitySelect').innerHTML = '<option value="">-- غير مرتبط --</option>';
+
+        document.getElementById('saveUserBtn').innerHTML = '<i class="fas fa-user-plus"></i> إنشاء المستخدم';
+        document.getElementById('cancelEditBtn').style.display = 'none';
     },
 
     deleteUser: (id) => {
@@ -470,8 +525,12 @@ function loadUsersTable() {
         <td>${u.name}</td>
         <td>${roleBadge}</td>
         <td>${u.linkedEntity || '-'}</td>
-        <td>${(u.role !== 'admin' || u.username !== 'admin')
-                ? `<button class="delete-btn" onclick="Actions.deleteUser(${u.id})"><i class="fas fa-trash"></i></button>` : ''}</td>
+        <td>
+            ${(u.role !== 'admin' || u.username !== 'admin') ?
+                `<button class="secondary" onclick="Actions.editUser(${u.id})" style="padding:5px 10px; font-size:0.8rem; margin-left:5px;">تعديل</button>
+             <button class="delete-btn" onclick="Actions.deleteUser(${u.id})" style="padding:5px 10px; font-size:0.8rem;"><i class="fas fa-trash"></i></button>`
+                : ''}
+        </td>
       </tr>`;
     });
 }
