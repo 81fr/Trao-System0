@@ -866,6 +866,30 @@ const Orders = {
                 select.appendChild(opt);
             });
         }
+    },
+
+    loadForMerchant: (merchantName) => {
+        const tbody = document.getElementById('merchantOrdersTable');
+        if (!tbody) return;
+
+        const allOrders = Storage.get('supply_orders') || [];
+        // Filter orders match merchant name
+        const myOrders = allOrders.filter(o => o.partner === merchantName);
+
+        if (myOrders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">لا توجد أوامر توريد واردة</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = myOrders.map(o => `
+            <tr>
+                <td>#${o.id}</td>
+                <td>${o.item}</td>
+                <td>${Number(o.cost).toFixed(2)} ريال</td>
+                <td>${o.date}</td>
+                <td><span class="status-badge ${o.status === 'Completed' ? 'status-active' : 'status-inactive'}">${o.status === 'Completed' ? 'منفذ' : 'قيد الانتظار'}</span></td>
+            </tr>
+        `).join('');
     }
 };
 

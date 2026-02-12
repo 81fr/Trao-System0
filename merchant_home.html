@@ -43,6 +43,22 @@
             </div>
         </div>
 
+        <h3 style="margin-top:24px;">أوامر التوريد الواردة</h3>
+        <div class="table-container" style="margin-bottom:24px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>رقم الأمر</th>
+                        <th>الصنف / الخدمة</th>
+                        <th>القيمة</th>
+                        <th>التاريخ</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody id="merchantOrdersTable"></tbody>
+            </table>
+        </div>
+
         <h3>آخر العمليات</h3>
         <div class="table-container">
             <table>
@@ -83,6 +99,11 @@
           <td>${t.date}</td>
         </tr>
       `).join('');
+
+            // Load Supply Orders for this merchant
+            if (typeof Orders !== 'undefined' && Orders.loadForMerchant) {
+                Orders.loadForMerchant(user.name);
+            }
         });
     </script>
 </body>
