@@ -77,19 +77,50 @@
         </div>
     </main>
 
-    <div id="successModal" class="modal" style="display:none;"></div>
+    <!-- Backdrop + Modal -->
+    <div id="posReceiptBackdrop" class="modal-backdrop">
+        <div class="modal">
+            <header>
+                <strong><i class="fas fa-receipt"></i> إيصال العملية</strong>
+                <button class="secondary" onclick="POS.closeModal()"><i class="fas fa-times"></i> إغلاق</button>
+            </header>
+            <div class="modal-body">
+                <div id="receiptContent">جارٍ التحضير…</div>
+            </div>
+            <div class="modal-actions">
+                <button class="secondary" onclick="window.print()"><i class="fas fa-print"></i> طباعة / PDF</button>
+                <button onclick="POS.closeModal()"><i class="fas fa-check"></i> تم</button>
+            </div>
+        </div>
+    </div>
 
-    <script>
-        document.getElementById('successModal').classList.add = new Proxy(document.getElementById('successModal').classList.add, {
-            apply(target, thisArg, args) { thisArg.style.display = 'block'; return Reflect.apply(target, thisArg, args); }
-        });
-        document.getElementById('successModal').classList.remove = new Proxy(document.getElementById('successModal').classList.remove, {
-            apply(target, thisArg, args) { thisArg.style.display = 'none'; return Reflect.apply(target, thisArg, args); }
-        });
-    </script>
-
-    <div id="receiptContent" style="display:none;"></div>
     <script src="script.js"></script>
+    <script>
+        // ربط المودال مع دوال POS الحالية
+        (function () {
+            const backdrop = document.getElementById('posReceiptBackdrop');
+            // نحافظ على الواجهات المستخدمة في script.js:
+            const _open = (contentHTML) => {
+                const holder = document.getElementById('receiptContent');
+                if (holder) holder.innerHTML = contentHTML || '';
+                backdrop?.classList.add('active');
+            };
+            const _close = () => backdrop?.classList.remove('active');
+
+            // "Override" بسيط: استدعاء هذه الدوال داخل processPayment/closeModal
+            // نلف الدوال الموجودة بدون كسرها:
+            const _origProcess = POS.processPayment.bind(POS);
+            POS.processPayment = function () {
+                const before = document.getElementById('receiptContent')?.innerHTML || '';
+                _origProcess();
+                // إذا تمّ تحديث الإيصال داخل script.js فسنظهره
+                if (document.getElementById('receiptContent')?.innerHTML !== before) {
+                    backdrop?.classList.add('active');
+                }
+            };
+            POS.closeModal = function () { _close(); };
+        })();
+    </script>
 </body>
 
 </html>

@@ -7,6 +7,7 @@
     <title>التقارير - تراوف</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -45,7 +46,13 @@
             <div class="form-group"><label>إلى</label><input type="date" id="toDate"></div>
             <button class="secondary" onclick="alert('تطبيق الفلتر قادم')"><i class="fas fa-filter"></i> تطبيق
                 الفلتر</button>
-            <button onclick="Actions.exportReport()"><i class="fas fa-file-pdf"></i> تصدير PDF</button>
+            <button onclick="exportTransactionsCSV()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+            <button onclick="exportTransactionsPDF()"><i class="fas fa-file-pdf"></i> تصدير PDF</button>
+        </div>
+
+        <div class="chart-card" style="margin-bottom:16px;">
+            <h3 style="margin-top:0"><i class="fas fa-chart-pie"></i> توزيع المبالغ حسب المتجر</h3>
+            <canvas id="reportsChart" height="140"></canvas>
         </div>
 
         <div class="table-container">

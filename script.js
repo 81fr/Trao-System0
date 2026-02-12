@@ -507,6 +507,89 @@ function loadMerchantsTable() {
 }
 
 /* ===========================
+   EXPORTS (CSV / PDF)
+=========================== */
+function exportTransactionsCSV(filename = 'transactions.csv') {
+    const tx = Storage.get('transactions') || [];
+    const header = ['id', 'merchant', 'card', 'amount', 'date'];
+    const rows = tx.map(t => [t.id, t.merchant, t.card, t.amount, t.date]);
+    const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function exportTransactionsPDF() {
+    // Basic browser print for PDF
+    window.print();
+}
+
+/* ===========================
+   CHARTS (Chart.js)
+=========================== */
+let _dashboardChart, _reportsChart;
+
+function buildDashboardChart() {
+    const el = document.getElementById('dashboardChart');
+    if (!el) return;
+    const tx = Storage.get('transactions') || [];
+    // Last 7 days aggregation
+    const labels = [], data = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(now.getDate() - i);
+        const key = d.toLocaleDateString('ar-SA');
+        labels.push(key);
+        const sum = tx.filter(t => t.date === key).reduce((s, t) => s + Number(t.amount || 0), 0);
+        data.push(sum);
+    }
+    if (_dashboardChart) _dashboardChart.destroy();
+    _dashboardChart = new Chart(el.getContext('2d'), {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'مبيعات/العمليات (ريال)', data, backgroundColor: '#00A59B' }] },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+}
+
+function buildReportsChart() {
+    const el = document.getElementById('reportsChart');
+    if (!el) return;
+    const tx = Storage.get('transactions') || [];
+    // Merchant aggregation
+    const map = {};
+    tx.forEach(t => map[t.merchant] = (map[t.merchant] || 0) + Number(t.amount || 0));
+    const labels = Object.keys(map);
+    const data = Object.values(map);
+    if (_reportsChart) _reportsChart.destroy();
+    _reportsChart = new Chart(el.getContext('2d'), {
+        type: 'doughnut',
+        data: { labels, datasets: [{ label: 'إجمالي بالمتاجر', data, backgroundColor: ['#00A59B', '#8CC240', '#3E4559', '#5ec9c3', '#a9d66e'] }] },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+}
+
+function fillTransactionsTableIfAny() {
+    const tbody = document.getElementById('transactionsTableBody');
+    if (!tbody) return false;
+    const transactions = Storage.get('transactions') || [];
+    tbody.innerHTML = transactions.map(t => `
+    <tr>
+      <td>#${t.id}</td>
+      <td>${t.merchant}</td>
+      <td>${t.card}</td>
+      <td style="color:var(--brand-teal)"><strong>${Number(t.amount || 0).toFixed(2)} ريال</strong></td>
+      <td>${t.date}</td>
+    </tr>
+  `).join('');
+    return true;
+}
+
+/* ===========================
    POS
 =========================== */
 const POS = {
@@ -615,19 +698,15 @@ window.onload = () => {
         if (typeof loadMerchantsTable === 'function') loadMerchantsTable();
         if (typeof loadUsersTable === 'function') loadUsersTable();
 
-        // التقارير العامة (إن وجد جدولها)
-        const tbody = document.getElementById('transactionsTableBody');
-        if (tbody) {
-            const transactions = Storage.get('transactions') || [];
-            tbody.innerHTML = transactions.map(t => `
-        <tr>
-          <td>#${t.id}</td>
-          <td>${t.merchant}</td>
-          <td>${t.card}</td>
-          <td style="color:var(--primary-color)"><strong>${Number(t.amount || 0).toFixed(2)} ريال</strong></td>
-          <td>${t.date}</td>
-        </tr>`).join('');
+        if (typeof loadUsersTable === 'function') loadUsersTable();
+
+        // Fill reports table and build reports chart
+        if (fillTransactionsTableIfAny()) {
+            if (typeof buildReportsChart === 'function') buildReportsChart();
         }
+
+        // Build dashboard chart
+        if (typeof buildDashboardChart === 'function') buildDashboardChart();
 
         // صفحة المستفيد (لو دالتها معرفة)
         if (typeof initBeneficiary === 'function') initBeneficiary();

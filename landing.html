@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>تراوف | نظام البطاقات والمحافظ</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css" />
+    <style>
+        .hero {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(135deg, rgba(0, 165, 155, .08), rgba(140, 194, 64, .08));
+            padding: 26px;
+        }
+
+        .hero-card {
+            max-width: 820px;
+            width: 100%;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 26px;
+            text-align: center;
+        }
+
+        .hero-card h1 {
+            margin: 10px 0 6px;
+            font-size: 2rem;
+            color: var(--brand-ink);
+        }
+
+        .hero-card p {
+            color: #627089;
+            line-height: 1.9;
+        }
+
+        .cta {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        .cta a {
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            transition: .2s;
+        }
+
+        .cta a.primary {
+            background: var(--brand-green);
+            color: #fff;
+        }
+
+        .cta a.secondary {
+            background: #f0f4f8;
+            color: var(--brand-ink);
+            border: 1px solid var(--border);
+        }
+
+        .cta a:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+    </style>
+</head>
+
+<body>
+    <section class="hero">
+        <div class="hero-card">
+            <img src="assets/logo.png" alt="TRAOF Logo" style="max-height:100px; margin-bottom:20px;">
+            <h1>تراوف</h1>
+            <p>
+                نظام خيري لإدارة البطاقات والمحافظ والمستفيدين والمتاجر مع نقطة بيع وتقارير تفاعلية.
+                هوية هادئة بالأخضر والأزرق، وتجربة استخدام بسيطة وسلسة.
+            </p>
+            <div class="cta">
+                <a href="login.html" class="primary"><i class="fas fa-sign-in-alt"></i> دخول للنظام</a>
+                <a href="reports.html" class="secondary"><i class="fas fa-chart-bar"></i> التقارير</a>
+                <a href="pos.html" class="secondary"><i class="fas fa-cash-register"></i> نقطة البيع</a>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>
