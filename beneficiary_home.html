@@ -97,20 +97,37 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            <h3><i class="fas fa-history"></i> آخر العمليات</h3>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>التاريخ</th>
-                            <th>المتجر</th>
-                            <th>المبلغ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="beneficiaryTransactionsTable"></tbody>
-                </table>
+        <!-- Manual Code Entry (Fallback) -->
+        <div id="manualEntrySection" style="margin-top:20px; border-top:1px dashed #ccc; padding-top:15px;">
+            <p style="margin:0 0 10px; color:#666; font-size:0.9rem;">
+                <i class="fas fa-keyboard"></i> لم يصلك الطلب؟ أدخل الكود الذي يظهر عند التاجر:
+            </p>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="manualCodeInput" placeholder="أدخل الكود (مثلاً 123456)" maxlength="6"
+                    style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px; text-align:center; font-size:1.1rem; letter-spacing:2px;">
+                <button onclick="PendingPurchase.manualCheck()"
+                    style="padding:10px 20px; background:#6c757d; color:#fff; border:none; border-radius:8px;">
+                    <i class="fas fa-search"></i> تحقق
+                </button>
             </div>
+        </div>
+        </div>
+
+        <h3><i class="fas fa-history"></i> آخر العمليات</h3>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>التاريخ</th>
+                        <th>المتجر</th>
+                        <th>المبلغ</th>
+                    </tr>
+                </thead>
+                <tbody id="beneficiaryTransactionsTable"></tbody>
+            </table>
+        </div>
         </div>
         <footer class="main-footer">
             <p>صنع في تراؤف</p>
@@ -203,6 +220,45 @@
                     const secs = Math.floor((remaining % 60000) / 1000);
                     timerEl.innerText = mins + ':' + String(secs).padStart(2, '0');
                 }, 1000);
+            },
+
+            manualCheck: () => {
+                const codeInput = document.getElementById('manualCodeInput');
+                const code = codeInput.value.trim();
+                if (!code || code.length !== 6) return alert('الرجاء إدخال كود صحيح مكون من 6 أرقام');
+
+                const pending = Storage.get('pendingPurchases') || [];
+                // Check against ALL cards logic again to be safe
+                const user = Auth.user;
+                const benefName = user.linkedEntity || user.name;
+                const cards = Storage.get('cards') || [];
+
+                // Find all my card numbers
+                let myCards = [];
+                if (/^\d+$/.test(user.username)) myCards.push(...cards.filter(c => c.identity === user.username));
+                myCards.push(...cards.filter(c => c.beneficiary === benefName));
+                myCards.push(...cards.filter(c => c.beneficiary && c.beneficiary.includes(benefName)));
+                const myCardNumbers = [...new Set(myCards.map(c => c.number))];
+
+                // Find the request by CODE + (Card OR Name match)
+                const req = pending.find(p => p.code === code && p.status === 'pending' &&
+                    (p.beneficiary === benefName || myCardNumbers.includes(p.cardNumber))
+                );
+
+                if (req) {
+                    console.log('[ManualCheck] Found:', req);
+                    PendingPurchase.currentRequest = req;
+                    document.getElementById('noPendingState').style.display = 'none';
+                    document.getElementById('pendingPurchaseCard').style.display = 'block';
+                    document.getElementById('pendingMerchant').innerText = req.merchant || 'تاجر';
+                    document.getElementById('pendingCode').innerText = req.code;
+                    document.getElementById('pendingAmount').innerText = Number(req.amount).toFixed(2);
+                    PendingPurchase.startTimer(req.expiresAt);
+                    alert('✅ تم العثور على الطلب! يمكنك الآن تأكيده.');
+                    codeInput.value = '';
+                } else {
+                    alert('❌ لم يتم العثور على طلب بهذا الكود، أو أن الطلب منتهي الصلاحية، أو لا يخص بطاقاتك.');
+                }
             },
 
             confirm: () => {
