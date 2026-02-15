@@ -136,9 +136,24 @@
                 const user = Auth.user;
                 if (!user) { console.log('[PendingPurchase] No user logged in'); return; }
                 const benefName = user.linkedEntity || user.name;
-                // Also find beneficiary's card number for matching
+
+                // Also find beneficiary's card number for matching - using robust logic
                 const cards = Storage.get('cards') || [];
-                const myCard = cards.find(c => (c.beneficiary === benefName) && (c.status === 'نشط' || c.status === 'Active'));
+                let myCard = null;
+
+                // 1. Match by identity
+                if (/^\d+$/.test(user.username)) {
+                    myCard = cards.find(c => c.identity === user.username && (c.status === 'نشط' || c.status === 'Active'));
+                }
+                // 2. Match by name
+                if (!myCard) {
+                    myCard = cards.find(c => c.beneficiary === benefName && (c.status === 'نشط' || c.status === 'Active'));
+                }
+                // 3. Match by partial name
+                if (!myCard) {
+                    myCard = cards.find(c => c.beneficiary && c.beneficiary.includes(benefName) && (c.status === 'نشط' || c.status === 'Active'));
+                }
+
                 const myCardNumber = myCard ? myCard.number : null;
 
                 const pending = Storage.get('pendingPurchases') || [];
@@ -234,7 +249,23 @@
 
             const cards = Storage.get('cards') || [];
             const benefName = user.linkedEntity || user.name;
-            const myCard = cards.find(c => (c.beneficiary === benefName) && (c.status === 'نشط' || c.status === 'Active'));
+
+            // Robust matching:
+            // 1. Match by identity (if username looks like identity)
+            let myCard = null;
+            if (/^\d+$/.test(user.username)) {
+                myCard = cards.find(c => c.identity === user.username && (c.status === 'نشط' || c.status === 'Active'));
+            }
+
+            // 2. Match by exact beneficiary name
+            if (!myCard) {
+                myCard = cards.find(c => c.beneficiary === benefName && (c.status === 'نشط' || c.status === 'Active'));
+            }
+
+            // 3. Match by partial name
+            if (!myCard) {
+                myCard = cards.find(c => c.beneficiary && c.beneficiary.includes(benefName) && (c.status === 'نشط' || c.status === 'Active'));
+            }
 
             const cardSection = document.getElementById('cardDetailsSection');
             const noCard = document.getElementById('noCardState');
@@ -244,7 +275,9 @@
                 document.getElementById('cardBalanceDisplay').innerText = Number(myCard.balance || 0).toFixed(2);
 
                 const transactions = Storage.get('transactions') || [];
+                // Match transactions by card number OR beneficiary name
                 const myTrans = transactions.filter(t => t.card === myCard.number);
+
                 const tbody = document.getElementById('beneficiaryTransactionsTable');
 
                 if (tbody) {
