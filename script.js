@@ -203,9 +203,9 @@ function initData() {
     }
     if (localStorage.getItem('cards') === null) {
         Storage.set('cards', [
-            { id: 1, number: '10001', balance: 500, status: 'نشط', wallet: 'إعانة غذائية', beneficiary: 'محمد أحمد', identity: '1010101010' },
-            { id: 2, number: '10002', balance: 1500, status: 'نشط', wallet: 'دعم كساء', beneficiary: 'سارة خالد', identity: '2020202020' },
-            { id: 3, number: '10003', balance: 0, status: 'موقوف', wallet: 'خدمات عامة', beneficiary: 'غير محدد', identity: '' }
+            { id: 1, number: '10001001', balance: 500, status: 'نشط', wallet: 'إعانة غذائية', beneficiary: 'محمد أحمد', identity: '1010101010' },
+            { id: 2, number: '10001002', balance: 1500, status: 'نشط', wallet: 'دعم كساء', beneficiary: 'سارة خالد', identity: '2020202020' },
+            { id: 3, number: '10001003', balance: 0, status: 'موقوف', wallet: 'خدمات عامة', beneficiary: 'غير محدد', identity: '' }
         ]);
     }
     if (localStorage.getItem('wallets') === null) {
@@ -222,8 +222,8 @@ function initData() {
     }
     if (localStorage.getItem('transactions') === null) {
         Storage.set('transactions', [
-            { id: 101, card: '10001', amount: 50, date: '2023-10-25', merchant: 'سوبرماركت الرياض' },
-            { id: 102, card: '10002', amount: 200, date: '2023-10-26', merchant: 'متجر الملابس العصرية' }
+            { id: 101, card: '10001001', amount: 50, date: '2023-10-25', merchant: 'سوبرماركت الرياض' },
+            { id: 102, card: '10001002', amount: 200, date: '2023-10-26', merchant: 'متجر الملابس العصرية' }
         ]);
     }
     if (localStorage.getItem('customLabels') === null) {
@@ -249,11 +249,28 @@ function initData() {
    DATA MIGRATION (patch old data)
 =========================== */
 function migrateData() {
-    // Patch cards with identity from beneficiaries
     const cards = Storage.get('cards') || [];
     const beneficiaries = Storage.get('beneficiaries') || [];
+
+    // Detect old default card numbers (10001, 10002, 10003) and replace with new format
+    const oldDefaults = ['10001', '10002', '10003'];
+    const hasOldCards = cards.some(c => oldDefaults.includes(c.number));
+    if (hasOldCards) {
+        // Replace old cards with new format
+        const newCards = [
+            { id: 1, number: '10001001', balance: 500, status: 'نشط', wallet: 'إعانة غذائية', beneficiary: 'محمد أحمد', identity: '1010101010' },
+            { id: 2, number: '10001002', balance: 1500, status: 'نشط', wallet: 'دعم كساء', beneficiary: 'سارة خالد', identity: '2020202020' },
+            { id: 3, number: '10001003', balance: 0, status: 'موقوف', wallet: 'خدمات عامة', beneficiary: 'غير محدد', identity: '' }
+        ];
+        // Keep any user-added cards (not in old defaults)
+        const userCards = cards.filter(c => !oldDefaults.includes(c.number));
+        Storage.set('cards', [...newCards, ...userCards]);
+    }
+
+    // Patch remaining cards with identity from beneficiaries
+    const currentCards = Storage.get('cards') || [];
     let cardsChanged = false;
-    cards.forEach(card => {
+    currentCards.forEach(card => {
         if (!card.identity && card.beneficiary) {
             const ben = beneficiaries.find(b => b.name === card.beneficiary);
             if (ben && ben.identity) {
@@ -262,7 +279,16 @@ function migrateData() {
             }
         }
     });
-    if (cardsChanged) Storage.set('cards', cards);
+    if (cardsChanged) Storage.set('cards', currentCards);
+
+    // Update old transactions that reference old card numbers
+    const tx = Storage.get('transactions') || [];
+    let txChanged = false;
+    const cardMap = { '10001': '10001001', '10002': '10001002', '10003': '10001003' };
+    tx.forEach(t => {
+        if (cardMap[t.card]) { t.card = cardMap[t.card]; txChanged = true; }
+    });
+    if (txChanged) Storage.set('transactions', tx);
 
     // Ensure at least one beneficiary user exists
     const users = Storage.get('users') || [];
