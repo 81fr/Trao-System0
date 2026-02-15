@@ -134,7 +134,7 @@
 
             checkOnce: () => {
                 const user = Auth.user;
-                if (!user) return;
+                if (!user) { console.log('[PendingPurchase] No user logged in'); return; }
                 const benefName = user.linkedEntity || user.name;
                 // Also find beneficiary's card number for matching
                 const cards = Storage.get('cards') || [];
@@ -142,9 +142,12 @@
                 const myCardNumber = myCard ? myCard.number : null;
 
                 const pending = Storage.get('pendingPurchases') || [];
+                console.log('[PendingPurchase] Checking:', { benefName, myCardNumber, pendingCount: pending.length, pending: pending.map(p => ({ code: p.code, status: p.status, beneficiary: p.beneficiary, cardNumber: p.cardNumber, expired: Date.now() > p.expiresAt })) });
+
                 const req = pending.find(p => p.status === 'pending' && Date.now() < p.expiresAt && (p.beneficiary === benefName || (myCardNumber && p.cardNumber === myCardNumber)));
 
                 if (req) {
+                    console.log('[PendingPurchase] ✅ Found matching request:', req.code, req.amount);
                     PendingPurchase.currentRequest = req;
                     document.getElementById('noPendingState').style.display = 'none';
                     document.getElementById('pendingPurchaseCard').style.display = 'block';
@@ -153,6 +156,7 @@
                     document.getElementById('pendingAmount').innerText = Number(req.amount).toFixed(2);
                     PendingPurchase.startTimer(req.expiresAt);
                 } else {
+                    console.log('[PendingPurchase] ❌ No matching pending request found');
                     if (PendingPurchase.currentRequest) {
                         // Was showing, now gone (expired/processed)
                         PendingPurchase.currentRequest = null;
