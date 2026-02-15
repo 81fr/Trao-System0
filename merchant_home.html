@@ -184,12 +184,36 @@
                 if (!input) return alert('يرجى إدخال رقم البطاقة أو رقم الهوية أو مسح QR أولاً');
 
                 const cards = Storage.get('cards') || [];
-                // Search by card number OR identity number
-                const card = cards.find(c => c.number === input || c.identity === input);
+                const beneficiaries = Storage.get('beneficiaries') || [];
+
+                console.log('Scanner input:', input);
+                console.log('Available cards:', cards.map(c => c.number));
+
+                // Search by exact card number
+                let card = cards.find(c => c.number === input);
+
+                // Search by identity number
+                if (!card) card = cards.find(c => c.identity === input);
+
+                // Search by beneficiary name
+                if (!card) card = cards.find(c => c.beneficiary === input);
+
+                // Try partial match (contains)
+                if (!card) card = cards.find(c => c.number && c.number.includes(input));
+                if (!card) card = cards.find(c => c.identity && c.identity.includes(input));
+
+                // Try matching via beneficiaries table (identity -> name -> card)
+                if (!card) {
+                    const ben = beneficiaries.find(b => b.identity === input || b.name === input);
+                    if (ben) {
+                        card = cards.find(c => c.beneficiary === ben.name);
+                    }
+                }
 
                 if (!card) {
                     document.getElementById('scanResult').style.display = 'none';
-                    return alert('لم يتم العثور على بطاقة بهذا الرقم أو رقم الهوية');
+                    const available = cards.map(c => c.number).join(', ');
+                    return alert('لم يتم العثور على بطاقة.\nالقيمة الممسوحة: ' + input + '\nالبطاقات المتوفرة: ' + (available || 'لا توجد بطاقات'));
                 }
 
                 MerchantScanner.scannedCard = card;
