@@ -167,14 +167,15 @@ function initData() {
     if (localStorage.getItem('users') === null) {
         Storage.set('users', [
             { id: 1, name: 'مدير النظام', username: 'admin', password: '123', role: 'admin' },
-            { id: 2, name: 'تاجر السوبرماركت', username: 'merchant', password: '123', role: 'merchant' }
+            { id: 2, name: 'تاجر السوبرماركت', username: 'merchant', password: '123', role: 'merchant', linkedEntity: 'سوبرماركت الرياض' },
+            { id: 3, name: 'محمد أحمد', username: 'ben1', password: '123', role: 'beneficiary', linkedEntity: 'محمد أحمد' }
         ]);
     }
     if (localStorage.getItem('cards') === null) {
         Storage.set('cards', [
-            { id: 1, number: '10001', balance: 500, status: 'نشط', wallet: 'إعانة غذائية', beneficiary: 'محمد أحمد' },
-            { id: 2, number: '10002', balance: 1500, status: 'نشط', wallet: 'دعم كساء', beneficiary: 'سارة خالد' },
-            { id: 3, number: '10003', balance: 0, status: 'موقوف', wallet: 'خدمات عامة', beneficiary: 'غير محدد' }
+            { id: 1, number: '10001', balance: 500, status: 'نشط', wallet: 'إعانة غذائية', beneficiary: 'محمد أحمد', identity: '1010101010' },
+            { id: 2, number: '10002', balance: 1500, status: 'نشط', wallet: 'دعم كساء', beneficiary: 'سارة خالد', identity: '2020202020' },
+            { id: 3, number: '10003', balance: 0, status: 'موقوف', wallet: 'خدمات عامة', beneficiary: 'غير محدد', identity: '' }
         ]);
     }
     if (localStorage.getItem('wallets') === null) {
@@ -211,6 +212,42 @@ function initData() {
             { id: 1, name: 'محمد أحمد', identity: '1010101010' },
             { id: 2, name: 'سارة خالد', identity: '2020202020' }
         ]);
+    }
+}
+
+/* ===========================
+   DATA MIGRATION (patch old data)
+=========================== */
+function migrateData() {
+    // Patch cards with identity from beneficiaries
+    const cards = Storage.get('cards') || [];
+    const beneficiaries = Storage.get('beneficiaries') || [];
+    let cardsChanged = false;
+    cards.forEach(card => {
+        if (!card.identity && card.beneficiary) {
+            const ben = beneficiaries.find(b => b.name === card.beneficiary);
+            if (ben && ben.identity) {
+                card.identity = ben.identity;
+                cardsChanged = true;
+            }
+        }
+    });
+    if (cardsChanged) Storage.set('cards', cards);
+
+    // Ensure at least one beneficiary user exists
+    const users = Storage.get('users') || [];
+    const hasBenUser = users.some(u => u.role === 'beneficiary');
+    if (!hasBenUser && beneficiaries.length > 0) {
+        const firstBen = beneficiaries[0];
+        users.push({
+            id: users.length + 100,
+            name: firstBen.name,
+            username: 'ben1',
+            password: '123',
+            role: 'beneficiary',
+            linkedEntity: firstBen.name
+        });
+        Storage.set('users', users);
     }
 }
 
@@ -1307,6 +1344,7 @@ const Orders = {
 window.onload = () => {
     try {
         initData();
+        migrateData(); // Patch old data with identity fields
         Settings.applyLayout(); // Apply saved layout preference
         Settings.load?.();
         Auth.checkSession();
