@@ -98,6 +98,46 @@
             </div>
         </div>
 
+        <!-- ===== Purchase Code Verification ===== -->
+        <div class="form-container" style="border-top: 4px solid #8CC240; margin-top:20px;">
+            <h3><i class="fas fa-ticket-alt"></i> تحقق من كود الشراء</h3>
+            <p style="color:#666; font-size:0.9rem; margin-bottom:15px;">أدخل كود الشراء المكوّن من 6 أرقام الذي حصلت
+                عليه من المستفيد، أو امسح رمز QR الخاص بالكود.</p>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+                <div class="form-group" style="flex:1; min-width:180px; margin-bottom:0;">
+                    <label>كود الشراء</label>
+                    <input id="purchaseCodeInput" type="text" maxlength="6" placeholder="أدخل الكود المكوّن من 6 أرقام"
+                        style="font-size:1.2rem; letter-spacing:5px; text-align:center; font-family:monospace;">
+                </div>
+                <button onclick="MerchantScanner.verifyPurchaseCode()" style="background:#8CC240; white-space:nowrap;">
+                    <i class="fas fa-check-circle"></i> تحقق
+                </button>
+            </div>
+
+            <!-- Purchase Code Result -->
+            <div id="payCodeResult"
+                style="display:none; margin-top:15px; background:linear-gradient(135deg, #f0faf9, #e8f5e9); border:2px solid #8CC240; border-radius:12px; padding:20px;">
+                <h4 style="margin:0 0 12px; color:#8CC240;"><i class="fas fa-receipt"></i> تفاصيل كود الشراء</h4>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div><strong>المستفيد:</strong> <span id="payBeneficiary">-</span></div>
+                    <div><strong>رقم البطاقة:</strong> <span id="payCardNum">-</span></div>
+                    <div><strong>المحفظة:</strong> <span id="payWallet">-</span></div>
+                    <div style="font-size:1.2rem;"><strong>المبلغ:</strong> <span id="payAmount"
+                            style="color:#8CC240; font-weight:bold;">-</span></div>
+                </div>
+                <div style="margin-top:15px; display:flex; gap:10px;">
+                    <button onclick="MerchantScanner.confirmPurchase()"
+                        style="background:#8CC240; flex:1; font-size:1.1rem;">
+                        <i class="fas fa-check-double"></i> تأكيد الشراء وخصم المبلغ
+                    </button>
+                    <button class="secondary" onclick="document.getElementById('payCodeResult').style.display='none'">
+                        <i class="fas fa-times"></i> إلغاء
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <h3 style="margin-top:24px;">أوامر التوريد الواردة</h3>
         <div class="table-container" style="margin-bottom:24px;">
             <table>
@@ -153,11 +193,19 @@
                     { facingMode: 'environment' },
                     { fps: 10, qrbox: { width: 250, height: 250 } },
                     (decodedText) => {
-                        // Success
-                        document.getElementById('scanCardNumber').value = decodedText;
-                        MerchantScanner.stopScan();
-                        MerchantScanner.lookupCard();
-                        if (typeof showToast === 'function') showToast('تم مسح الكود بنجاح!', 'success');
+                        // Success — check if it's a purchase code QR
+                        if (decodedText.startsWith('PAY:')) {
+                            const code = decodedText.replace('PAY:', '');
+                            document.getElementById('purchaseCodeInput').value = code;
+                            MerchantScanner.stopScan();
+                            MerchantScanner.verifyPurchaseCode();
+                            if (typeof showToast === 'function') showToast('تم مسح كود الشراء!', 'success');
+                        } else {
+                            document.getElementById('scanCardNumber').value = decodedText;
+                            MerchantScanner.stopScan();
+                            MerchantScanner.lookupCard();
+                            if (typeof showToast === 'function') showToast('تم مسح الكود بنجاح!', 'success');
+                        }
                     },
                     (errorMessage) => {
                         // Ignore scan errors (normal during scanning)
@@ -229,6 +277,74 @@
 
                 document.getElementById('scanResult').style.display = 'block';
             },
+
+            verifyPurchaseCode: () => {
+                const codeInput = document.getElementById('purchaseCodeInput').value.trim();
+                if (!codeInput || codeInput.length !== 6) return alert('يرجى إدخال كود شراء صحيح مكوّن من 6 أرقام');
+
+                const purchaseCodes = Storage.get('purchaseCodes') || [];
+                const pc = purchaseCodes.find(p => p.code === codeInput && !p.used);
+
+                if (!pc) return alert('كود الشراء غير صالح أو مستخدم مسبقاً');
+
+                if (Date.now() > pc.expiresAt) return alert('كود الشراء منتهي الصلاحية. اطلب من المستفيد إنشاء كود جديد.');
+
+                // Store for confirmation
+                MerchantScanner.pendingPurchase = pc;
+
+                // Display
+                document.getElementById('payBeneficiary').innerText = pc.beneficiary || '-';
+                document.getElementById('payCardNum').innerText = pc.cardNumber || '-';
+                document.getElementById('payWallet').innerText = pc.wallet || '-';
+                document.getElementById('payAmount').innerText = Number(pc.amount).toFixed(2) + ' ريال';
+                document.getElementById('payCodeResult').style.display = 'block';
+
+                if (typeof showToast === 'function') showToast('كود الشراء صالح ✅', 'success');
+            },
+
+            confirmPurchase: () => {
+                const pc = MerchantScanner.pendingPurchase;
+                if (!pc) return alert('لا يوجد كود شراء للتأكيد');
+
+                // Deduct from card balance
+                const cards = Storage.get('cards') || [];
+                const card = cards.find(c => c.number === pc.cardNumber);
+                if (!card) return alert('لم يتم العثور على البطاقة');
+                if (Number(card.balance) < pc.amount) return alert('رصيد البطاقة غير كافي');
+
+                card.balance = Number(card.balance) - pc.amount;
+                Storage.set('cards', cards);
+
+                // Record transaction
+                const transactions = Storage.get('transactions') || [];
+                const merchantUser = Auth.user;
+                transactions.push({
+                    id: transactions.length + 1000,
+                    card: pc.cardNumber,
+                    amount: pc.amount,
+                    date: new Date().toISOString().split('T')[0],
+                    merchant: merchantUser?.linkedEntity || merchantUser?.name || 'تاجر',
+                    type: 'شراء بكود'
+                });
+                Storage.set('transactions', transactions);
+
+                // Mark code as used
+                const purchaseCodes = Storage.get('purchaseCodes') || [];
+                const codeObj = purchaseCodes.find(p => p.code === pc.code);
+                if (codeObj) codeObj.used = true;
+                Storage.set('purchaseCodes', purchaseCodes);
+
+                // Cleanup
+                MerchantScanner.pendingPurchase = null;
+                document.getElementById('payCodeResult').style.display = 'none';
+                document.getElementById('purchaseCodeInput').value = '';
+
+                alert('✅ تمت عملية الشراء بنجاح!\nالمبلغ: ' + pc.amount.toFixed(2) + ' ريال\nالرصيد المتبقي: ' + card.balance.toFixed(2) + ' ريال');
+
+                if (typeof showToast === 'function') showToast('تم خصم المبلغ بنجاح!', 'success');
+            },
+
+            pendingPurchase: null,
 
             goToPOS: () => {
                 if (MerchantScanner.scannedCard) {
