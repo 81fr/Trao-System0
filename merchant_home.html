@@ -387,6 +387,47 @@
             // Load Supply Orders for this merchant
             const merchantName = user.linkedEntity || user.name;
 
+            // Restore any active pending purchase request
+            const pending = Storage.get('pendingPurchases') || [];
+            // Find request created by this merchant that is still pending/confirmed and not expired
+            const activeReq = pending.find(p =>
+                (p.merchant === merchantName) &&
+                (p.status === 'pending' || p.status === 'confirmed') &&
+                Date.now() < p.expiresAt
+            );
+
+            if (activeReq) {
+                // Restore UI state
+                document.getElementById('merchantCode').innerText = activeReq.code;
+                document.getElementById('merchantReqAmount').innerText = Number(activeReq.amount).toFixed(2);
+                document.getElementById('purchaseRequestResult').style.display = 'block';
+
+                if (activeReq.status === 'confirmed') {
+                    document.getElementById('merchantReqStatus').innerText = '✅ تم التأكيد!';
+                    document.getElementById('merchantReqStatus').style.background = '#28a745';
+                } else {
+                    document.getElementById('merchantReqStatus').innerText = '⏳ بانتظار التأكيد';
+                    document.getElementById('merchantReqStatus').style.background = '#f0ad4e';
+                    // Restart polling
+                    MerchantScanner.pollForConfirmation(activeReq.code);
+                }
+
+                // Also restore scanned card details if possible
+                const cards = Storage.get('cards') || [];
+                const card = cards.find(c => c.number === activeReq.cardNumber);
+                if (card) {
+                    MerchantScanner.scannedCard = card;
+                    document.getElementById('resultCardNum').innerText = card.number;
+                    document.getElementById('resultBeneficiary').innerText = card.beneficiary || 'غير محدد';
+                    document.getElementById('resultWallet').innerText = card.wallet || '-';
+                    document.getElementById('resultBalance').innerText = Number(card.balance || 0).toFixed(2) + ' ريال';
+                    document.getElementById('resultIdentity').innerText = card.identity || '-';
+                    const statusText = (card.status === 'نشط' || card.status === 'Active') ? 'نشط ✅' : 'موقوف ❌';
+                    document.getElementById('resultStatus').innerText = statusText;
+                    document.getElementById('scanResult').style.display = 'block';
+                }
+            }
+
             // Display the target name for confirmation (optional, helps debugging)
             const header = document.querySelector('h3[style*="margin-top:24px"]');
             if (header) header.innerHTML = `أوامر التوريد الواردة <small style="font-size:0.8em; color:var(--text-secondary)">(${merchantName})</small>`;
