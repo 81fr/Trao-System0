@@ -121,6 +121,14 @@
                 }
             };
             POS.closeModal = function () { _close(); };
+
+            // Auto-fill card from scanner
+            const scannedCard = sessionStorage.getItem('posCardNumber');
+            if (scannedCard) {
+                const inp = document.getElementById('cardNumber');
+                if (inp) { inp.value = scannedCard; POS.verifyCard(); }
+                sessionStorage.removeItem('posCardNumber');
+            }
         })();
     </script>
 </body>

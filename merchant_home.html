@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 
 <body>
@@ -41,6 +42,58 @@
                 <div class="icon"><i class="fas fa-wallet"></i></div>
                 <h3>مبيعات اليوم</h3>
                 <div class="value" id="merchantToday">0</div>
+            </div>
+        </div>
+
+        <!-- ===== QR Scanner Section ===== -->
+        <div class="form-container" style="border-top: 4px solid var(--brand-teal);">
+            <h3><i class="fas fa-qrcode"></i> مسح بطاقة المستفيد</h3>
+            <p style="color:#666; font-size:0.9rem; margin-bottom:15px;">افتح الكاميرا لمسح رمز QR الخاص ببطاقة
+                المستفيد، أو أدخل الرقم يدوياً.</p>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:15px;">
+                <div class="form-group" style="flex:1; min-width:200px; margin-bottom:0;">
+                    <label>رقم البطاقة</label>
+                    <input id="scanCardNumber" type="text" placeholder="أدخل رقم البطاقة أو امسح QR">
+                </div>
+                <button onclick="MerchantScanner.lookupCard()" style="white-space:nowrap;">
+                    <i class="fas fa-search"></i> بحث
+                </button>
+                <button id="btnStartScan" onclick="MerchantScanner.startScan()"
+                    style="background:var(--brand-teal); white-space:nowrap;">
+                    <i class="fas fa-camera"></i> فتح الكاميرا
+                </button>
+                <button id="btnStopScan" onclick="MerchantScanner.stopScan()"
+                    style="background:#dc3545; display:none; white-space:nowrap;">
+                    <i class="fas fa-times"></i> إغلاق الكاميرا
+                </button>
+            </div>
+
+            <!-- Camera Preview -->
+            <div id="qr-reader"
+                style="display:none; max-width:400px; margin:0 auto 15px; border-radius:12px; overflow:hidden; border:2px solid var(--brand-teal);">
+            </div>
+
+            <!-- Scan Result Card -->
+            <div id="scanResult"
+                style="display:none; background:#f0faf9; border:1px solid #c9e8e5; border-radius:12px; padding:16px;">
+                <h4 style="margin:0 0 10px; color:var(--brand-teal);"><i class="fas fa-id-card"></i> بيانات البطاقة</h4>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div><strong>رقم البطاقة:</strong> <span id="resultCardNum">-</span></div>
+                    <div><strong>المستفيد:</strong> <span id="resultBeneficiary">-</span></div>
+                    <div><strong>المحفظة:</strong> <span id="resultWallet">-</span></div>
+                    <div><strong>الرصيد:</strong> <span id="resultBalance"
+                            style="color:var(--brand-teal); font-weight:bold;">-</span></div>
+                    <div><strong>الحالة:</strong> <span id="resultStatus">-</span></div>
+                </div>
+                <div style="margin-top:15px; display:flex; gap:10px;">
+                    <button onclick="MerchantScanner.goToPOS()" style="flex:1;">
+                        <i class="fas fa-cash-register"></i> الانتقال لنقطة البيع
+                    </button>
+                    <button class="secondary" onclick="MerchantScanner.clearResult()">
+                        <i class="fas fa-redo"></i> مسح جديد
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -83,6 +136,88 @@
 
     <script src="script.js"></script>
     <script>
+        /* ===== QR Scanner Logic ===== */
+        const MerchantScanner = {
+            scanner: null,
+            scannedCard: null,
+
+            startScan: () => {
+                const readerDiv = document.getElementById('qr-reader');
+                readerDiv.style.display = 'block';
+                document.getElementById('btnStartScan').style.display = 'none';
+                document.getElementById('btnStopScan').style.display = '';
+
+                MerchantScanner.scanner = new Html5Qrcode('qr-reader');
+                MerchantScanner.scanner.start(
+                    { facingMode: 'environment' },
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    (decodedText) => {
+                        // Success
+                        document.getElementById('scanCardNumber').value = decodedText;
+                        MerchantScanner.stopScan();
+                        MerchantScanner.lookupCard();
+                        if (typeof showToast === 'function') showToast('تم مسح الكود بنجاح!', 'success');
+                    },
+                    (errorMessage) => {
+                        // Ignore scan errors (normal during scanning)
+                    }
+                ).catch(err => {
+                    alert('تعذر فتح الكاميرا. تأكد من منح صلاحية الكاميرا.');
+                    MerchantScanner.stopScan();
+                });
+            },
+
+            stopScan: () => {
+                if (MerchantScanner.scanner) {
+                    MerchantScanner.scanner.stop().then(() => {
+                        MerchantScanner.scanner.clear();
+                    }).catch(() => { });
+                }
+                document.getElementById('qr-reader').style.display = 'none';
+                document.getElementById('btnStartScan').style.display = '';
+                document.getElementById('btnStopScan').style.display = 'none';
+            },
+
+            lookupCard: () => {
+                const cardNum = document.getElementById('scanCardNumber').value.trim();
+                if (!cardNum) return alert('يرجى إدخال رقم البطاقة أو مسح QR أولاً');
+
+                const cards = Storage.get('cards') || [];
+                const card = cards.find(c => c.number === cardNum);
+
+                if (!card) {
+                    document.getElementById('scanResult').style.display = 'none';
+                    return alert('لم يتم العثور على بطاقة بهذا الرقم');
+                }
+
+                MerchantScanner.scannedCard = card;
+
+                document.getElementById('resultCardNum').innerText = card.number;
+                document.getElementById('resultBeneficiary').innerText = card.beneficiary || 'غير محدد';
+                document.getElementById('resultWallet').innerText = card.wallet || '-';
+                document.getElementById('resultBalance').innerText = Number(card.balance || 0).toFixed(2) + ' ريال';
+
+                const statusText = (card.status === 'نشط' || card.status === 'Active') ? 'نشط ✅' : 'موقوف ❌';
+                document.getElementById('resultStatus').innerText = statusText;
+
+                document.getElementById('scanResult').style.display = 'block';
+            },
+
+            goToPOS: () => {
+                if (MerchantScanner.scannedCard) {
+                    // Store card number for POS to pick up
+                    sessionStorage.setItem('posCardNumber', MerchantScanner.scannedCard.number);
+                    window.location.href = 'pos.html';
+                }
+            },
+
+            clearResult: () => {
+                document.getElementById('scanCardNumber').value = '';
+                document.getElementById('scanResult').style.display = 'none';
+                MerchantScanner.scannedCard = null;
+            }
+        };
+
         // تهيئة بسيطة للتاجر (تجريبية)
         document.addEventListener('DOMContentLoaded', () => {
             const user = Auth.user;
