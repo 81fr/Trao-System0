@@ -332,10 +332,23 @@
             },
 
             goToPOS: () => {
-                if (MerchantScanner.scannedCard) {
-                    sessionStorage.setItem('posCardNumber', MerchantScanner.scannedCard.number);
-                    window.location.href = 'pos.html';
+                if (!MerchantScanner.scannedCard) return alert('يرجى مسح بطاقة أولاً');
+
+                // Check for confirmed purchase request
+                const pending = Storage.get('pendingPurchases') || [];
+                const confirmedReq = pending.find(p =>
+                    p.cardNumber === MerchantScanner.scannedCard.number &&
+                    p.status === 'confirmed'
+                );
+
+                if (!confirmedReq) {
+                    return alert('⚠️ لا يمكن الانتقال لنقطة البيع!\n\nيجب أولاً:\n1. إنشاء طلب شراء وإدخال المبلغ\n2. انتظار تأكيد المستفيد\n\nلم يتم العثور على طلب شراء مؤكد.');
                 }
+
+                sessionStorage.setItem('posCardNumber', MerchantScanner.scannedCard.number);
+                sessionStorage.setItem('posConfirmedCode', confirmedReq.code);
+                sessionStorage.setItem('posConfirmedAmount', String(confirmedReq.amount));
+                window.location.href = 'pos.html';
             },
 
             clearResult: () => {

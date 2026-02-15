@@ -101,7 +101,6 @@
         // ربط المودال مع دوال POS الحالية
         (function () {
             const backdrop = document.getElementById('posReceiptBackdrop');
-            // نحافظ على الواجهات المستخدمة في script.js:
             const _open = (contentHTML) => {
                 const holder = document.getElementById('receiptContent');
                 if (holder) holder.innerHTML = contentHTML || '';
@@ -109,25 +108,42 @@
             };
             const _close = () => backdrop?.classList.remove('active');
 
-            // "Override" بسيط: استدعاء هذه الدوال داخل processPayment/closeModal
-            // نلف الدوال الموجودة بدون كسرها:
             const _origProcess = POS.processPayment.bind(POS);
             POS.processPayment = function () {
                 const before = document.getElementById('receiptContent')?.innerHTML || '';
                 _origProcess();
-                // إذا تمّ تحديث الإيصال داخل script.js فسنظهره
                 if (document.getElementById('receiptContent')?.innerHTML !== before) {
                     backdrop?.classList.add('active');
                 }
             };
             POS.closeModal = function () { _close(); };
 
-            // Auto-fill card from scanner
+            // Auto-fill card and amount from merchant scanner
             const scannedCard = sessionStorage.getItem('posCardNumber');
+            const confirmedCode = sessionStorage.getItem('posConfirmedCode');
+            const confirmedAmount = sessionStorage.getItem('posConfirmedAmount');
+
             if (scannedCard) {
                 const inp = document.getElementById('cardNumber');
                 if (inp) { inp.value = scannedCard; POS.verifyCard(); }
                 sessionStorage.removeItem('posCardNumber');
+            }
+
+            // Auto-fill amount from confirmed purchase request
+            if (confirmedCode && confirmedAmount) {
+                POS.amount = confirmedAmount;
+                POS.updateDisplay();
+
+                // Show confirmation status
+                const statusDiv = document.getElementById('cardStatusDisplay');
+                if (statusDiv) {
+                    statusDiv.innerHTML += '<div style="margin-top:10px; padding:10px; background:#d4edda; border:1px solid #28a745; border-radius:8px; color:#155724; text-align:center;">' +
+                        '<i class="fas fa-check-circle"></i> كود الشراء مؤكد: <strong>' + confirmedCode + '</strong> | المبلغ: <strong>' + Number(confirmedAmount).toFixed(2) + '</strong> ريال' +
+                        '</div>';
+                }
+
+                sessionStorage.removeItem('posConfirmedCode');
+                sessionStorage.removeItem('posConfirmedAmount');
             }
         })();
     </script>

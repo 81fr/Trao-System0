@@ -184,28 +184,13 @@
                 const req = PendingPurchase.currentRequest;
                 if (!req) return alert('لا يوجد طلب شراء للتأكيد');
 
-                // Deduct from card balance
+                // Only verify balance is sufficient (don't deduct yet - POS will do that)
                 const cards = Storage.get('cards') || [];
                 const card = cards.find(c => c.number === req.cardNumber);
                 if (!card) return alert('لم يتم العثور على البطاقة');
                 if (Number(card.balance) < req.amount) return alert('رصيد البطاقة غير كافي');
 
-                card.balance = Number(card.balance) - req.amount;
-                Storage.set('cards', cards);
-
-                // Record transaction
-                const transactions = Storage.get('transactions') || [];
-                transactions.push({
-                    id: transactions.length + 1000,
-                    card: req.cardNumber,
-                    amount: req.amount,
-                    date: new Date().toISOString().split('T')[0],
-                    merchant: req.merchant,
-                    type: 'شراء بكود'
-                });
-                Storage.set('transactions', transactions);
-
-                // Update status to confirmed
+                // Update status to confirmed (balance deduction happens at POS)
                 const pending = Storage.get('pendingPurchases') || [];
                 const p = pending.find(x => x.code === req.code);
                 if (p) p.status = 'confirmed';
@@ -215,12 +200,8 @@
                 document.getElementById('pendingPurchaseCard').style.display = 'none';
                 document.getElementById('noPendingState').style.display = '';
 
-                // Refresh balance
-                const balEl = document.getElementById('cardBalanceDisplay');
-                if (balEl) balEl.innerText = Number(card.balance).toFixed(2);
-
-                alert('✅ تم تأكيد الشراء بنجاح!\nالمبلغ: ' + req.amount.toFixed(2) + ' ريال\nالرصيد المتبقي: ' + card.balance.toFixed(2) + ' ريال');
-                if (typeof showToast === 'function') showToast('تم تأكيد الشراء!', 'success');
+                alert('✅ تم تأكيد طلب الشراء!\nالمبلغ: ' + req.amount.toFixed(2) + ' ريال\nسيتم خصم المبلغ عند إتمام العملية في نقطة البيع.');
+                if (typeof showToast === 'function') showToast('تم تأكيد طلب الشراء!', 'success');
             },
 
             reject: () => {
