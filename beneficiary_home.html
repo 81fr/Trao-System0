@@ -112,6 +112,12 @@
                     <i class="fas fa-search"></i> تحقق
                 </button>
             </div>
+            <div style="margin-top:15px; text-align:center;">
+                <button onclick="PendingPurchase.showDebugInfo()"
+                    style="font-size:0.8rem; color:#999; background:none; border:none; text-decoration:underline;">
+                    🔍 واجهت مشكلة؟ اضغط هنا للفحص
+                </button>
+            </div>
         </div>
         </div>
 
@@ -257,8 +263,36 @@
                     alert('✅ تم العثور على الطلب! يمكنك الآن تأكيده.');
                     codeInput.value = '';
                 } else {
-                    alert('❌ لم يتم العثور على طلب بهذا الكود، أو أن الطلب منتهي الصلاحية، أو لا يخص بطاقاتك.');
+                    // Debug info on failure
+                    console.log('User:', user.name, user.linkedEntity);
+                    console.log('My Cards:', myCardNumbers);
+                    console.log('All Pending:', pending);
+                    alert('❌ لم يتم العثور على طلب بهذا الكود.\n\nتأكد من:\n1. أن الكود صحيح (6 أرقام)\n2. أن الطلب لم تنته صلاحيته\n3. أن البطاقة الممسوحة تخصك');
                 }
+            },
+
+            showDebugInfo: () => {
+                const user = Auth.user;
+                const cards = Storage.get('cards') || [];
+                const pending = Storage.get('pendingPurchases') || [];
+
+                const benefName = user.linkedEntity || user.name;
+                const myCards = cards.filter(c => c.beneficiary && (c.beneficiary === benefName || c.beneficiary.includes(benefName)));
+
+                const msg = `
+🔍 معلومات التشخيص:
+
+👤 المستخدم: ${user.name} (${user.username})
+💳 عدد البطاقات المرتبطة بك: ${myCards.length}
+🔢 أرقام بطاقاتي: ${myCards.map(c => c.number).join(', ')}
+
+📨 عدد طلبات الشراء المعلقة (الكل): ${pending.length}
+📝 أكواد الطلبات المعلقة: ${pending.map(p => p.code).join(', ')}
+
+إذا كان الكود يظهر هنا ولكن لا يقبله النظام، فهناك مشكلة في ربط البطاقة.
+`;
+                alert(msg);
+                console.log(msg);
             },
 
             confirm: () => {
