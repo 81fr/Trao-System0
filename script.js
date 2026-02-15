@@ -25,30 +25,48 @@ const Auth = {
     user: JSON.parse(localStorage.getItem('currentUser') || 'null'),
 
     login: () => {
-        const username = document.getElementById('username')?.value.trim();
+        const input = document.getElementById('username')?.value.trim();
         const password = document.getElementById('password')?.value.trim();
         const role = document.getElementById('roleInput')?.value;
 
-        if (!username || !password) return alert('يرجى إدخال اسم المستخدم وكلمة المرور');
-
-        if (role === 'beneficiary') {
-            if (password !== '123') return alert('كلمة المرور غير صحيحة');
-            const beneficiaries = Storage.get('beneficiaries') || [];
-            const ben = beneficiaries.find(b => b.identity === username);
-            if (!ben) return alert('رقم الهوية غير مسجل في النظام');
-            const sessionUser = { id: ben.id, name: ben.name, username: ben.identity, role: 'beneficiary' };
-            localStorage.setItem('currentUser', JSON.stringify(sessionUser));
-            Auth.user = sessionUser;
-            return window.location.href = 'beneficiary_home.html';
-        }
+        if (!input || !password) return alert('يرجى إدخال اسم المستخدم أو رقم الهوية وكلمة المرور');
 
         const users = Storage.get('users') || [];
-        const user = users.find(u => u.username === username && u.password === password && u.role === role);
-        if (!user) return alert('بيانات الدخول غير صحيحة!');
+        const beneficiaries = Storage.get('beneficiaries') || [];
+
+        // 1) Try matching by username in users list
+        let user = users.find(u => u.username === input && u.password === password && u.role === role);
+
+        // 2) If not found, try matching by identity number
+        if (!user) {
+            // Look for identity in beneficiaries
+            const ben = beneficiaries.find(b => b.identity === input);
+            if (ben) {
+                // Find or create a user for this beneficiary
+                user = users.find(u => u.linkedEntity === ben.name && u.role === 'beneficiary');
+                if (user) {
+                    if (user.password !== password) return alert('كلمة المرور غير صحيحة');
+                } else {
+                    // Auto-create session for beneficiary by identity
+                    if (password !== '123') return alert('كلمة المرور غير صحيحة');
+                    user = { id: ben.id, name: ben.name, username: ben.identity, role: 'beneficiary', linkedEntity: ben.name };
+                }
+            }
+        }
+
+        // 3) Also try identity directly against users (if user has identity stored)
+        if (!user) {
+            user = users.find(u => u.identity === input && u.password === password);
+        }
+
+        if (!user) return alert('بيانات الدخول غير صحيحة! تأكد من اسم المستخدم أو رقم الهوية وكلمة المرور');
+
         localStorage.setItem('currentUser', JSON.stringify(user));
         Auth.user = user;
+
         if (user.role === 'admin') return window.location.href = 'index.html';
         if (user.role === 'merchant') return window.location.href = 'merchant_home.html';
+        if (user.role === 'beneficiary') return window.location.href = 'beneficiary_home.html';
     },
 
     logout: () => {
