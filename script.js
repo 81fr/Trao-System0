@@ -1018,6 +1018,19 @@ const POS = {
         if (!POS.currentCard) return alert('يرجى التحقق من البطاقة أولاً.');
         const amount = parseFloat(POS.amount);
         if (isNaN(amount) || amount <= 0) return alert('يرجى إدخال مبلغ صحيح.');
+
+        // === Purchase Code Verification Gate ===
+        const pending = Storage.get('pendingPurchases') || [];
+        const confirmedReq = pending.find(p =>
+            p.cardNumber === POS.currentCard.number &&
+            p.status === 'confirmed' &&
+            Math.abs(p.amount - amount) < 0.01
+        );
+
+        if (!confirmedReq) {
+            return alert('⚠️ لا يمكن تنفيذ العملية!\n\nيجب أولاً:\n1. إنشاء طلب شراء من صفحة التاجر\n2. انتظار تأكيد المستفيد\n\nلم يتم العثور على طلب شراء مؤكد لهذه البطاقة بهذا المبلغ.');
+        }
+
         if (POS.currentCard.balance < amount) return alert('الرصيد غير كافٍ!');
 
         const cards = Storage.get('cards') || [];
@@ -1031,9 +1044,15 @@ const POS = {
             card: POS.currentCard.number,
             amount,
             date: new Date().toLocaleDateString('ar-SA'),
-            merchant: 'نقطة بيع 1'
+            merchant: confirmedReq.merchant || 'نقطة بيع 1'
         };
         Storage.add('transactions', transaction);
+
+        // Mark purchase request as completed
+        const updatedPending = Storage.get('pendingPurchases') || [];
+        const pReq = updatedPending.find(p => p.code === confirmedReq.code);
+        if (pReq) pReq.status = 'completed';
+        Storage.set('pendingPurchases', updatedPending);
 
         const modal = document.getElementById('successModal');
         const receipt = document.getElementById('receiptContent');
@@ -1045,7 +1064,8 @@ const POS = {
         <strong>المستفيد:</strong> ${cards[i].beneficiary || 'غير محدد'}<br>
         <strong>المبلغ:</strong> ${transaction.amount.toFixed(2)} ريال<br>
         <strong>الرصيد المتبقي:</strong> ${cards[i].balance.toFixed(2)} ريال<br>
-        <strong>الحالة:</strong> مقبولة`;
+        <strong>كود الشراء:</strong> ${confirmedReq.code}<br>
+        <strong>الحالة:</strong> مقبولة ✅`;
         }
         if (modal) modal.style.display = 'block';
 

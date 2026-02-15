@@ -136,8 +136,13 @@
                 const user = Auth.user;
                 if (!user) return;
                 const benefName = user.linkedEntity || user.name;
+                // Also find beneficiary's card number for matching
+                const cards = Storage.get('cards') || [];
+                const myCard = cards.find(c => (c.beneficiary === benefName) && (c.status === 'نشط' || c.status === 'Active'));
+                const myCardNumber = myCard ? myCard.number : null;
+
                 const pending = Storage.get('pendingPurchases') || [];
-                const req = pending.find(p => p.beneficiary === benefName && p.status === 'pending' && Date.now() < p.expiresAt);
+                const req = pending.find(p => p.status === 'pending' && Date.now() < p.expiresAt && (p.beneficiary === benefName || (myCardNumber && p.cardNumber === myCardNumber)));
 
                 if (req) {
                     PendingPurchase.currentRequest = req;
