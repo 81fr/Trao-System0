@@ -54,39 +54,47 @@
                 <p style="font-size:.9rem; opacity:.9">أبرز هذا الكود عند البائع لإتمام الشراء</p>
             </div>
 
-            <!-- ===== كود الشراء ===== -->
-            <div class="form-container" style="border-top: 4px solid var(--brand-teal); margin-top:20px;">
-                <h3><i class="fas fa-shopping-cart"></i> إنشاء كود شراء</h3>
-                <p style="color:#666; font-size:0.9rem; margin-bottom:15px;">أدخل المبلغ المطلوب لإنشاء كود شراء مؤقت.
-                    أعطِ الكود للتاجر لإتمام عملية الشراء.</p>
+            <!-- ===== طلبات الشراء الواردة ===== -->
+            <div class="form-container" style="border-top: 4px solid #8CC240; margin-top:20px;">
+                <h3><i class="fas fa-bell"></i> طلبات الشراء الواردة</h3>
+                <p style="color:#666; font-size:0.9rem; margin-bottom:15px;">عند قيام التاجر بإنشاء طلب شراء ستظهر
+                    التفاصيل هنا لتأكيدها أو رفضها.</p>
 
-                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-                    <div class="form-group" style="flex:1; min-width:150px; margin-bottom:0;">
-                        <label>المبلغ (ريال)</label>
-                        <input id="purchaseAmount" type="number" min="1" placeholder="أدخل المبلغ">
-                    </div>
-                    <button id="btnGenerateCode" onclick="PurchaseCode.generate()"
-                        style="background:var(--brand-teal); white-space:nowrap;">
-                        <i class="fas fa-ticket-alt"></i> إنشاء كود
-                    </button>
+                <div id="noPendingState" style="text-align:center; padding:20px; color:#999;">
+                    <i class="fas fa-inbox" style="font-size:2rem; margin-bottom:10px; display:block;"></i>
+                    لا توجد طلبات شراء حالياً
                 </div>
 
-                <!-- نتيجة الكود -->
-                <div id="purchaseCodeResult"
-                    style="display:none; margin-top:20px; text-align:center; background:linear-gradient(135deg, #f0faf9, #e8f5e9); border:2px solid var(--brand-teal); border-radius:16px; padding:24px;">
-                    <p style="margin:0 0 5px; color:#666; font-size:0.85rem;">كود الشراء الخاص بك</p>
-                    <h1 id="generatedCode"
-                        style="font-size:2.5rem; letter-spacing:12px; color:var(--brand-ink); margin:10px 0; font-family:monospace;">
-                        ------</h1>
-                    <div id="purchaseQR" style="display:flex; justify-content:center; margin:15px 0;"></div>
-                    <div style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap; margin:10px 0;">
-                        <span><i class="fas fa-money-bill-wave" style="color:var(--brand-teal);"></i> المبلغ: <strong
-                                id="codeAmount">0</strong> ريال</span>
-                        <span><i class="fas fa-clock" style="color:#e67e22;"></i> ينتهي خلال: <strong id="codeTimer"
+                <div id="pendingPurchaseCard"
+                    style="display:none; background:linear-gradient(135deg, #fff9e6, #fff3cd); border:2px solid #f0ad4e; border-radius:16px; padding:24px; text-align:center;">
+                    <p style="margin:0 0 5px; color:#856404; font-size:0.9rem;"><i class="fas fa-store"></i> طلب شراء من
+                        التاجر</p>
+                    <h4 id="pendingMerchant" style="color:#856404; margin:5px 0;">-</h4>
+
+                    <div style="margin:15px 0;">
+                        <p style="color:#666; font-size:0.85rem; margin:0;">كود التحقق</p>
+                        <h1 id="pendingCode"
+                            style="font-size:2.5rem; letter-spacing:12px; color:var(--brand-ink); margin:5px 0; font-family:monospace;">
+                            ------</h1>
+                    </div>
+
+                    <div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin:15px 0;">
+                        <span><i class="fas fa-money-bill-wave" style="color:#8CC240;"></i> المبلغ: <strong
+                                id="pendingAmount" style="font-size:1.3rem; color:#8CC240;">0</strong> ريال</span>
+                        <span><i class="fas fa-clock" style="color:#e67e22;"></i> ينتهي خلال: <strong id="pendingTimer"
                                 style="color:#e67e22;">5:00</strong></span>
                     </div>
-                    <p style="font-size:0.85rem; color:#888; margin:10px 0 0;">أعطِ هذا الكود للتاجر أو اعرض رمز QR
-                        للمسح</p>
+
+                    <div style="display:flex; gap:10px; justify-content:center; margin-top:15px;">
+                        <button onclick="PendingPurchase.confirm()"
+                            style="background:#28a745; padding:12px 30px; font-size:1.1rem;">
+                            <i class="fas fa-check-circle"></i> تأكيد الشراء
+                        </button>
+                        <button onclick="PendingPurchase.reject()"
+                            style="background:#dc3545; padding:12px 30px; font-size:1.1rem;">
+                            <i class="fas fa-times-circle"></i> رفض
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -112,79 +120,118 @@
 
     <script src="script.js"></script>
     <script>
-        /* ===== Purchase Code Logic ===== */
-        const PurchaseCode = {
+        /* ===== Pending Purchase Requests (from merchant) ===== */
+        const PendingPurchase = {
+            pollInterval: null,
+            currentRequest: null,
             timerInterval: null,
 
-            generate: () => {
-                const amountInput = document.getElementById('purchaseAmount');
-                const amount = parseFloat(amountInput?.value);
-                if (!amount || amount <= 0) return alert('يرجى إدخال مبلغ صحيح');
+            startPolling: () => {
+                PendingPurchase.checkOnce();
+                if (PendingPurchase.pollInterval) clearInterval(PendingPurchase.pollInterval);
+                PendingPurchase.pollInterval = setInterval(() => PendingPurchase.checkOnce(), 3000);
+            },
 
+            checkOnce: () => {
                 const user = Auth.user;
                 if (!user) return;
-
-                const cards = Storage.get('cards') || [];
                 const benefName = user.linkedEntity || user.name;
-                const myCard = cards.find(c => c.beneficiary === benefName && (c.status === 'نشط' || c.status === 'Active'));
-                if (!myCard) return alert('لا توجد بطاقة نشطة');
-                if (Number(myCard.balance) < amount) return alert('الرصيد غير كافي! رصيدك الحالي: ' + Number(myCard.balance).toFixed(2) + ' ريال');
+                const pending = Storage.get('pendingPurchases') || [];
+                const req = pending.find(p => p.beneficiary === benefName && p.status === 'pending' && Date.now() < p.expiresAt);
 
-                // Generate 6-digit code
-                const code = String(Math.floor(100000 + Math.random() * 900000));
-                const expiresAt = Date.now() + (5 * 60 * 1000); // 5 minutes
-
-                // Store purchase code
-                const purchaseCodes = Storage.get('purchaseCodes') || [];
-                // Remove old codes for this card
-                const filtered = purchaseCodes.filter(p => p.cardNumber !== myCard.number);
-                filtered.push({
-                    code: code,
-                    cardNumber: myCard.number,
-                    beneficiary: myCard.beneficiary,
-                    identity: myCard.identity || '',
-                    wallet: myCard.wallet,
-                    amount: amount,
-                    expiresAt: expiresAt,
-                    used: false
-                });
-                Storage.set('purchaseCodes', filtered);
-
-                // Display
-                document.getElementById('generatedCode').innerText = code;
-                document.getElementById('codeAmount').innerText = amount.toFixed(2);
-                document.getElementById('purchaseCodeResult').style.display = 'block';
-
-                // Generate QR with code
-                const qrContainer = document.getElementById('purchaseQR');
-                qrContainer.innerHTML = '';
-                if (window.QRCode) {
-                    new QRCode(qrContainer, { text: 'PAY:' + code, width: 160, height: 160 });
+                if (req) {
+                    PendingPurchase.currentRequest = req;
+                    document.getElementById('noPendingState').style.display = 'none';
+                    document.getElementById('pendingPurchaseCard').style.display = 'block';
+                    document.getElementById('pendingMerchant').innerText = req.merchant || 'تاجر';
+                    document.getElementById('pendingCode').innerText = req.code;
+                    document.getElementById('pendingAmount').innerText = Number(req.amount).toFixed(2);
+                    PendingPurchase.startTimer(req.expiresAt);
+                } else {
+                    if (PendingPurchase.currentRequest) {
+                        // Was showing, now gone (expired/processed)
+                        PendingPurchase.currentRequest = null;
+                    }
+                    document.getElementById('noPendingState').style.display = '';
+                    document.getElementById('pendingPurchaseCard').style.display = 'none';
                 }
-
-                // Start countdown
-                PurchaseCode.startTimer(expiresAt);
-
-                if (typeof showToast === 'function') showToast('تم إنشاء كود الشراء!', 'success');
             },
 
             startTimer: (expiresAt) => {
-                if (PurchaseCode.timerInterval) clearInterval(PurchaseCode.timerInterval);
-                const timerEl = document.getElementById('codeTimer');
-
-                PurchaseCode.timerInterval = setInterval(() => {
+                if (PendingPurchase.timerInterval) clearInterval(PendingPurchase.timerInterval);
+                const timerEl = document.getElementById('pendingTimer');
+                PendingPurchase.timerInterval = setInterval(() => {
                     const remaining = expiresAt - Date.now();
                     if (remaining <= 0) {
-                        clearInterval(PurchaseCode.timerInterval);
+                        clearInterval(PendingPurchase.timerInterval);
                         timerEl.innerText = 'انتهى!';
                         timerEl.style.color = '#c0392b';
-                        document.getElementById('generatedCode').style.opacity = '0.3';
+                        PendingPurchase.checkOnce();
                         return;
                     }
                     const mins = Math.floor(remaining / 60000);
                     const secs = Math.floor((remaining % 60000) / 1000);
                     timerEl.innerText = mins + ':' + String(secs).padStart(2, '0');
                 }, 1000);
+            },
+
+            confirm: () => {
+                const req = PendingPurchase.currentRequest;
+                if (!req) return alert('لا يوجد طلب شراء للتأكيد');
+
+                // Deduct from card balance
+                const cards = Storage.get('cards') || [];
+                const card = cards.find(c => c.number === req.cardNumber);
+                if (!card) return alert('لم يتم العثور على البطاقة');
+                if (Number(card.balance) < req.amount) return alert('رصيد البطاقة غير كافي');
+
+                card.balance = Number(card.balance) - req.amount;
+                Storage.set('cards', cards);
+
+                // Record transaction
+                const transactions = Storage.get('transactions') || [];
+                transactions.push({
+                    id: transactions.length + 1000,
+                    card: req.cardNumber,
+                    amount: req.amount,
+                    date: new Date().toISOString().split('T')[0],
+                    merchant: req.merchant,
+                    type: 'شراء بكود'
+                });
+                Storage.set('transactions', transactions);
+
+                // Update status to confirmed
+                const pending = Storage.get('pendingPurchases') || [];
+                const p = pending.find(x => x.code === req.code);
+                if (p) p.status = 'confirmed';
+                Storage.set('pendingPurchases', pending);
+
+                PendingPurchase.currentRequest = null;
+                document.getElementById('pendingPurchaseCard').style.display = 'none';
+                document.getElementById('noPendingState').style.display = '';
+
+                // Refresh balance
+                const balEl = document.getElementById('cardBalanceDisplay');
+                if (balEl) balEl.innerText = Number(card.balance).toFixed(2);
+
+                alert('✅ تم تأكيد الشراء بنجاح!\nالمبلغ: ' + req.amount.toFixed(2) + ' ريال\nالرصيد المتبقي: ' + card.balance.toFixed(2) + ' ريال');
+                if (typeof showToast === 'function') showToast('تم تأكيد الشراء!', 'success');
+            },
+
+            reject: () => {
+                const req = PendingPurchase.currentRequest;
+                if (!req) return;
+
+                const pending = Storage.get('pendingPurchases') || [];
+                const p = pending.find(x => x.code === req.code);
+                if (p) p.status = 'rejected';
+                Storage.set('pendingPurchases', pending);
+
+                PendingPurchase.currentRequest = null;
+                document.getElementById('pendingPurchaseCard').style.display = 'none';
+                document.getElementById('noPendingState').style.display = '';
+
+                alert('تم رفض طلب الشراء');
             }
         };
 
@@ -231,6 +278,9 @@
                 if (cardSection) cardSection.style.display = 'none';
                 if (noCard) noCard.style.display = 'block';
             }
+
+            // Start polling for incoming purchase requests from merchants
+            PendingPurchase.startPolling();
         }
     </script>
 </body>
