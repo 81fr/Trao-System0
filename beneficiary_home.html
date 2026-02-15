@@ -137,29 +137,35 @@
                 if (!user) { console.log('[PendingPurchase] No user logged in'); return; }
                 const benefName = user.linkedEntity || user.name;
 
-                // Also find beneficiary's card number for matching - using robust logic
+                // Find ALL cards belonging to this beneficiary
                 const cards = Storage.get('cards') || [];
-                let myCard = null;
+                let myCards = [];
 
-                // 1. Match by identity
+                // 1. By identity
                 if (/^\d+$/.test(user.username)) {
-                    myCard = cards.find(c => c.identity === user.username && (c.status === 'نشط' || c.status === 'Active'));
-                }
-                // 2. Match by name
-                if (!myCard) {
-                    myCard = cards.find(c => c.beneficiary === benefName && (c.status === 'نشط' || c.status === 'Active'));
-                }
-                // 3. Match by partial name
-                if (!myCard) {
-                    myCard = cards.find(c => c.beneficiary && c.beneficiary.includes(benefName) && (c.status === 'نشط' || c.status === 'Active'));
+                    const byId = cards.filter(c => c.identity === user.username && (c.status === 'نشط' || c.status === 'Active'));
+                    myCards.push(...byId);
                 }
 
-                const myCardNumber = myCard ? myCard.number : null;
+                // 2. By name
+                const byName = cards.filter(c => c.beneficiary === benefName && (c.status === 'نشط' || c.status === 'Active'));
+                myCards.push(...byName);
+
+                // 3. By partial name
+                const byPartial = cards.filter(c => c.beneficiary && c.beneficiary.includes(benefName) && (c.status === 'نشط' || c.status === 'Active'));
+                myCards.push(...byPartial);
+
+                // Deduplicate cards by number
+                const uniqueCards = [...new Map(myCards.map(item => [item.number, item])).values()];
+                const myCardNumbers = uniqueCards.map(c => c.number);
 
                 const pending = Storage.get('pendingPurchases') || [];
-                console.log('[PendingPurchase] Checking:', { benefName, myCardNumber, pendingCount: pending.length, pending: pending.map(p => ({ code: p.code, status: p.status, beneficiary: p.beneficiary, cardNumber: p.cardNumber, expired: Date.now() > p.expiresAt })) });
+                console.log('[PendingPurchase] Checking:', { benefName, myCardNumbers, pendingCount: pending.length, pending: pending.map(p => ({ code: p.code, status: p.status, beneficiary: p.beneficiary, cardNumber: p.cardNumber, expired: Date.now() > p.expiresAt })) });
 
-                const req = pending.find(p => p.status === 'pending' && Date.now() < p.expiresAt && (p.beneficiary === benefName || (myCardNumber && p.cardNumber === myCardNumber)));
+                // Check if request matches name OR matches ANY of the user's card numbers
+                const req = pending.find(p => p.status === 'pending' && Date.now() < p.expiresAt &&
+                    (p.beneficiary === benefName || myCardNumbers.includes(p.cardNumber))
+                );
 
                 if (req) {
                     console.log('[PendingPurchase] ✅ Found matching request:', req.code, req.amount);
