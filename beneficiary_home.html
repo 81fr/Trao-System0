@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 
 <body>
@@ -49,7 +50,7 @@
                     الرصيد المتاح: <strong id="cardBalanceDisplay">0.00</strong> ريال
                 </div>
                 <br>
-                <div class="qr-placeholder"><i class="fas fa-qrcode"></i></div>
+                <div id="qrBox" class="qr-placeholder"></div>
                 <p style="font-size:.9rem; opacity:.9">أبرز هذا الكود عند البائع لإتمام الشراء</p>
             </div>
 
@@ -111,6 +112,8 @@
                 }
                 if (cardSection) cardSection.style.display = '';
                 if (noCard) noCard.style.display = 'none';
+                // Render QR code with card number
+                renderBeneficiaryQR('qrBox', myCard.number);
             } else {
                 if (cardSection) cardSection.style.display = 'none';
                 if (noCard) noCard.style.display = 'block';

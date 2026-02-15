@@ -572,3 +572,60 @@ body.layout-top .main-content {
   padding: 16px;
   box-shadow: var(--shadow);
 }
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  inset-inline-start: 50%;
+  bottom: 24px;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--brand-ink);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  transition: .25s;
+  z-index: 99999;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.toast.success {
+  background: var(--brand-teal);
+}
+
+.toast.error {
+  background: #c0392b;
+}
+
+/* ===== Pager ===== */
+.pager {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 10px;
+}
+
+.pager button {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #ecf6f5;
+  color: var(--brand-teal);
+  border: 1px solid #c9e8e5;
+}
+
+.pager .muted {
+  opacity: .6;
+}
+
+/* ===== Status Warning Badge ===== */
+.status-badge.status-warning {
+  background: #fff8e1;
+  color: #f57f17;
+  border-color: #ffecb3;
+}

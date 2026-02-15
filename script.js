@@ -817,6 +817,68 @@ function fillTransactionsTableIfAny() {
 }
 
 /* ===========================
+   TOAST
+=========================== */
+function showToast(msg, type = 'success', timeout = 1800) {
+    let el = document.getElementById('__toast');
+    if (!el) {
+        el = document.createElement('div'); el.id = '__toast'; el.className = 'toast';
+        document.body.appendChild(el);
+    }
+    el.className = `toast ${type}`; el.innerText = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), timeout);
+}
+
+/* ===========================
+   TABLE SEARCH + PAGINATION
+=========================== */
+function attachTableSearchAndPager(tableId, searchInputId, pagerContainerId, pageSize = 10) {
+    const tbody = document.getElementById(tableId);
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const search = document.getElementById(searchInputId);
+    const pager = document.getElementById(pagerContainerId);
+
+    let filtered = rows.slice(), page = 1;
+    function render() {
+        const start = (page - 1) * pageSize, end = start + pageSize;
+        rows.forEach(r => r.style.display = 'none');
+        filtered.slice(start, end).forEach(r => r.style.display = '');
+        if (pager) {
+            const total = filtered.length, pages = Math.max(1, Math.ceil(total / pageSize));
+            pager.innerHTML = `
+        <div class="pager">
+          <span>عرض ${(start + 1)}–${Math.min(end, total)} من ${total}</span>
+          <button ${page <= 1 ? 'class="muted" disabled' : ''} onclick="this.closest('.pager').__prev?.()">السابق</button>
+          <button ${page >= pages ? 'class="muted" disabled' : ''} onclick="this.closest('.pager').__next?.()">التالي</button>
+        </div>`;
+            const root = pager.querySelector('.pager');
+            root.__prev = () => { if (page > 1) { page--; render(); } };
+            root.__next = () => { const pages2 = Math.ceil(filtered.length / pageSize); if (page < pages2) { page++; render(); } };
+        }
+    }
+    if (search) {
+        search.oninput = () => {
+            const q = search.value.trim().toLowerCase();
+            filtered = rows.filter(r => r.innerText.toLowerCase().includes(q));
+            page = 1; render();
+        };
+    }
+    render();
+}
+
+/* ===========================
+   BENEFICIARY QR (اختياري)
+=========================== */
+function renderBeneficiaryQR(containerId, text) {
+    if (!window.QRCode) return;
+    const el = document.getElementById(containerId); if (!el) return;
+    el.innerHTML = '';
+    new QRCode(el, { text, width: 128, height: 128 });
+}
+
+/* ===========================
    POS
 =========================== */
 const POS = {

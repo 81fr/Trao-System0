@@ -42,7 +42,7 @@
         <div class="form-container" style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
             <div class="form-group"><label>من</label><input type="date" id="fromDate"></div>
             <div class="form-group"><label>إلى</label><input type="date" id="toDate"></div>
-            <button class="secondary" onclick="alert('تطبيق الفلتر قادم')"><i class="fas fa-filter"></i> تطبيق
+            <button class="secondary" onclick="showToast('فلتر قادم قريبًا')"><i class="fas fa-filter"></i> تطبيق
                 الفلتر</button>
             <button onclick="exportTransactionsCSV()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
             <button onclick="exportTransactionsPDF()"><i class="fas fa-file-pdf"></i> تصدير PDF</button>
@@ -68,13 +68,24 @@
                 </thead>
                 <tbody id="transactionsTableBody"></tbody>
             </table>
-        </div>
-        <footer class="main-footer">
-            <p>صنع في تراؤف</p>
-            <img src="assets/logo.png" alt="TRAOF Logo">
-        </footer>
+            <div class="form-group" style="max-width:320px; margin-top:10px;">
+                <label>بحث</label>
+                <input id="txSearch" type="text" placeholder="ابحث في النتائج...">
+            </div>
+            <div id="txPager"></div>
+
+            <footer class="main-footer">
+                <p>صنع في تراؤف</p>
+                <img src="assets/logo.png" alt="TRAOF Logo">
+            </footer>
     </main>
     <script src="script.js"></script>
+    <script>
+        // Initialize search and pagination after data loads
+        window.addEventListener('load', () => {
+            setTimeout(() => attachTableSearchAndPager('transactionsTableBody', 'txSearch', 'txPager', 10), 200);
+        });
+    </script>
 </body>
 
 </html>
