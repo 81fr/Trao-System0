@@ -33,30 +33,42 @@ const Auth = {
 
         const users = Storage.get('users') || [];
         const beneficiaries = Storage.get('beneficiaries') || [];
+        let user = null;
 
-        // 1) Try matching by username in users list
-        let user = users.find(u => u.username === input && u.password === password && u.role === role);
+        // 1) Try matching by username + role in users list
+        user = users.find(u => u.username === input && u.password === password && u.role === role);
 
-        // 2) If not found, try matching by identity number
+        // 2) Try matching by username without role constraint (fallback)
         if (!user) {
-            // Look for identity in beneficiaries
+            user = users.find(u => u.username === input && u.password === password);
+        }
+
+        // 3) Try matching by identity number in beneficiaries
+        if (!user) {
             const ben = beneficiaries.find(b => b.identity === input);
             if (ben) {
-                // Find or create a user for this beneficiary
                 user = users.find(u => u.linkedEntity === ben.name && u.role === 'beneficiary');
                 if (user) {
                     if (user.password !== password) return alert('كلمة المرور غير صحيحة');
                 } else {
-                    // Auto-create session for beneficiary by identity
                     if (password !== '123') return alert('كلمة المرور غير صحيحة');
                     user = { id: ben.id, name: ben.name, username: ben.identity, role: 'beneficiary', linkedEntity: ben.name };
                 }
             }
         }
 
-        // 3) Also try identity directly against users (if user has identity stored)
+        // 4) Try matching by beneficiary name
         if (!user) {
-            user = users.find(u => u.identity === input && u.password === password);
+            const ben = beneficiaries.find(b => b.name === input);
+            if (ben) {
+                user = users.find(u => u.linkedEntity === ben.name && u.role === 'beneficiary');
+                if (user) {
+                    if (user.password !== password) return alert('كلمة المرور غير صحيحة');
+                } else {
+                    if (password !== '123') return alert('كلمة المرور غير صحيحة');
+                    user = { id: ben.id, name: ben.name, username: ben.identity || ben.name, role: 'beneficiary', linkedEntity: ben.name };
+                }
+            }
         }
 
         if (!user) return alert('بيانات الدخول غير صحيحة! تأكد من اسم المستخدم أو رقم الهوية وكلمة المرور');
