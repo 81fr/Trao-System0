@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار النظام الشامل - تراؤف</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            padding: 20px;
+            background: #f4f6f9;
+        }
+
+        .test-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .role-box {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .merchant-box {
+            border-top: 5px solid #8CC240;
+        }
+
+        .beneficiary-box {
+            border-top: 5px solid #00a59b;
+        }
+
+        h2 {
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .log-box {
+            background: #333;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            height: 150px;
+            overflow-y: auto;
+            font-family: monospace;
+            direction: ltr;
+            margin-top: 20px;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background: #ffeeba;
+            color: #856404;
+        }
+
+        .status-confirmed {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1 style="text-align:center; color:#3e4559;">🛠️ صفحة اختبار تدفق الشراء (Simulation)</h1>
+    <p style="text-align:center; color:#666; max-width: 700px; margin: 0 auto 20px;">
+        هذه الصفحة تحاكي عملية الشراء بالكامل في شاشة واحدة لتجاوز قيود المتصفحات المختلفة.<br>
+        <strong>ملاحظة:</strong> النظام الحالي (Demo) يعمل فقط على نفس الجهاز والمتصفح لأن البيانات تحفظ محلياً.
+    </p>
+
+    <div class="test-container">
+        <!-- MERCHANT SECTION -->
+        <div class="role-box merchant-box">
+            <h2>👷‍♂️ التاجر (Merchant)</h2>
+            <div class="form-group" style="margin-bottom:15px;">
+                <label style="display:block; margin-bottom:5px;">اختر بطاقة للمسح:</label>
+                <select id="simCardSelect" style="width:100%; padding: 10px; border:1px solid #ddd; border-radius:5px;">
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom:15px;">
+                <label style="display:block; margin-bottom:5px;">المبلغ:</label>
+                <input type="number" id="simAmount" value="50"
+                    style="width:100%; padding: 10px; border:1px solid #ddd; border-radius:5px;">
+            </div>
+            <button onclick="TestFlow.createRequest()"
+                style="width:100%; padding:10px; background:#8CC240; color:white; border:none; border-radius:5px; cursor:pointer;">إنشاء
+                طلب شراء</button>
+
+            <div id="merchantResult"
+                style="margin-top:20px; display:none; text-align:center; background:#f9f9f9; padding:15px; border-radius:8px;">
+                <p style="color:#666; margin:0;">كود العملية:</p>
+                <h1 id="simGeneratedCode" style="letter-spacing: 5px; color: #8CC240; margin:10px 0;">------</h1>
+                <span id="simMerchantStatus" class="status-badge status-pending">بانتظار التأكيد...</span>
+            </div>
+        </div>
+
+        <!-- BENEFICIARY SECTION -->
+        <div class="role-box beneficiary-box">
+            <h2>👤 المستفيد (Beneficiary)</h2>
+            <p style="text-align:center; color:#888; font-size:0.9rem;">(يتم التحديث تلقائياً)</p>
+            <div id="beneficiaryView"
+                style="text-align:center; padding: 20px; min-height:100px; display:flex; align-items:center; justify-content:center;">
+                <p style="color:#999">لا توجد طلبات معلقة حالياً</p>
+            </div>
+
+            <hr style="border:0; border-top:1px dashed #ddd; margin:20px 0;">
+            <h3>إدخال يدوي (Manual Check)</h3>
+            <div style="display:flex; gap:5px;">
+                <input type="text" id="simManualCode" placeholder="أدخل الكود"
+                    style="flex:1; padding:10px; border:1px solid #ddd; border-radius:5px;">
+                <button onclick="TestFlow.manualCheck()"
+                    style="padding:10px 20px; background:#00a59b; color:white; border:none; border-radius:5px; cursor:pointer;">تحقق</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="log-box" id="debugLog">
+        > Ready to test...
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        const TestFlow = {
+            init: () => {
+                // Load cards for simulation
+                const cards = Storage.get('cards') || [];
+                const select = document.getElementById('simCardSelect');
+                if (cards.length > 0) {
+                    select.innerHTML = cards.map(c =>
+                        `<option value="${c.number}">${c.beneficiary} (${c.number}) - رصيد: ${c.balance}</option>`
+                    ).join('');
+                } else {
+                    select.innerHTML = '<option value="">No cards found</option>';
+                }
+
+                TestFlow.log('System initialized. Cards loaded: ' + cards.length);
+
+                // Start polling similar to real pages
+                setInterval(TestFlow.pollBeneficiary, 2000);
+                setInterval(TestFlow.pollMerchant, 2000);
+            },
+
+            log: (msg) => {
+                const box = document.getElementById('debugLog');
+                const p = document.createElement('div');
+                p.innerText = `> ${msg}`;
+                box.appendChild(p);
+                box.scrollTop = box.scrollHeight;
+            },
+
+            createRequest: () => {
+                const cardNum = document.getElementById('simCardSelect').value;
+                if (!cardNum) return alert('الرجاء اختيار بطاقة');
+
+                const amount = parseFloat(document.getElementById('simAmount').value);
+                const code = String(Math.floor(100000 + Math.random() * 900000));
+
+                const cards = Storage.get('cards') || [];
+                const card = cards.find(c => c.number === cardNum);
+
+                const pending = Storage.get('pendingPurchases') || [];
+                // Clear old for this card
+                const filtered = pending.filter(p => p.cardNumber !== cardNum || p.status !== 'pending');
+
+                const merchantName = 'Test Merchant';
+
+                const newReq = {
+                    code: code,
+                    cardNumber: cardNum,
+                    beneficiary: card.beneficiary,
+                    amount: amount,
+                    merchant: merchantName,
+                    wallet: card.wallet,
+                    status: 'pending',
+                    createdAt: Date.now(),
+                    expiresAt: Date.now() + 300000 // 5 minutes
+                };
+
+                filtered.push(newReq);
+                Storage.set('pendingPurchases', filtered);
+
+                document.getElementById('merchantResult').style.display = 'block';
+                document.getElementById('simGeneratedCode').innerText = code;
+                document.getElementById('simMerchantStatus').innerText = 'بانتظار التأكيد...';
+                document.getElementById('simMerchantStatus').className = 'status-badge status-pending';
+                document.getElementById('simMerchantStatus').style.background = '#ffeeba';
+
+                TestFlow.log(`Merchant created request: Code ${code} for ${card.beneficiary}`);
+            },
+
+            pollBeneficiary: () => {
+                const pending = Storage.get('pendingPurchases') || [];
+                // Find ANY pending request
+                const active = pending.find(p => p.status === 'pending');
+
+                const container = document.getElementById('beneficiaryView');
+
+                if (active) {
+                    container.innerHTML = `
+                        <div style="background:#e3fefa; padding:15px; border-radius:10px; border:1px solid #00a59b; width:100%;">
+                            <h3 style="margin:0 0 10px;">طلب شراء جديد!</h3>
+                            <h2 style="color:#00a59b; margin:10px 0; letter-spacing:3px;">${active.code}</h2>
+                            <p style="margin:5px 0;">المبلغ: <strong>${Number(active.amount).toFixed(2)}</strong> ريال</p>
+                            <p style="margin:5px 0;">التاجر: ${active.merchant}</p>
+                            <button onclick="TestFlow.confirm('${active.code}')" style="background:#28a745; color:white; padding:10px; width:100%; margin-top:10px; border:none; border-radius:5px; cursor:pointer;">✅ تأكيد الشراء</button>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = '<p style="color:#999">لا توجد طلبات معلقة حالياً</p>';
+                }
+            },
+
+            pollMerchant: () => {
+                const code = document.getElementById('simGeneratedCode').innerText;
+                if (code === '------') return;
+
+                const pending = Storage.get('pendingPurchases') || [];
+                const req = pending.find(p => p.code === code);
+
+                if (req && req.status === 'confirmed') {
+                    const statusEl = document.getElementById('simMerchantStatus');
+                    if (statusEl.innerText !== '✅ تم التأكيد!') {
+                        statusEl.innerText = '✅ تم التأكيد!';
+                        statusEl.className = 'status-badge status-confirmed';
+                        statusEl.style.background = '#d4edda';
+                        TestFlow.log(`Merchant detected confirmation for code ${code}`);
+                        alert('✅ تم تأكيد العملية بنجاح! يمكن الانتقال للدفع الآن.');
+                    }
+                }
+            },
+
+            confirm: (code) => {
+                const pending = Storage.get('pendingPurchases') || [];
+                const reqIndex = pending.findIndex(p => p.code === code);
+
+                if (reqIndex !== -1) {
+                    pending[reqIndex].status = 'confirmed';
+                    Storage.set('pendingPurchases', pending);
+                    TestFlow.log(`Beneficiary confirmed request ${code} manually/via button`);
+
+                    // Force UI update immediately
+                    document.getElementById('beneficiaryView').innerHTML = '<p style="color:green">✅ تم تأكيد الطلب!</p>';
+                } else {
+                    TestFlow.log(`Failed to find request with code ${code}`);
+                    alert('الكود غير صحيح أو منتهي الصلاحية');
+                }
+            },
+
+            manualCheck: () => {
+                const code = document.getElementById('simManualCode').value;
+                if (code) TestFlow.confirm(code);
+            }
+        };
+
+        window.onload = TestFlow.init;
+    </script>
+</body>
+
+</html>
