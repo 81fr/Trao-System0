@@ -54,7 +54,7 @@
             <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:15px;">
                 <div class="form-group" style="flex:1; min-width:200px; margin-bottom:0;">
                     <label>رقم البطاقة</label>
-                    <input id="scanCardNumber" type="text" placeholder="أدخل رقم البطاقة أو امسح QR">
+                    <input id="scanCardNumber" type="text" placeholder="أدخل رقم البطاقة أو رقم الهوية">
                 </div>
                 <button onclick="MerchantScanner.lookupCard()" style="white-space:nowrap;">
                     <i class="fas fa-search"></i> بحث
@@ -81,6 +81,7 @@
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                     <div><strong>رقم البطاقة:</strong> <span id="resultCardNum">-</span></div>
                     <div><strong>المستفيد:</strong> <span id="resultBeneficiary">-</span></div>
+                    <div><strong>رقم الهوية:</strong> <span id="resultIdentity">-</span></div>
                     <div><strong>المحفظة:</strong> <span id="resultWallet">-</span></div>
                     <div><strong>الرصيد:</strong> <span id="resultBalance"
                             style="color:var(--brand-teal); font-weight:bold;">-</span></div>
@@ -179,15 +180,16 @@
             },
 
             lookupCard: () => {
-                const cardNum = document.getElementById('scanCardNumber').value.trim();
-                if (!cardNum) return alert('يرجى إدخال رقم البطاقة أو مسح QR أولاً');
+                const input = document.getElementById('scanCardNumber').value.trim();
+                if (!input) return alert('يرجى إدخال رقم البطاقة أو رقم الهوية أو مسح QR أولاً');
 
                 const cards = Storage.get('cards') || [];
-                const card = cards.find(c => c.number === cardNum);
+                // Search by card number OR identity number
+                const card = cards.find(c => c.number === input || c.identity === input);
 
                 if (!card) {
                     document.getElementById('scanResult').style.display = 'none';
-                    return alert('لم يتم العثور على بطاقة بهذا الرقم');
+                    return alert('لم يتم العثور على بطاقة بهذا الرقم أو رقم الهوية');
                 }
 
                 MerchantScanner.scannedCard = card;
@@ -196,6 +198,7 @@
                 document.getElementById('resultBeneficiary').innerText = card.beneficiary || 'غير محدد';
                 document.getElementById('resultWallet').innerText = card.wallet || '-';
                 document.getElementById('resultBalance').innerText = Number(card.balance || 0).toFixed(2) + ' ريال';
+                document.getElementById('resultIdentity').innerText = card.identity || '-';
 
                 const statusText = (card.status === 'نشط' || card.status === 'Active') ? 'نشط ✅' : 'موقوف ❌';
                 document.getElementById('resultStatus').innerText = statusText;

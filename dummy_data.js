@@ -35,14 +35,14 @@ function injectDummyData() {
     ];
 
     const cards = [
-        { id: 1, number: '10001001', balance: 500, status: 'نشط', wallet: 'السلة الغذائية', beneficiary: 'أحمد محمد علي' },
-        { id: 2, number: '10001002', balance: 350, status: 'نشط', wallet: 'السلة الغذائية', beneficiary: 'سارة عبدالله عمر' },
-        { id: 3, number: '10001003', balance: 0, status: 'موقوف', wallet: 'السلة الغذائية', beneficiary: 'فاطمة حسن سعيد' },
-        { id: 4, number: '20002001', balance: 1000, status: 'نشط', wallet: 'كسوة الشتاء', beneficiary: 'خالد عبدالعزيز' },
-        { id: 5, number: '20002002', balance: 800, status: 'نشط', wallet: 'كسوة الشتاء', beneficiary: 'نورة صالح' },
-        { id: 6, number: '30003001', balance: 2500, status: 'نشط', wallet: 'الأجهزة الكهربائية', beneficiary: 'عمر يوسف' },
-        { id: 7, number: '10001004', balance: 450, status: 'نشط', wallet: 'السلة الغذائية', beneficiary: 'ليلى محمود' },
-        { id: 8, number: '20002003', balance: 600, status: 'نشط', wallet: 'كسوة الشتاء', beneficiary: 'سعيد القحطاني' }
+        { id: 1, number: '10001001', balance: 500, status: 'نشط', wallet: 'السلة الغذائية', beneficiary: 'أحمد محمد علي', identity: '1010101010' },
+        { id: 2, number: '10001002', balance: 350, status: 'نشط', wallet: 'السلة الغذائية', beneficiary: 'سارة عبدالله عمر', identity: '1020202020' },
+        { id: 3, number: '10001003', balance: 0, status: 'موقوف', wallet: 'السلة الغذائية', beneficiary: 'فاطمة حسن سعيد', identity: '1030303030' },
+        { id: 4, number: '20002001', balance: 1000, status: 'نشط', wallet: 'كسوة الشتاء', beneficiary: 'خالد عبدالعزيز', identity: '1040404040' },
+        { id: 5, number: '20002002', balance: 800, status: 'نشط', wallet: 'كسوة الشتاء', beneficiary: 'نورة صالح', identity: '1050505050' },
+        { id: 6, number: '30003001', balance: 2500, status: 'نشط', wallet: 'الأجهزة الكهربائية', beneficiary: 'عمر يوسف', identity: '1060606060' },
+        { id: 7, number: '10001004', balance: 450, status: 'نشط', wallet: 'السلة الغذائية', beneficiary: 'ليلى محمود', identity: '1070707070' },
+        { id: 8, number: '20002003', balance: 600, status: 'نشط', wallet: 'كسوة الشتاء', beneficiary: 'سعيد القحطاني', identity: '1080808080' }
     ];
 
     const supplyOrders = [
@@ -54,7 +54,13 @@ function injectDummyData() {
         { id: '100206', item: 'كوبونات شرائية', partner: 'الدانوب', cost: 50000, date: '2023-10-20', status: 'Withdrawn' }
     ];
 
-    Storage.set('users', [{ id: 1, name: 'مدير النظام', username: 'admin', password: '123', role: 'admin' }, { id: 2, name: 'تاجر', username: 'merchant', password: '123', role: 'merchant' }]);
+    Storage.set('users', [
+        { id: 1, name: 'مدير النظام', username: 'admin', password: '123', role: 'admin' },
+        { id: 2, name: 'تاجر', username: 'merchant', password: '123', role: 'merchant', linkedEntity: 'أسواق العثيم' },
+        { id: 3, name: 'أحمد محمد علي', username: 'ben1', password: '123', role: 'beneficiary', linkedEntity: 'أحمد محمد علي' },
+        { id: 4, name: 'سارة عبدالله عمر', username: 'ben2', password: '123', role: 'beneficiary', linkedEntity: 'سارة عبدالله عمر' },
+        { id: 5, name: 'خالد عبدالعزيز', username: 'ben3', password: '123', role: 'beneficiary', linkedEntity: 'خالد عبدالعزيز' }
+    ]);
     Storage.set('beneficiaries', beneficiaries);
     Storage.set('cards', cards);
     Storage.set('wallets', wallets);

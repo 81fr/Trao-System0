@@ -84,7 +84,8 @@
             if (welcome) welcome.innerText = `مرحباً، ${user.name}`;
 
             const cards = Storage.get('cards') || [];
-            const myCard = cards.find(c => c.beneficiary === user.name && (c.status === 'نشط' || c.status === 'Active'));
+            const benefName = user.linkedEntity || user.name;
+            const myCard = cards.find(c => (c.beneficiary === benefName) && (c.status === 'نشط' || c.status === 'Active'));
 
             const cardSection = document.getElementById('cardDetailsSection');
             const noCard = document.getElementById('noCardState');
