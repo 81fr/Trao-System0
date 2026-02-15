@@ -143,16 +143,16 @@
 
                 // 1. By identity
                 if (/^\d+$/.test(user.username)) {
-                    const byId = cards.filter(c => c.identity === user.username && (c.status === 'نشط' || c.status === 'Active'));
+                    const byId = cards.filter(c => c.identity === user.username);
                     myCards.push(...byId);
                 }
 
                 // 2. By name
-                const byName = cards.filter(c => c.beneficiary === benefName && (c.status === 'نشط' || c.status === 'Active'));
+                const byName = cards.filter(c => c.beneficiary === benefName);
                 myCards.push(...byName);
 
                 // 3. By partial name
-                const byPartial = cards.filter(c => c.beneficiary && c.beneficiary.includes(benefName) && (c.status === 'نشط' || c.status === 'Active'));
+                const byPartial = cards.filter(c => c.beneficiary && c.beneficiary.includes(benefName));
                 myCards.push(...byPartial);
 
                 // Deduplicate cards by number
@@ -310,6 +310,13 @@
 
             // Start polling for incoming purchase requests from merchants
             PendingPurchase.startPolling();
+
+            // DEBUG: Dump state to help troubleshooting
+            console.log('--- DEBUG STATE ---');
+            console.log('User:', Auth.user);
+            console.log('All Cards:', Storage.get('cards'));
+            console.log('All Pending:', Storage.get('pendingPurchases'));
+            console.log('-------------------');
         }
     </script>
 </body>
