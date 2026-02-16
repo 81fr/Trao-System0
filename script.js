@@ -1203,6 +1203,11 @@ const Orders = {
                 actions += `<button onclick="Orders.execute('${o.id}')" style="padding:5px 10px; font-size:0.8rem;">تنفيذ</button>`;
             }
 
+            if (o.status === 'Accepted') {
+                actions += `<button onclick="Orders.execute('${o.id}')" style="padding:5px 10px; font-size:0.8rem;">تنفيذ</button>`;
+                actions += `<button onclick="Orders.withdraw('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#ff9800; color:white; border:none; margin-left:5px;">سحب الطلب</button>`;
+            }
+
             if (o.status === 'Rejected') {
                 actions += `<button onclick="Orders.reopen('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#17a2b8; color:white; border:none; margin-left:5px;">إعادة فتح</button>`;
                 actions += `<button onclick="Orders.cancelFinal('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#343a40; color:white; border:none;">إلغاء نهائي</button>`;
@@ -1221,7 +1226,7 @@ const Orders = {
                 <td>${o.item}
                     ${o.status === 'Rejected' ? `<br><small style="color:red">سبب الرفض: ${o.rejectionReason}</small>` : ''}
                 </td>
-                <td>${o.partner}</td>
+                <td>${o.partner || "—"}</td>
                 <td>${Number(o.cost).toFixed(2)} ريال</td>
                 <td>${o.date}</td>
                 <td>${statusBadge}</td>
