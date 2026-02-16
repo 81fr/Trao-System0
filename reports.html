@@ -4,459 +4,517 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-    <title>التقارير - تراوف</title>
+    <title>التقارير والتحليلات - تراوف</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap"
         rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
-        /* ===== Reports Premium Styles ===== */
-        .report-hero {
-            background: linear-gradient(135deg, #3E4559 0%, #00A59B 60%, #8CC240 100%);
+        .rpt-hero {
+            background: linear-gradient(135deg, #3E4559 0%, #00A59B 55%, #8CC240 100%);
             border-radius: 16px;
             padding: 28px 32px;
             color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 22px;
             position: relative;
             overflow: hidden;
         }
 
-        .report-hero::before {
+        .rpt-hero::before {
             content: '';
             position: absolute;
             top: -50%;
-            left: -5%;
-            width: 250px;
-            height: 250px;
+            left: -8%;
+            width: 220px;
+            height: 220px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 50%;
         }
 
-        .report-hero h2 {
-            font-size: 1.4rem;
+        .rpt-hero h2 {
+            font-size: 1.35rem;
             font-weight: 700;
             margin: 0 0 4px;
             z-index: 1;
         }
 
-        .report-hero p {
+        .rpt-hero p {
             margin: 0;
-            opacity: 0.8;
-            font-size: 0.9rem;
+            opacity: .8;
+            font-size: .88rem;
             z-index: 1;
         }
 
-        .report-hero .hero-stats {
+        .hero-stats {
             display: flex;
-            gap: 28px;
+            gap: 24px;
             z-index: 1;
         }
 
-        .report-hero .h-stat {
+        .h-stat {
             text-align: center;
         }
 
-        .report-hero .h-stat .h-val {
-            font-size: 1.6rem;
+        .h-stat .h-val {
+            font-size: 1.5rem;
             font-weight: 800;
             display: block;
         }
 
-        .report-hero .h-stat .h-lbl {
-            font-size: 0.75rem;
-            opacity: 0.8;
+        .h-stat .h-lbl {
+            font-size: .72rem;
+            opacity: .8;
         }
 
-        /* Filter Bar */
         .filter-bar {
             background: white;
             border-radius: 14px;
-            padding: 18px 22px;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+            padding: 16px 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .04);
             display: flex;
-            gap: 14px;
+            gap: 12px;
             align-items: flex-end;
             flex-wrap: wrap;
-            margin-bottom: 24px;
+            margin-bottom: 22px;
         }
 
-        .filter-bar .fg {
+        .fg {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
         }
 
-        .filter-bar label {
-            font-size: 0.75rem;
+        .fg label {
+            font-size: .72rem;
             color: #8c97a8;
             font-weight: 500;
         }
 
-        .filter-bar input,
-        .filter-bar select {
+        .fg input,
+        .fg select {
             border: 1.5px solid #e6ecf2;
             border-radius: 10px;
-            padding: 9px 14px;
+            padding: 8px 12px;
             font-family: 'Tajawal', sans-serif;
-            font-size: 0.85rem;
+            font-size: .84rem;
             color: #3E4559;
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color .2s;
         }
 
-        .filter-bar input:focus,
-        .filter-bar select:focus {
+        .fg input:focus,
+        .fg select:focus {
             border-color: #00A59B;
         }
 
-        .filter-bar .btn-filter {
-            padding: 9px 20px;
+        .btn-f {
+            padding: 8px 16px;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             font-family: 'Tajawal', sans-serif;
-            font-size: 0.85rem;
+            font-size: .82rem;
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
+            gap: 5px;
+            transition: all .2s;
         }
 
-        .btn-primary {
+        .btn-main {
             background: linear-gradient(135deg, #00A59B, #8CC240);
             color: white;
         }
 
-        .btn-primary:hover {
+        .btn-main:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 165, 155, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 165, 155, .3);
         }
 
-        .btn-outline {
+        .btn-out {
             background: white;
             color: #3E4559;
             border: 1.5px solid #e6ecf2 !important;
         }
 
-        .btn-outline:hover {
+        .btn-out:hover {
             border-color: #00A59B !important;
             color: #00A59B;
         }
 
-        .btn-danger {
-            background: #fef2f2;
-            color: #dc2626;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-            color: white;
-        }
-
-        /* Summary Cards */
-        .summary-row {
+        .sum-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 14px;
-            margin-bottom: 24px;
+            grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+            gap: 12px;
+            margin-bottom: 22px;
         }
 
-        .sum-card {
+        .sc {
             background: white;
-            border-radius: 14px;
-            padding: 18px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            border-radius: 13px;
+            padding: 16px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .04);
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             border-right: 4px solid transparent;
-            transition: transform 0.2s;
+            transition: transform .2s;
         }
 
-        .sum-card:hover {
-            transform: translateY(-3px);
+        .sc:hover {
+            transform: translateY(-2px);
         }
 
-        .sum-card.bdr-teal {
-            border-right-color: #00A59B;
+        .sc.b1 {
+            border-right-color: #00A59B
         }
 
-        .sum-card.bdr-green {
-            border-right-color: #8CC240;
+        .sc.b2 {
+            border-right-color: #8CC240
         }
 
-        .sum-card.bdr-orange {
-            border-right-color: #f59e0b;
+        .sc.b3 {
+            border-right-color: #f59e0b
         }
 
-        .sum-card.bdr-purple {
-            border-right-color: #8b5cf6;
+        .sc.b4 {
+            border-right-color: #8b5cf6
         }
 
-        .sum-icon {
-            width: 44px;
-            height: 44px;
+        .sc.b5 {
+            border-right-color: #ef4444
+        }
+
+        .sc.b6 {
+            border-right-color: #06b6d4
+        }
+
+        .si {
+            width: 42px;
+            height: 42px;
             border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            font-size: 1rem;
             flex-shrink: 0;
             color: white;
         }
 
-        .sum-icon.teal {
-            background: linear-gradient(135deg, #00A59B, #008f87);
+        .si.c1 {
+            background: linear-gradient(135deg, #00A59B, #008f87)
         }
 
-        .sum-icon.green {
-            background: linear-gradient(135deg, #8CC240, #6fa830);
+        .si.c2 {
+            background: linear-gradient(135deg, #8CC240, #6fa830)
         }
 
-        .sum-icon.orange {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
+        .si.c3 {
+            background: linear-gradient(135deg, #f59e0b, #d97706)
         }
 
-        .sum-icon.purple {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        .si.c4 {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed)
         }
 
-        .sum-info h4 {
+        .si.c5 {
+            background: linear-gradient(135deg, #ef4444, #dc2626)
+        }
+
+        .si.c6 {
+            background: linear-gradient(135deg, #06b6d4, #0891b2)
+        }
+
+        .si-info h4 {
             margin: 0;
-            font-size: 0.72rem;
+            font-size: .7rem;
             color: #8c97a8;
             font-weight: 400;
         }
 
-        .sum-info .sum-val {
-            font-size: 1.4rem;
+        .si-info .sv {
+            font-size: 1.25rem;
             font-weight: 800;
             color: #3E4559;
         }
 
-        /* Charts Grid */
-        .charts-grid-2 {
+        .g2 {
             display: grid;
             grid-template-columns: 1.5fr 1fr;
-            gap: 18px;
-            margin-bottom: 24px;
+            gap: 16px;
+            margin-bottom: 20px;
         }
 
-        .charts-grid-3 {
+        .g3 {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 18px;
-            margin-bottom: 24px;
+            gap: 16px;
+            margin-bottom: 20px;
         }
 
-        .chart-card {
+        .g22 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .cb {
             background: white;
             border-radius: 14px;
-            padding: 20px;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+            padding: 18px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .04);
         }
 
-        .chart-card h3 {
-            margin: 0 0 14px;
-            font-size: 0.92rem;
+        .cb h3 {
+            margin: 0 0 12px;
+            font-size: .9rem;
             color: #3E4559;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 7px;
         }
 
-        .chart-card h3 i {
+        .cb h3 i {
             color: #00A59B;
-            font-size: 0.85rem;
+            font-size: .82rem;
         }
 
-        /* Transaction Table */
-        .table-card {
+        .tc {
             background: white;
             border-radius: 14px;
-            padding: 22px;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
-            margin-bottom: 24px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .04);
+            margin-bottom: 20px;
         }
 
-        .table-card h3 {
-            margin: 0 0 16px;
-            font-size: 0.95rem;
+        .tc h3 {
+            margin: 0 0 14px;
+            font-size: .92rem;
             color: #3E4559;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .table-card h3 .badge {
+        .badge {
             background: #e7f7f6;
             color: #00A59B;
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 20px;
-            font-size: 0.72rem;
+            font-size: .7rem;
         }
 
-        .rpt-table {
+        .rt {
             width: 100%;
             border-collapse: collapse;
         }
 
-        .rpt-table th {
+        .rt th {
             text-align: right;
-            padding: 10px 10px;
-            font-size: 0.75rem;
+            padding: 9px 8px;
+            font-size: .72rem;
             color: #8c97a8;
             border-bottom: 2px solid #f0f0f0;
             font-weight: 600;
             background: #fafbfc;
         }
 
-        .rpt-table td {
-            padding: 10px;
-            font-size: 0.84rem;
+        .rt td {
+            padding: 9px 8px;
+            font-size: .82rem;
             border-bottom: 1px solid #f5f5f5;
         }
 
-        .rpt-table tr:hover td {
+        .rt tr:hover td {
             background: #f9fafb;
         }
 
-        .rpt-table tr:last-child td {
+        .rt tr:last-child td {
             border: none;
         }
 
-        /* Search Box */
+        .pill {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: .7rem;
+            font-weight: 500;
+        }
+
+        .pill-g {
+            background: #ecfdf5;
+            color: #059669
+        }
+
+        .pill-y {
+            background: #fffbeb;
+            color: #d97706
+        }
+
+        .pill-r {
+            background: #fef2f2;
+            color: #dc2626
+        }
+
+        .pill-b {
+            background: #eff6ff;
+            color: #2563eb
+        }
+
+        .pill-gr {
+            background: #f3f4f6;
+            color: #6b7280
+        }
+
         .search-box {
             border: 1.5px solid #e6ecf2;
             border-radius: 10px;
-            padding: 8px 14px;
+            padding: 7px 12px;
             font-family: 'Tajawal', sans-serif;
-            font-size: 0.85rem;
-            width: 260px;
+            font-size: .82rem;
+            width: 240px;
             outline: none;
-            transition: border-color 0.2s;
         }
 
         .search-box:focus {
             border-color: #00A59B;
         }
 
-        /* Pagination */
-        .pager {
+        .pgr {
             display: flex;
-            gap: 6px;
+            gap: 5px;
             align-items: center;
             justify-content: center;
-            margin-top: 16px;
+            margin-top: 14px;
         }
 
-        .pager button {
-            width: 34px;
-            height: 34px;
+        .pgr button {
+            width: 32px;
+            height: 32px;
             border: 1.5px solid #e6ecf2;
             border-radius: 8px;
             background: white;
             color: #3E4559;
             cursor: pointer;
-            font-family: 'Tajawal', sans-serif;
-            font-size: 0.82rem;
-            transition: all 0.2s;
+            font-family: 'Tajawal';
+            font-size: .8rem;
+            transition: all .2s;
         }
 
-        .pager button:hover {
+        .pgr button:hover {
             border-color: #00A59B;
             color: #00A59B;
         }
 
-        .pager button.active-page {
+        .pgr button.ap {
             background: linear-gradient(135deg, #00A59B, #8CC240);
             color: white;
             border: none;
         }
 
-        .pager span {
-            font-size: 0.8rem;
+        .pgr span {
+            font-size: .78rem;
             color: #8c97a8;
         }
 
-        /* Animations */
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-inline-end: 5px;
+        }
+
+        .dot-g {
+            background: #8CC240;
+        }
+
+        .dot-r {
+            background: #ef4444;
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(12px);
+                transform: translateY(10px)
             }
 
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0)
             }
         }
 
-        .fade-in {
-            animation: fadeIn 0.4s ease forwards;
+        .fi {
+            animation: fadeIn .4s ease forwards;
             opacity: 0;
         }
 
-        .fade-in:nth-child(1) {
-            animation-delay: 0.03s;
+        .fi:nth-child(1) {
+            animation-delay: .02s
         }
 
-        .fade-in:nth-child(2) {
-            animation-delay: 0.06s;
+        .fi:nth-child(2) {
+            animation-delay: .04s
         }
 
-        .fade-in:nth-child(3) {
-            animation-delay: 0.09s;
+        .fi:nth-child(3) {
+            animation-delay: .06s
         }
 
-        .fade-in:nth-child(4) {
-            animation-delay: 0.12s;
+        .fi:nth-child(4) {
+            animation-delay: .08s
         }
 
-        /* Responsive */
-        @media (max-width: 1100px) {
-            .charts-grid-3 {
-                grid-template-columns: 1fr;
+        .fi:nth-child(5) {
+            animation-delay: .1s
+        }
+
+        .fi:nth-child(6) {
+            animation-delay: .12s
+        }
+
+        @media(max-width:1100px) {
+            .g3 {
+                grid-template-columns: 1fr
             }
         }
 
-        @media (max-width: 900px) {
-            .charts-grid-2 {
-                grid-template-columns: 1fr;
+        @media(max-width:900px) {
+
+            .g2,
+            .g22 {
+                grid-template-columns: 1fr
             }
 
-            .report-hero {
+            .rpt-hero {
                 flex-direction: column;
                 text-align: center;
-                gap: 16px;
+                gap: 14px
             }
 
-            .report-hero .hero-stats {
-                justify-content: center;
+            .hero-stats {
+                justify-content: center
             }
 
             .filter-bar {
-                flex-direction: column;
+                flex-direction: column
             }
 
             .search-box {
-                width: 100%;
+                width: 100%
             }
         }
     </style>
 </head>
 
 <body>
-
     <nav class="sidebar">
-        <div class="sidebar-header">
-            <img src="assets/logo.png" alt="TRAOF Logo" style="max-height:56px;">
-        </div>
+        <div class="sidebar-header"><img src="assets/logo.png" alt="TRAOF Logo" style="max-height:56px;"></div>
         <ul class="nav-links">
             <li><a href="index.html"><i class="fas fa-home"></i> لوحة التحكم</a></li>
             <li><a href="cards.html"><i class="fas fa-credit-card"></i> البطاقات</a></li>
@@ -481,492 +539,546 @@
         </header>
 
         <!-- Hero -->
-        <div class="report-hero fade-in">
+        <div class="rpt-hero fi">
             <div>
-                <h2><i class="fas fa-chart-line"></i> مركز التقارير</h2>
-                <p>تحليل شامل لجميع العمليات والبيانات في النظام</p>
+                <h2><i class="fas fa-chart-line"></i> مركز التقارير الشامل</h2>
+                <p>تحليل متقدم لكافة العمليات والمالية والبطاقات</p>
             </div>
             <div class="hero-stats">
-                <div class="h-stat"><span class="h-val" id="heroTxCount">0</span><span class="h-lbl">عملية</span></div>
-                <div class="h-stat"><span class="h-val" id="heroTxTotal">0</span><span class="h-lbl">ر.س إجمالي</span>
-                </div>
-                <div class="h-stat"><span class="h-val" id="heroAvg">0</span><span class="h-lbl">متوسط العملية</span>
-                </div>
+                <div class="h-stat"><span class="h-val" id="hTx">0</span><span class="h-lbl">عملية</span></div>
+                <div class="h-stat"><span class="h-val" id="hTotal">0</span><span class="h-lbl">ر.س إجمالي</span></div>
+                <div class="h-stat"><span class="h-val" id="hAvg">0</span><span class="h-lbl">متوسط</span></div>
+                <div class="h-stat"><span class="h-val" id="hDays">0</span><span class="h-lbl">يوم نشط</span></div>
             </div>
         </div>
 
-        <!-- Filter Bar -->
-        <div class="filter-bar fade-in">
-            <div class="fg">
-                <label>من تاريخ</label>
-                <input type="date" id="fromDate">
-            </div>
-            <div class="fg">
-                <label>إلى تاريخ</label>
-                <input type="date" id="toDate">
-            </div>
-            <div class="fg">
-                <label>المتجر</label>
-                <select id="filterMerchant">
+        <!-- Filters -->
+        <div class="filter-bar fi">
+            <div class="fg"><label>من تاريخ</label><input type="date" id="fromDate"></div>
+            <div class="fg"><label>إلى تاريخ</label><input type="date" id="toDate"></div>
+            <div class="fg"><label>المتجر</label><select id="fMerch">
                     <option value="">الكل</option>
-                </select>
-            </div>
-            <div class="fg">
-                <label>المحفظة</label>
-                <select id="filterWallet">
+                </select></div>
+            <div class="fg"><label>المحفظة</label><select id="fWallet">
                     <option value="">الكل</option>
-                </select>
-            </div>
-            <button class="btn-filter btn-primary" onclick="applyFilters()"><i class="fas fa-filter"></i> تطبيق</button>
-            <button class="btn-filter btn-outline" onclick="resetFilters()"><i class="fas fa-undo"></i> إعادة</button>
-            <button class="btn-filter btn-outline" onclick="exportCSV()"><i class="fas fa-file-excel"></i>
-                Excel</button>
-            <button class="btn-filter btn-outline" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+                </select></div>
+            <div class="fg"><label>البطاقة</label><select id="fCard">
+                    <option value="">الكل</option>
+                </select></div>
+            <button class="btn-f btn-main" onclick="applyFilters()"><i class="fas fa-filter"></i> تطبيق</button>
+            <button class="btn-f btn-out" onclick="resetFilters()"><i class="fas fa-undo"></i> إعادة</button>
+            <button class="btn-f btn-out" onclick="exportCSV()"><i class="fas fa-file-excel"></i> Excel</button>
+            <button class="btn-f btn-out" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
         </div>
 
-        <!-- Summary Cards -->
-        <div class="summary-row">
-            <div class="sum-card bdr-teal fade-in">
-                <div class="sum-icon teal"><i class="fas fa-receipt"></i></div>
-                <div class="sum-info">
-                    <h4>إجمالي العمليات</h4>
-                    <div class="sum-val" id="sumCount">0</div>
+        <!-- Summary Cards = 6 -->
+        <div class="sum-row">
+            <div class="sc b1 fi">
+                <div class="si c1"><i class="fas fa-receipt"></i></div>
+                <div class="si-info">
+                    <h4>عدد العمليات</h4>
+                    <div class="sv" id="sCount">0</div>
                 </div>
             </div>
-            <div class="sum-card bdr-green fade-in">
-                <div class="sum-icon green"><i class="fas fa-coins"></i></div>
-                <div class="sum-info">
+            <div class="sc b2 fi">
+                <div class="si c2"><i class="fas fa-coins"></i></div>
+                <div class="si-info">
                     <h4>إجمالي المبالغ</h4>
-                    <div class="sum-val" id="sumTotal">0 ر.س</div>
+                    <div class="sv" id="sTotal">0</div>
                 </div>
             </div>
-            <div class="sum-card bdr-orange fade-in">
-                <div class="sum-icon orange"><i class="fas fa-calculator"></i></div>
-                <div class="sum-info">
+            <div class="sc b3 fi">
+                <div class="si c3"><i class="fas fa-calculator"></i></div>
+                <div class="si-info">
                     <h4>متوسط العملية</h4>
-                    <div class="sum-val" id="sumAvg">0 ر.س</div>
+                    <div class="sv" id="sAvg">0</div>
                 </div>
             </div>
-            <div class="sum-card bdr-purple fade-in">
-                <div class="sum-icon purple"><i class="fas fa-arrow-up"></i></div>
-                <div class="sum-info">
+            <div class="sc b4 fi">
+                <div class="si c4"><i class="fas fa-arrow-up"></i></div>
+                <div class="si-info">
                     <h4>أعلى عملية</h4>
-                    <div class="sum-val" id="sumMax">0 ر.س</div>
+                    <div class="sv" id="sMax">0</div>
+                </div>
+            </div>
+            <div class="sc b5 fi">
+                <div class="si c5"><i class="fas fa-arrow-down"></i></div>
+                <div class="si-info">
+                    <h4>أقل عملية</h4>
+                    <div class="sv" id="sMin">0</div>
+                </div>
+            </div>
+            <div class="sc b6 fi">
+                <div class="si c6"><i class="fas fa-calendar-day"></i></div>
+                <div class="si-info">
+                    <h4>أعلى يوم مبيعات</h4>
+                    <div class="sv" id="sTopDay">-</div>
                 </div>
             </div>
         </div>
 
-        <!-- Charts Row 1 -->
-        <div class="charts-grid-2">
-            <div class="chart-card fade-in">
-                <h3><i class="fas fa-chart-area"></i> المبيعات اليومية</h3>
-                <div style="height:260px; position:relative;"><canvas id="dailyChart"></canvas></div>
+        <!-- Row 1: Daily Sales + Merchant Pie -->
+        <div class="g2">
+            <div class="cb fi">
+                <h3><i class="fas fa-chart-area"></i> المبيعات اليومية (آخر 90 يوم)</h3>
+                <div style="height:270px;position:relative"><canvas id="cDaily"></canvas></div>
             </div>
-            <div class="chart-card fade-in">
+            <div class="cb fi">
                 <h3><i class="fas fa-chart-pie"></i> توزيع المبالغ حسب المتجر</h3>
-                <div style="height:260px; position:relative;"><canvas id="merchantPie"></canvas></div>
+                <div style="height:270px;position:relative"><canvas id="cMerchPie"></canvas></div>
             </div>
         </div>
 
-        <!-- Charts Row 2 -->
-        <div class="charts-grid-3">
-            <div class="chart-card fade-in">
-                <h3><i class="fas fa-chart-bar"></i> عدد العمليات لكل متجر</h3>
-                <div style="height:240px; position:relative;"><canvas id="merchantCountChart"></canvas></div>
+        <!-- Row 2: Weekly Comparison + Category Breakdown + Cards Spending -->
+        <div class="g3">
+            <div class="cb fi">
+                <h3><i class="fas fa-calendar-week"></i> مقارنة أسبوعية</h3>
+                <div style="height:240px;position:relative"><canvas id="cWeekly"></canvas></div>
             </div>
-            <div class="chart-card fade-in">
-                <h3><i class="fas fa-credit-card"></i> أعلى البطاقات صرفاً</h3>
-                <div style="height:240px; position:relative;"><canvas id="topCardsChart"></canvas></div>
+            <div class="cb fi">
+                <h3><i class="fas fa-tags"></i> الإنفاق حسب الفئة</h3>
+                <div style="height:240px;position:relative"><canvas id="cCategory"></canvas></div>
             </div>
-            <div class="chart-card fade-in">
+            <div class="cb fi">
+                <h3><i class="fas fa-chart-bar"></i> أعلى البطاقات صرفاً</h3>
+                <div style="height:240px;position:relative"><canvas id="cTopCards"></canvas></div>
+            </div>
+        </div>
+
+        <!-- Row 3: Merchant Count Bar + Wallet Spend Polar + Orders Status -->
+        <div class="g3">
+            <div class="cb fi">
+                <h3><i class="fas fa-store"></i> عدد العمليات لكل متجر</h3>
+                <div style="height:240px;position:relative"><canvas id="cMerchCount"></canvas></div>
+            </div>
+            <div class="cb fi">
                 <h3><i class="fas fa-wallet"></i> الإنفاق حسب المحفظة</h3>
-                <div style="height:240px; position:relative;"><canvas id="walletSpendChart"></canvas></div>
+                <div style="height:240px;position:relative"><canvas id="cWalletSpend"></canvas></div>
+            </div>
+            <div class="cb fi">
+                <h3><i class="fas fa-truck"></i> حالة أوامر التوريد</h3>
+                <div style="height:240px;position:relative"><canvas id="cOrdersStatus"></canvas></div>
             </div>
         </div>
 
-        <!-- Transaction Table -->
-        <div class="table-card fade-in">
+        <!-- Row 4: Top Beneficiaries Table + Top Merchants Table -->
+        <div class="g22">
+            <div class="tc fi">
+                <h3><span><i class="fas fa-users" style="color:#00A59B;margin-inline-end:6px"></i> أعلى المستفيدين
+                        صرفاً</span><span class="badge" id="benBadge">0</span></h3>
+                <table class="rt">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>المستفيد</th>
+                            <th>البطاقة</th>
+                            <th>عدد العمليات</th>
+                            <th>إجمالي الصرف</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topBenBody"></tbody>
+                </table>
+            </div>
+            <div class="tc fi">
+                <h3><span><i class="fas fa-store" style="color:#8CC240;margin-inline-end:6px"></i> أعلى المتاجر
+                        إيراداً</span><span class="badge" id="topMerBadge">0</span></h3>
+                <table class="rt">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>المتجر</th>
+                            <th>الفئة</th>
+                            <th>عدد العمليات</th>
+                            <th>الإيراد</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topMerBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Row 5: Orders Table + Wallet Balance Table -->
+        <div class="g22">
+            <div class="tc fi">
+                <h3><span><i class="fas fa-file-invoice-dollar" style="color:#f59e0b;margin-inline-end:6px"></i> أوامر
+                        التوريد</span><span class="badge" id="ordBadge">0</span></h3>
+                <table class="rt">
+                    <thead>
+                        <tr>
+                            <th>رقم</th>
+                            <th>الوصف</th>
+                            <th>الشريك</th>
+                            <th>التكلفة</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordBody"></tbody>
+                </table>
+            </div>
+            <div class="tc fi">
+                <h3><span><i class="fas fa-wallet" style="color:#8b5cf6;margin-inline-end:6px"></i> أرصدة
+                        المحافظ</span><span class="badge" id="walBadge">0</span></h3>
+                <table class="rt">
+                    <thead>
+                        <tr>
+                            <th>المحفظة</th>
+                            <th>الرصيد</th>
+                            <th>المصروف</th>
+                            <th>عدد البطاقات</th>
+                            <th>المتبقي %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="walBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Full Transaction Log -->
+        <div class="tc fi">
             <h3>
-                <span><i class="fas fa-list" style="color:#00A59B; margin-inline-end:8px;"></i> سجل العمليات
+                <span><i class="fas fa-list" style="color:#00A59B;margin-inline-end:6px"></i> سجل العمليات
                     التفصيلي</span>
-                <span style="display:flex; align-items:center; gap:10px;">
-                    <span class="badge" id="tableBadge">0 عملية</span>
+                <span style="display:flex;align-items:center;gap:8px">
+                    <span class="badge" id="txBadge">0</span>
                     <input class="search-box" id="txSearch" type="text" placeholder="🔍 ابحث بالمتجر أو البطاقة...">
                 </span>
             </h3>
-            <table class="rpt-table">
+            <table class="rt">
                 <thead>
                     <tr>
                         <th>#</th>
                         <th>المتجر</th>
                         <th>البطاقة</th>
                         <th>المستفيد</th>
-                        <th>المبلغ (ر.س)</th>
+                        <th>المحفظة</th>
+                        <th>المبلغ</th>
                         <th>التاريخ</th>
                     </tr>
                 </thead>
                 <tbody id="txBody"></tbody>
             </table>
-            <div class="pager" id="txPager"></div>
+            <div class="pgr" id="txPager"></div>
         </div>
 
         <footer class="main-footer">
-            <p>صنع في تراؤف</p>
-            <img src="assets/logo.png" alt="TRAOF Logo">
+            <p>صنع في تراؤف</p><img src="assets/logo.png" alt="TRAOF Logo">
         </footer>
     </main>
 
-    <script src="script.js?v=6"></script>
+    <script src="script.js?v=7"></script>
     <script>
-        /* ===========================
-           REPORTS ENGINE
-        =========================== */
-        const BRAND = { teal: '#00A59B', green: '#8CC240', ink: '#3E4559', orange: '#f59e0b', purple: '#8b5cf6', red: '#ef4444' };
-        const COLORS = [BRAND.teal, BRAND.green, BRAND.ink, BRAND.orange, BRAND.purple, BRAND.red, '#06b6d4', '#ec4899', '#14b8a6', '#a855f7'];
+        const B = { teal: '#00A59B', green: '#8CC240', ink: '#3E4559', orange: '#f59e0b', purple: '#8b5cf6', red: '#ef4444', cyan: '#06b6d4', pink: '#ec4899' };
+        const CL = [B.teal, B.green, B.ink, B.orange, B.purple, B.red, B.cyan, B.pink, '#14b8a6', '#a855f7', '#10b981', '#f43f5e', '#0ea5e9', '#84cc16'];
+        let allTx = [], filtered = [], pg = 1; const PP = 15;
+        let charts = {};
 
-        let allTransactions = [];
-        let filteredTx = [];
-        let currentPage = 1;
-        const PER_PAGE = 12;
-        let chartInstances = {};
-
-        // --- Init ---
-        function initReports() {
-            allTransactions = Storage.get('transactions') || [];
-            filteredTx = [...allTransactions];
-            populateFilterDropdowns();
+        function init() {
+            allTx = Storage.get('transactions') || [];
+            filtered = [...allTx];
+            populateDropdowns();
             updateAll();
         }
 
-        // --- Populate filter dropdowns ---
-        function populateFilterDropdowns() {
-            const merchants = Storage.get('merchants') || [];
-            const wallets = Storage.get('wallets') || [];
-            const mSel = document.getElementById('filterMerchant');
-            const wSel = document.getElementById('filterWallet');
-            merchants.forEach(m => { const o = document.createElement('option'); o.value = m.name; o.textContent = m.name; mSel.appendChild(o); });
-            wallets.forEach(w => { const o = document.createElement('option'); o.value = w.name; o.textContent = w.name; wSel.appendChild(o); });
+        function populateDropdowns() {
+            const ms = Storage.get('merchants') || [], ws = Storage.get('wallets') || [], cs = Storage.get('cards') || [];
+            const mS = document.getElementById('fMerch'), wS = document.getElementById('fWallet'), cS = document.getElementById('fCard');
+            ms.forEach(m => { const o = document.createElement('option'); o.value = m.name; o.textContent = m.name; mS.appendChild(o) });
+            ws.forEach(w => { const o = document.createElement('option'); o.value = w.name; o.textContent = w.name; wS.appendChild(o) });
+            cs.forEach(c => { const o = document.createElement('option'); o.value = c.number; o.textContent = c.number + ' — ' + (c.beneficiary || '').split(' ').slice(0, 2).join(' '); cS.appendChild(o) });
         }
 
-        // --- Apply Filters ---
         function applyFilters() {
-            const merchant = document.getElementById('filterMerchant').value;
-            const wallet = document.getElementById('filterWallet').value;
-
-            filteredTx = allTransactions.filter(t => {
-                if (merchant && t.merchant !== merchant) return false;
-                if (wallet) {
-                    const cards = Storage.get('cards') || [];
-                    const walletCards = cards.filter(c => c.wallet === wallet).map(c => c.number);
-                    if (!walletCards.includes(t.card)) return false;
-                }
+            const m = document.getElementById('fMerch').value, w = document.getElementById('fWallet').value, c = document.getElementById('fCard').value;
+            const cards = Storage.get('cards') || [];
+            filtered = allTx.filter(t => {
+                if (m && t.merchant !== m) return false;
+                if (c && t.card !== c) return false;
+                if (w) { const wCards = cards.filter(x => x.wallet === w).map(x => x.number); if (!wCards.includes(t.card)) return false; }
                 return true;
             });
-
-            currentPage = 1;
-            updateAll();
+            pg = 1; updateAll();
         }
 
         function resetFilters() {
-            document.getElementById('filterMerchant').value = '';
-            document.getElementById('filterWallet').value = '';
-            document.getElementById('fromDate').value = '';
-            document.getElementById('toDate').value = '';
-            document.getElementById('txSearch').value = '';
-            filteredTx = [...allTransactions];
-            currentPage = 1;
-            updateAll();
+            document.getElementById('fMerch').value = ''; document.getElementById('fWallet').value = '';
+            document.getElementById('fCard').value = ''; document.getElementById('fromDate').value = '';
+            document.getElementById('toDate').value = ''; document.getElementById('txSearch').value = '';
+            filtered = [...allTx]; pg = 1; updateAll();
         }
 
-        // --- Update Everything ---
-        function updateAll() {
-            updateHero();
-            updateSummary();
-            buildDailyChart();
-            buildMerchantPie();
-            buildMerchantCountChart();
-            buildTopCardsChart();
-            buildWalletSpendChart();
-            renderTable();
-        }
+        function updateAll() { updateHero(); updateSummary(); buildDaily(); buildMerchPie(); buildWeekly(); buildCategory(); buildTopCards(); buildMerchCount(); buildWalletSpend(); buildOrdersStatus(); loadTopBen(); loadTopMer(); loadOrders(); loadWallets(); renderTable(); }
 
-        // --- Hero Stats ---
         function updateHero() {
-            const total = filteredTx.reduce((s, t) => s + Number(t.amount || 0), 0);
-            const avg = filteredTx.length ? Math.round(total / filteredTx.length) : 0;
-            document.getElementById('heroTxCount').textContent = filteredTx.length.toLocaleString('ar-SA');
-            document.getElementById('heroTxTotal').textContent = total.toLocaleString('ar-SA');
-            document.getElementById('heroAvg').textContent = avg.toLocaleString('ar-SA');
+            const t = filtered.reduce((s, x) => s + Number(x.amount || 0), 0), a = filtered.length ? Math.round(t / filtered.length) : 0;
+            const days = new Set(filtered.map(x => x.date)).size;
+            document.getElementById('hTx').textContent = filtered.length.toLocaleString('ar-SA');
+            document.getElementById('hTotal').textContent = t.toLocaleString('ar-SA');
+            document.getElementById('hAvg').textContent = a.toLocaleString('ar-SA');
+            document.getElementById('hDays').textContent = days;
         }
 
-        // --- Summary Cards ---
         function updateSummary() {
-            const total = filteredTx.reduce((s, t) => s + Number(t.amount || 0), 0);
-            const avg = filteredTx.length ? Math.round(total / filteredTx.length) : 0;
-            const max = filteredTx.length ? Math.max(...filteredTx.map(t => Number(t.amount || 0))) : 0;
-            document.getElementById('sumCount').textContent = filteredTx.length.toLocaleString('ar-SA');
-            document.getElementById('sumTotal').textContent = total.toLocaleString('ar-SA') + ' ر.س';
-            document.getElementById('sumAvg').textContent = avg.toLocaleString('ar-SA') + ' ر.س';
-            document.getElementById('sumMax').textContent = max.toLocaleString('ar-SA') + ' ر.س';
+            const t = filtered.reduce((s, x) => s + Number(x.amount || 0), 0);
+            const a = filtered.length ? Math.round(t / filtered.length) : 0;
+            const mx = filtered.length ? Math.max(...filtered.map(x => Number(x.amount || 0))) : 0;
+            const mn = filtered.length ? Math.min(...filtered.map(x => Number(x.amount || 0))) : 0;
+            document.getElementById('sCount').textContent = filtered.length.toLocaleString('ar-SA');
+            document.getElementById('sTotal').textContent = t.toLocaleString('ar-SA') + ' ر.س';
+            document.getElementById('sAvg').textContent = a.toLocaleString('ar-SA') + ' ر.س';
+            document.getElementById('sMax').textContent = mx.toLocaleString('ar-SA') + ' ر.س';
+            document.getElementById('sMin').textContent = mn.toLocaleString('ar-SA') + ' ر.س';
+            // Top day
+            const dm = {}; filtered.forEach(x => { dm[x.date] = (dm[x.date] || 0) + Number(x.amount || 0) });
+            const topD = Object.entries(dm).sort((a, b) => b[1] - a[1])[0];
+            document.getElementById('sTopDay').textContent = topD ? topD[1].toLocaleString('ar-SA') + ' ر.س' : '—';
         }
 
-        // --- Chart Helpers ---
-        function destroyChart(key) { if (chartInstances[key]) { chartInstances[key].destroy(); } }
+        function dc(k) { if (charts[k]) charts[k].destroy(); }
 
-        // Chart 1: Daily Sales (Area Line)
-        function buildDailyChart() {
-            destroyChart('daily');
-            const el = document.getElementById('dailyChart');
-            if (!el || typeof Chart === 'undefined') return;
-
-            const dailyMap = {};
-            filteredTx.forEach(t => { dailyMap[t.date] = (dailyMap[t.date] || 0) + Number(t.amount || 0); });
-
-            const now = new Date();
-            const labels = [], data = [];
-            for (let i = 29; i >= 0; i--) {
+        // Chart 1: Daily (90 days line)
+        function buildDaily() {
+            dc('daily'); const el = document.getElementById('cDaily'); if (!el) return;
+            const dm = {}; filtered.forEach(t => { dm[t.date] = (dm[t.date] || 0) + Number(t.amount || 0) });
+            const now = new Date(), labels = [], data = [];
+            for (let i = 89; i >= 0; i--) {
                 const d = new Date(now); d.setDate(now.getDate() - i);
-                const key = d.toLocaleDateString('ar-SA');
-                labels.push(d.toLocaleDateString('ar-SA', { day: 'numeric', month: 'numeric' }));
-                data.push(dailyMap[key] || 0);
+                const k = d.toLocaleDateString('ar-SA'); labels.push(d.toLocaleDateString('ar-SA', { day: 'numeric', month: 'numeric' })); data.push(dm[k] || 0);
             }
-
-            chartInstances['daily'] = new Chart(el.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'المبيعات (ر.س)',
-                        data,
-                        borderColor: BRAND.teal,
-                        backgroundColor: 'rgba(0,165,155,0.12)',
-                        fill: true,
-                        tension: 0.4,
-                        borderWidth: 2.5,
-                        pointRadius: 2,
-                        pointHoverRadius: 6,
-                        pointBackgroundColor: BRAND.teal
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 10 } } },
-                        x: { grid: { display: false }, ticks: { maxTicksLimit: 10, font: { size: 9 } } }
-                    }
-                }
+            charts['daily'] = new Chart(el.getContext('2d'), {
+                type: 'line', data: { labels, datasets: [{ label: 'المبيعات', data, borderColor: B.teal, backgroundColor: 'rgba(0,165,155,.1)', fill: true, tension: .4, borderWidth: 2, pointRadius: 1, pointHoverRadius: 5 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 9 } } }, x: { grid: { display: false }, ticks: { maxTicksLimit: 12, font: { size: 8 } } } } }
             });
         }
 
         // Chart 2: Merchant Pie
-        function buildMerchantPie() {
-            destroyChart('mpie');
-            const el = document.getElementById('merchantPie');
-            if (!el || typeof Chart === 'undefined') return;
-
-            const mMap = {};
-            filteredTx.forEach(t => { mMap[t.merchant] = (mMap[t.merchant] || 0) + Number(t.amount || 0); });
-            const sorted = Object.entries(mMap).sort((a, b) => b[1] - a[1]);
-
-            chartInstances['mpie'] = new Chart(el.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: sorted.map(s => s[0]),
-                    datasets: [{ data: sorted.map(s => s[1]), backgroundColor: COLORS.slice(0, sorted.length), borderWidth: 0, hoverOffset: 6 }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, cutout: '58%',
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 8, font: { family: 'Tajawal', size: 10 } } } }
-                }
+        function buildMerchPie() {
+            dc('mpie'); const el = document.getElementById('cMerchPie'); if (!el) return;
+            const mm = {}; filtered.forEach(t => { mm[t.merchant] = (mm[t.merchant] || 0) + Number(t.amount || 0) });
+            const s = Object.entries(mm).sort((a, b) => b[1] - a[1]);
+            charts['mpie'] = new Chart(el.getContext('2d'), {
+                type: 'doughnut', data: { labels: s.map(x => x[0]), datasets: [{ data: s.map(x => x[1]), backgroundColor: CL.slice(0, s.length), borderWidth: 0, hoverOffset: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '58%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 9, padding: 7, font: { family: 'Tajawal', size: 9 } } } } }
             });
         }
 
-        // Chart 3: Merchant Transaction Count (Bar)
-        function buildMerchantCountChart() {
-            destroyChart('mcount');
-            const el = document.getElementById('merchantCountChart');
-            if (!el || typeof Chart === 'undefined') return;
-
-            const mMap = {};
-            filteredTx.forEach(t => { mMap[t.merchant] = (mMap[t.merchant] || 0) + 1; });
-            const sorted = Object.entries(mMap).sort((a, b) => b[1] - a[1]).slice(0, 8);
-
-            chartInstances['mcount'] = new Chart(el.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: sorted.map(s => s[0]),
-                    datasets: [{ label: 'عدد العمليات', data: sorted.map(s => s[1]), backgroundColor: COLORS.slice(0, sorted.length), borderRadius: 6, borderSkipped: false }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { beginAtZero: true, grid: { color: '#f0f0f0' } }, y: { grid: { display: false }, ticks: { font: { family: 'Tajawal', size: 10 } } } }
-                }
+        // Chart 3: Weekly comparison (bar with last 12 weeks)
+        function buildWeekly() {
+            dc('weekly'); const el = document.getElementById('cWeekly'); if (!el) return;
+            const now = new Date(), weeks = [], labels = [];
+            for (let w = 11; w >= 0; w--) {
+                const wStart = new Date(now); wStart.setDate(now.getDate() - (w * 7 + 6));
+                const wEnd = new Date(now); wEnd.setDate(now.getDate() - w * 7);
+                let total = 0;
+                filtered.forEach(t => {
+                    // Compare by matching dates
+                    const dm = {}; dm[t.date] = true;
+                    // Simple: count all tx in a 7 day window
+                    for (let d = 0; d < 7; d++) {
+                        const dd = new Date(wStart); dd.setDate(wStart.getDate() + d);
+                        if (t.date === dd.toLocaleDateString('ar-SA')) total += Number(t.amount || 0);
+                    }
+                });
+                weeks.push(total);
+                labels.push('أسبوع ' + (12 - w));
+            }
+            charts['weekly'] = new Chart(el.getContext('2d'), {
+                type: 'bar', data: { labels, datasets: [{ label: 'المبيعات الأسبوعية', data: weeks, backgroundColor: CL.map(c => c + 'bb'), borderRadius: 5, borderSkipped: false }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' } }, x: { grid: { display: false }, ticks: { font: { family: 'Tajawal', size: 9 } } } } }
             });
         }
 
-        // Chart 4: Top Cards Spending (Bar)
-        function buildTopCardsChart() {
-            destroyChart('tcards');
-            const el = document.getElementById('topCardsChart');
-            if (!el || typeof Chart === 'undefined') return;
+        // Chart 4: Category breakdown
+        function buildCategory() {
+            dc('cat'); const el = document.getElementById('cCategory'); if (!el) return;
+            const merchants = Storage.get('merchants') || [];
+            const catMap = {};
+            filtered.forEach(t => {
+                const m = merchants.find(x => x.name === t.merchant);
+                const cat = m ? m.category : 'أخرى';
+                catMap[cat] = (catMap[cat] || 0) + Number(t.amount || 0);
+            });
+            const s = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
+            charts['cat'] = new Chart(el.getContext('2d'), {
+                type: 'polarArea', data: { labels: s.map(x => x[0]), datasets: [{ data: s.map(x => x[1]), backgroundColor: CL.slice(0, s.length).map(c => c + 'bb'), borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 9, padding: 7, font: { family: 'Tajawal', size: 10 } } } }, scales: { r: { display: false } } }
+            });
+        }
 
-            const cardMap = {};
-            filteredTx.forEach(t => { cardMap[t.card] = (cardMap[t.card] || 0) + Number(t.amount || 0); });
-            const sorted = Object.entries(cardMap).sort((a, b) => b[1] - a[1]).slice(0, 6);
-
-            // Lookup beneficiary names
+        // Chart 5: Top Cards spending (horizontal bar)
+        function buildTopCards() {
+            dc('tcards'); const el = document.getElementById('cTopCards'); if (!el) return;
+            const cm = {}; filtered.forEach(t => { cm[t.card] = (cm[t.card] || 0) + Number(t.amount || 0) });
+            const sorted = Object.entries(cm).sort((a, b) => b[1] - a[1]).slice(0, 7);
             const cards = Storage.get('cards') || [];
-            const labels = sorted.map(s => {
-                const c = cards.find(c => c.number === s[0]);
-                return c ? (c.beneficiary || '').split(' ').slice(0, 2).join(' ') : s[0];
-            });
-
-            chartInstances['tcards'] = new Chart(el.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels,
-                    datasets: [{ label: 'إجمالي الصرف', data: sorted.map(s => s[1]), backgroundColor: BRAND.green + 'cc', borderRadius: 6, borderSkipped: false }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' } }, x: { grid: { display: false }, ticks: { font: { family: 'Tajawal', size: 10 } } } }
-                }
+            const labels = sorted.map(s => { const c = cards.find(x => x.number === s[0]); return c ? (c.beneficiary || '').split(' ').slice(0, 2).join(' ') : s[0]; });
+            charts['tcards'] = new Chart(el.getContext('2d'), {
+                type: 'bar', data: { labels, datasets: [{ label: 'إجمالي الصرف', data: sorted.map(s => s[1]), backgroundColor: B.green + 'cc', borderRadius: 5, borderSkipped: false }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: '#f0f0f0' } }, y: { grid: { display: false }, ticks: { font: { family: 'Tajawal', size: 10 } } } } }
             });
         }
 
-        // Chart 5: Wallet Spend (Polar)
-        function buildWalletSpendChart() {
-            destroyChart('wspend');
-            const el = document.getElementById('walletSpendChart');
-            if (!el || typeof Chart === 'undefined') return;
+        // Chart 6: Merchant count (bar)
+        function buildMerchCount() {
+            dc('mcount'); const el = document.getElementById('cMerchCount'); if (!el) return;
+            const mm = {}; filtered.forEach(t => { mm[t.merchant] = (mm[t.merchant] || 0) + 1 });
+            const s = Object.entries(mm).sort((a, b) => b[1] - a[1]).slice(0, 8);
+            charts['mcount'] = new Chart(el.getContext('2d'), {
+                type: 'bar', data: { labels: s.map(x => x[0]), datasets: [{ label: 'عدد العمليات', data: s.map(x => x[1]), backgroundColor: CL.slice(0, s.length), borderRadius: 5, borderSkipped: false }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: '#f0f0f0' } }, y: { grid: { display: false }, ticks: { font: { family: 'Tajawal', size: 10 } } } } }
+            });
+        }
 
+        // Chart 7: Wallet spend (doughnut)
+        function buildWalletSpend() {
+            dc('wspend'); const el = document.getElementById('cWalletSpend'); if (!el) return;
+            const cards = Storage.get('cards') || [], wallets = Storage.get('wallets') || [];
+            const wm = {}; wallets.forEach(w => { wm[w.name] = 0 });
+            filtered.forEach(t => { const c = cards.find(x => x.number === t.card); if (c && wm.hasOwnProperty(c.wallet)) wm[c.wallet] += Number(t.amount || 0) });
+            const s = Object.entries(wm).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
+            charts['wspend'] = new Chart(el.getContext('2d'), {
+                type: 'doughnut', data: { labels: s.map(x => x[0]), datasets: [{ data: s.map(x => x[1]), backgroundColor: CL.slice(0, s.length), borderWidth: 0, hoverOffset: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '55%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 9, padding: 7, font: { family: 'Tajawal', size: 10 } } } } }
+            });
+        }
+
+        // Chart 8: Orders status (pie)
+        function buildOrdersStatus() {
+            dc('ostatus'); const el = document.getElementById('cOrdersStatus'); if (!el) return;
+            const orders = Storage.get('supply_orders') || [];
+            const sm = { 'Completed': 0, 'Pending': 0, 'Accepted': 0, 'Rejected': 0, 'Withdrawn': 0 };
+            orders.forEach(o => { if (sm.hasOwnProperty(o.status)) sm[o.status]++ });
+            const labels = ['مكتمل', 'معلق', 'مقبول', 'مرفوض', 'مسحوب'], data = Object.values(sm);
+            charts['ostatus'] = new Chart(el.getContext('2d'), {
+                type: 'pie', data: { labels, datasets: [{ data, backgroundColor: [B.green, B.orange, B.teal, B.red, '#9ca3af'], borderWidth: 0, hoverOffset: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 9, padding: 7, font: { family: 'Tajawal', size: 10 } } } } }
+            });
+        }
+
+        // Table: Top Beneficiaries
+        function loadTopBen() {
             const cards = Storage.get('cards') || [];
-            const wallets = Storage.get('wallets') || [];
-            const walletMap = {};
-            wallets.forEach(w => { walletMap[w.name] = 0; });
-
-            filteredTx.forEach(t => {
-                const card = cards.find(c => c.number === t.card);
-                if (card && walletMap.hasOwnProperty(card.wallet)) {
-                    walletMap[card.wallet] += Number(t.amount || 0);
-                }
+            const bm = {}; filtered.forEach(t => {
+                const c = cards.find(x => x.number === t.card);
+                const name = c ? c.beneficiary : 'غير معروف';
+                if (!bm[name]) bm[name] = { count: 0, total: 0, card: t.card };
+                bm[name].count++; bm[name].total += Number(t.amount || 0);
             });
-
-            const entries = Object.entries(walletMap).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
-
-            chartInstances['wspend'] = new Chart(el.getContext('2d'), {
-                type: 'polarArea',
-                data: {
-                    labels: entries.map(e => e[0]),
-                    datasets: [{ data: entries.map(e => e[1]), backgroundColor: COLORS.slice(0, entries.length).map(c => c + 'bb'), borderWidth: 0 }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 8, font: { family: 'Tajawal', size: 10 } } } },
-                    scales: { r: { display: false } }
-                }
-            });
+            const sorted = Object.entries(bm).sort((a, b) => b[1].total - a[1].total).slice(0, 10);
+            document.getElementById('benBadge').textContent = sorted.length + ' مستفيد';
+            document.getElementById('topBenBody').innerHTML = sorted.length ? sorted.map((s, i) => `<tr>
+            <td style="color:#8c97a8">${i + 1}</td>
+            <td style="font-weight:500">${s[0]}</td>
+            <td style="font-family:monospace;font-size:.78rem">${s[1].card}</td>
+            <td style="font-weight:600;color:${B.purple}">${s[1].count}</td>
+            <td style="font-weight:700;color:${B.teal}">${s[1].total.toLocaleString('ar-SA')} ر.س</td>
+        </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px">لا توجد بيانات</td></tr>';
         }
 
-        // --- Transaction Table with Search & Pagination ---
+        // Table: Top Merchants
+        function loadTopMer() {
+            const merchants = Storage.get('merchants') || [];
+            const mm = {}; filtered.forEach(t => { if (!mm[t.merchant]) mm[t.merchant] = { count: 0, total: 0 }; mm[t.merchant].count++; mm[t.merchant].total += Number(t.amount || 0) });
+            const sorted = Object.entries(mm).sort((a, b) => b[1].total - a[1].total);
+            document.getElementById('topMerBadge').textContent = sorted.length + ' متجر';
+            document.getElementById('topMerBody').innerHTML = sorted.length ? sorted.map((s, i) => {
+                const m = merchants.find(x => x.name === s[0]);
+                return `<tr>
+                <td style="color:#8c97a8">${i + 1}</td>
+                <td style="font-weight:500">${s[0]}</td>
+                <td style="font-size:.78rem;color:#8c97a8">${m ? m.category : '—'}</td>
+                <td style="font-weight:600;color:${B.purple}">${s[1].count}</td>
+                <td style="font-weight:700;color:${B.green}">${s[1].total.toLocaleString('ar-SA')} ر.س</td>
+            </tr>`}).join('') : '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px">لا توجد بيانات</td></tr>';
+        }
+
+        // Table: Supply Orders
+        function loadOrders() {
+            const orders = Storage.get('supply_orders') || [];
+            const pills = { 'Completed': '<span class="pill pill-g">مكتمل</span>', 'Pending': '<span class="pill pill-y">معلق</span>', 'Accepted': '<span class="pill pill-b">مقبول</span>', 'Rejected': '<span class="pill pill-r">مرفوض</span>', 'Withdrawn': '<span class="pill pill-gr">مسحوب</span>' };
+            document.getElementById('ordBadge').textContent = orders.length + ' أمر';
+            document.getElementById('ordBody').innerHTML = orders.length ? orders.map(o => `<tr>
+            <td style="font-family:monospace;font-weight:600">#${o.id}</td>
+            <td style="font-size:.78rem">${(o.item || '').substring(0, 30)}${(o.item || '').length > 30 ? '...' : ''}</td>
+            <td>${o.partner}</td>
+            <td style="font-weight:600">${Number(o.cost).toLocaleString('ar-SA')}</td>
+            <td>${pills[o.status] || o.status}</td>
+        </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px">لا توجد أوامر</td></tr>';
+        }
+
+        // Table: Wallet Balances with spending analysis
+        function loadWallets() {
+            const wallets = Storage.get('wallets') || [], cards_all = Storage.get('cards') || [];
+            document.getElementById('walBadge').textContent = wallets.length + ' محفظة';
+            document.getElementById('walBody').innerHTML = wallets.length ? wallets.map(w => {
+                const wCards = cards_all.filter(c => c.wallet === w.name);
+                let spent = 0; filtered.forEach(t => { if (wCards.find(c => c.number === t.card)) spent += Number(t.amount || 0) });
+                const remaining = w.funds > 0 ? Math.round(((w.funds - spent) / w.funds) * 100) : 0;
+                const color = remaining > 50 ? B.green : remaining > 20 ? B.orange : B.red;
+                return `<tr>
+                <td style="font-weight:500">${w.name}</td>
+                <td style="font-weight:600">${Number(w.funds).toLocaleString('ar-SA')}</td>
+                <td style="font-weight:600;color:${B.red}">${spent.toLocaleString('ar-SA')}</td>
+                <td style="color:${B.purple}">${wCards.length}</td>
+                <td><span style="color:${color};font-weight:700">${remaining}%</span></td>
+            </tr>`}).join('') : '<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px">لا توجد محافظ</td></tr>';
+        }
+
+        // Full Transaction Table
         function renderTable() {
             const search = (document.getElementById('txSearch').value || '').trim().toLowerCase();
-            let data = filteredTx;
-            if (search) {
-                data = data.filter(t => t.merchant.toLowerCase().includes(search) || t.card.includes(search));
-            }
-
-            const totalPages = Math.ceil(data.length / PER_PAGE) || 1;
-            if (currentPage > totalPages) currentPage = totalPages;
-
-            const start = (currentPage - 1) * PER_PAGE;
-            const page = data.slice(start, start + PER_PAGE);
-
+            let data = filtered;
+            if (search) data = data.filter(t => t.merchant.toLowerCase().includes(search) || t.card.includes(search));
+            const tp = Math.ceil(data.length / PP) || 1; if (pg > tp) pg = tp;
+            const start = (pg - 1) * PP, page = data.slice(start, start + PP);
             const cards = Storage.get('cards') || [];
+            document.getElementById('txBadge').textContent = data.length + ' عملية';
             const tbody = document.getElementById('txBody');
-            document.getElementById('tableBadge').textContent = data.length + ' عملية';
-
-            if (page.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#aaa; padding:30px;">لا توجد عمليات مطابقة</td></tr>';
-            } else {
+            if (!page.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:30px">لا توجد عمليات</td></tr>'; }
+            else {
                 tbody.innerHTML = page.map((t, i) => {
-                    const card = cards.find(c => c.number === t.card);
-                    const benName = card ? (card.beneficiary || '').split(' ').slice(0, 2).join(' ') : '-';
+                    const c = cards.find(x => x.number === t.card);
+                    const ben = c ? (c.beneficiary || '').split(' ').slice(0, 2).join(' ') : '—';
+                    const wal = c ? c.wallet : '—';
                     return `<tr>
-                    <td style="color:#8c97a8; font-size:0.75rem">${start + i + 1}</td>
+                    <td style="color:#8c97a8;font-size:.72rem">${start + i + 1}</td>
                     <td style="font-weight:500">${t.merchant}</td>
-                    <td style="font-family:monospace; font-size:0.8rem">${t.card}</td>
-                    <td>${benName}</td>
-                    <td style="font-weight:700; color:#00A59B">${Number(t.amount).toLocaleString('ar-SA')}</td>
-                    <td style="color:#8c97a8; font-size:0.78rem">${t.date}</td>
-                </tr>`;
-                }).join('');
+                    <td style="font-family:monospace;font-size:.78rem">${t.card}</td>
+                    <td>${ben}</td>
+                    <td style="font-size:.78rem;color:#8c97a8">${wal}</td>
+                    <td style="font-weight:700;color:${B.teal}">${Number(t.amount).toLocaleString('ar-SA')}</td>
+                    <td style="color:#8c97a8;font-size:.75rem">${t.date}</td>
+                </tr>`}).join('');
             }
-
             // Pagination
-            const pager = document.getElementById('txPager');
-            if (totalPages <= 1) { pager.innerHTML = ''; return; }
-
-            let html = `<button onclick="goPage(1)" ${currentPage === 1 ? 'disabled' : ''}><i class="fas fa-angle-double-right"></i></button>`;
-            html += `<button onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><i class="fas fa-angle-right"></i></button>`;
-
-            const maxButtons = 5;
-            let startP = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-            let endP = Math.min(totalPages, startP + maxButtons - 1);
-            if (endP - startP < maxButtons - 1) startP = Math.max(1, endP - maxButtons + 1);
-
-            for (let p = startP; p <= endP; p++) {
-                html += `<button class="${p === currentPage ? 'active-page' : ''}" onclick="goPage(${p})">${p}</button>`;
-            }
-
-            html += `<button onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}><i class="fas fa-angle-left"></i></button>`;
-            html += `<button onclick="goPage(${totalPages})" ${currentPage === totalPages ? 'disabled' : ''}><i class="fas fa-angle-double-left"></i></button>`;
-            html += `<span>صفحة ${currentPage} من ${totalPages}</span>`;
-            pager.innerHTML = html;
+            const pgr = document.getElementById('txPager');
+            if (tp <= 1) { pgr.innerHTML = ''; return; }
+            let h = `<button onclick="gp(1)" ${pg === 1 ? 'disabled' : ''}><i class="fas fa-angle-double-right"></i></button>`;
+            h += `<button onclick="gp(${pg - 1})" ${pg === 1 ? 'disabled' : ''}><i class="fas fa-angle-right"></i></button>`;
+            let s = Math.max(1, pg - 2), e = Math.min(tp, s + 4); if (e - s < 4) s = Math.max(1, e - 4);
+            for (let p = s; p <= e; p++) h += `<button class="${p === pg ? 'ap' : ''}" onclick="gp(${p})">${p}</button>`;
+            h += `<button onclick="gp(${pg + 1})" ${pg === tp ? 'disabled' : ''}><i class="fas fa-angle-left"></i></button>`;
+            h += `<button onclick="gp(${tp})" ${pg === tp ? 'disabled' : ''}><i class="fas fa-angle-double-left"></i></button>`;
+            h += `<span>صفحة ${pg} من ${tp}</span>`;
+            pgr.innerHTML = h;
         }
+        function gp(p) { const tp = Math.ceil(filtered.length / PP) || 1; if (p < 1 || p > tp) return; pg = p; renderTable(); }
+        document.getElementById('txSearch').addEventListener('input', () => { pg = 1; renderTable() });
 
-        function goPage(p) {
-            const totalPages = Math.ceil(filteredTx.length / PER_PAGE) || 1;
-            if (p < 1 || p > totalPages) return;
-            currentPage = p;
-            renderTable();
-        }
-
-        // --- Search live ---
-        document.getElementById('txSearch').addEventListener('input', () => { currentPage = 1; renderTable(); });
-
-        // --- Export CSV ---
         function exportCSV() {
-            if (filteredTx.length === 0) { alert('لا توجد بيانات للتصدير'); return; }
+            if (!filtered.length) { alert('لا توجد بيانات'); return; }
             const cards = Storage.get('cards') || [];
-            let csv = '\uFEFF#,المتجر,البطاقة,المستفيد,المبلغ,التاريخ\n';
-            filteredTx.forEach((t, i) => {
-                const card = cards.find(c => c.number === t.card);
-                const ben = card ? card.beneficiary : '-';
-                csv += `${i + 1},${t.merchant},${t.card},${ben},${t.amount},${t.date}\n`;
+            let csv = '\uFEFF#,المتجر,البطاقة,المستفيد,المحفظة,المبلغ,التاريخ\n';
+            filtered.forEach((t, i) => {
+                const c = cards.find(x => x.number === t.card);
+                csv += `${i + 1},${t.merchant},${t.card},${c ? c.beneficiary : '-'},${c ? c.wallet : '-'},${t.amount},${t.date}\n`
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'تقرير_العمليات_' + new Date().toLocaleDateString('ar-SA') + '.csv';
-            link.click();
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob);
+            link.download = 'تقرير_العمليات_' + new Date().toLocaleDateString('ar-SA') + '.csv'; link.click();
         }
+        function exportPDF() { window.print() }
 
-        // --- Export PDF (simple print) ---
-        function exportPDF() {
-            window.print();
-        }
-
-        // --- Init on load ---
-        const _origOnload = window.onload;
-        window.onload = function () {
-            if (_origOnload) _origOnload();
-            setTimeout(initReports, 100);
-        };
+        const _o = window.onload; window.onload = function () { if (_o) _o(); setTimeout(init, 100) };
     </script>
 </body>
 
