@@ -1892,3 +1892,9 @@ window.onload = function() {
     loadWalletsTable();
     loadMerchantsTable();
 };
+
+// Expose globals
+window.Storage = Storage;
+window.Auth = Auth;
+window.Orders = Orders;
+window.Support = Support;

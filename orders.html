@@ -116,7 +116,47 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <div id="debugLog"
+        style="background:#333;color:#0f0;padding:10px;margin:20px;border-radius:5px;font-family:monospace;direction:ltr;text-align:left;display:none;">
+    </div>
+
+    <script src="script.js?v=<?=Date.now()?>"></script>
+    <script>
+        // Inline Debug Script
+        const logBox = document.getElementById('debugLog');
+        function log(msg, err = false) {
+            logBox.style.display = 'block';
+            logBox.innerHTML += `<div style="color:${err ? '#f88' : '#afa'}">${new Date().toLocaleTimeString()} - ${msg}</div>`;
+            console.log(msg);
+        }
+
+        window.addEventListener('load', () => {
+            log('Window loaded.');
+            if (typeof Orders === 'undefined') {
+                log('ERROR: Orders object is undefined!', true);
+            } else {
+                log('Orders object found. Attempting load...');
+                try {
+                    Orders.load();
+                    log('Orders.load() called.');
+                    const tbody = document.getElementById('ordersTableBody');
+                    if (tbody) {
+                        log(`Table rows: ${tbody.children.length}`);
+                        if (tbody.children.length === 0) log('WARNING: Table is empty!', true);
+                    } else {
+                        log('ERROR: tbody not found!', true);
+                    }
+                } catch (e) {
+                    log(`ERROR executing Orders.load: ${e.message}`, true);
+                }
+            }
+        });
+
+        // Error handler
+        window.onerror = function (msg, url, line, col, error) {
+            log(`Global Error: ${msg} at line ${line}:${col}`, true);
+        };
+    </script>
 </body>
 
 </html>
