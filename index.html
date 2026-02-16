@@ -13,7 +13,7 @@
     <style>
         /* ===== Dashboard Premium Styles ===== */
         .dash-hero {
-            background: linear-gradient(135deg, #3E4559 0%, #00A59B 60%, #8CC240 100%);
+            background: linear-gradient(135deg, #3E4559 0%, #00A59B 50%, #8CC240 100%);
             border-radius: 18px;
             padding: 32px 36px;
             color: white;
@@ -34,6 +34,7 @@
             height: 300px;
             background: rgba(255, 255, 255, 0.06);
             border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
         }
 
         .dash-hero::after {
@@ -45,6 +46,23 @@
             height: 200px;
             background: rgba(255, 255, 255, 0.04);
             border-radius: 50%;
+            animation: float 6s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        .dash-hero .hero-text {
+            z-index: 1;
         }
 
         .dash-hero h2 {
@@ -59,6 +77,12 @@
             font-size: 0.95rem;
         }
 
+        .dash-hero .hero-date {
+            opacity: 0.7;
+            font-size: 0.8rem;
+            margin-top: 6px;
+        }
+
         .dash-hero img {
             height: 70px;
             opacity: 0.9;
@@ -69,21 +93,22 @@
         /* Stats Row */
         .stats-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+            gap: 16px;
             margin-bottom: 28px;
         }
 
         .stat-widget {
             background: white;
             border-radius: 16px;
-            padding: 22px;
+            padding: 20px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
             transition: transform 0.25s ease, box-shadow 0.25s ease;
             cursor: default;
+            border-right: 4px solid transparent;
         }
 
         .stat-widget:hover {
@@ -91,14 +116,38 @@
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
         }
 
+        .stat-widget.bdr-teal {
+            border-right-color: #00A59B;
+        }
+
+        .stat-widget.bdr-green {
+            border-right-color: #8CC240;
+        }
+
+        .stat-widget.bdr-ink {
+            border-right-color: #3E4559;
+        }
+
+        .stat-widget.bdr-orange {
+            border-right-color: #f59e0b;
+        }
+
+        .stat-widget.bdr-purple {
+            border-right-color: #8b5cf6;
+        }
+
+        .stat-widget.bdr-red {
+            border-right-color: #ef4444;
+        }
+
         .stat-icon {
-            width: 52px;
-            height: 52px;
+            width: 48px;
+            height: 48px;
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             flex-shrink: 0;
         }
 
@@ -127,22 +176,27 @@
             color: white;
         }
 
+        .stat-icon.red {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
         .stat-info h4 {
             margin: 0;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #8c97a8;
             font-weight: 400;
         }
 
         .stat-info .stat-value {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 800;
             color: #3E4559;
             line-height: 1.2;
         }
 
         .stat-info .stat-sub {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: #8CC240;
             display: flex;
             align-items: center;
@@ -150,23 +204,30 @@
         }
 
         /* Charts Section */
-        .charts-row {
+        .charts-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 20px;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
+        }
+
+        .charts-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
         }
 
         .chart-box {
             background: white;
             border-radius: 16px;
-            padding: 24px;
+            padding: 22px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
 
         .chart-box h3 {
-            margin: 0 0 16px;
-            font-size: 1rem;
+            margin: 0 0 14px;
+            font-size: 0.95rem;
             color: #3E4559;
             display: flex;
             align-items: center;
@@ -175,20 +236,30 @@
 
         .chart-box h3 i {
             color: #00A59B;
+            font-size: 0.9rem;
         }
 
         /* Quick Access */
+        .section-title {
+            font-size: 1.05rem;
+            color: #3E4559;
+            margin: 0 0 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .quick-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 14px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
             margin-bottom: 28px;
         }
 
         .quick-card {
             background: white;
             border-radius: 14px;
-            padding: 20px;
+            padding: 18px;
             text-align: center;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
@@ -205,13 +276,13 @@
         }
 
         .quick-card i {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
+            font-size: 1.6rem;
+            margin-bottom: 8px;
             display: block;
         }
 
         .quick-card span {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 500;
         }
 
@@ -220,19 +291,19 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
         }
 
         .data-box {
             background: white;
             border-radius: 16px;
-            padding: 24px;
+            padding: 22px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
 
         .data-box h3 {
-            margin: 0 0 16px;
-            font-size: 1rem;
+            margin: 0 0 14px;
+            font-size: 0.95rem;
             color: #3E4559;
             display: flex;
             align-items: center;
@@ -242,9 +313,9 @@
         .data-box h3 .badge {
             background: #e7f7f6;
             color: #00A59B;
-            padding: 4px 12px;
+            padding: 3px 10px;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
         }
 
         .mini-table {
@@ -254,16 +325,16 @@
 
         .mini-table th {
             text-align: right;
-            padding: 10px 8px;
-            font-size: 0.75rem;
+            padding: 9px 8px;
+            font-size: 0.72rem;
             color: #8c97a8;
             border-bottom: 1px solid #f0f0f0;
             font-weight: 500;
         }
 
         .mini-table td {
-            padding: 10px 8px;
-            font-size: 0.85rem;
+            padding: 9px 8px;
+            font-size: 0.82rem;
             border-bottom: 1px solid #f8f8f8;
         }
 
@@ -280,7 +351,7 @@
             height: 8px;
             border-radius: 50%;
             display: inline-block;
-            margin-inline-end: 6px;
+            margin-inline-end: 5px;
         }
 
         .status-dot.active {
@@ -291,11 +362,43 @@
             background: #ef4444;
         }
 
+        .pill {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.72rem;
+            font-weight: 500;
+        }
+
+        .pill-green {
+            background: #ecfdf5;
+            color: #059669;
+        }
+
+        .pill-yellow {
+            background: #fffbeb;
+            color: #d97706;
+        }
+
+        .pill-red {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .pill-blue {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .pill-gray {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
         /* Animations */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(16px);
             }
 
             to {
@@ -305,34 +408,49 @@
         }
 
         .animate-in {
-            animation: fadeInUp 0.5s ease forwards;
+            animation: fadeInUp 0.45s ease forwards;
             opacity: 0;
         }
 
         .animate-in:nth-child(1) {
-            animation-delay: 0.05s;
+            animation-delay: 0.03s;
         }
 
         .animate-in:nth-child(2) {
-            animation-delay: 0.1s;
+            animation-delay: 0.06s;
         }
 
         .animate-in:nth-child(3) {
-            animation-delay: 0.15s;
+            animation-delay: 0.09s;
         }
 
         .animate-in:nth-child(4) {
-            animation-delay: 0.2s;
+            animation-delay: 0.12s;
         }
 
         .animate-in:nth-child(5) {
-            animation-delay: 0.25s;
+            animation-delay: 0.15s;
+        }
+
+        .animate-in:nth-child(6) {
+            animation-delay: 0.18s;
+        }
+
+        /* Counter animation */
+        .count-up {
+            transition: all 0.8s ease;
         }
 
         /* Responsive */
+        @media (max-width: 1100px) {
+            .charts-grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 900px) {
 
-            .charts-row,
+            .charts-grid,
             .data-section {
                 grid-template-columns: 1fr;
             }
@@ -341,6 +459,10 @@
                 flex-direction: column;
                 text-align: center;
                 gap: 16px;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             }
         }
     </style>
@@ -380,77 +502,106 @@
 
         <!-- Hero Banner -->
         <div class="dash-hero animate-in">
-            <div>
+            <div class="hero-text">
                 <h2>مرحباً بك في نظام تراوف</h2>
-                <p id="heroSubtitle">نظام إدارة البطاقات والمحافظ الخيرية — لوحة المراقبة الشاملة</p>
+                <p>نظام إدارة البطاقات والمحافظ الخيرية — لوحة المراقبة الشاملة</p>
+                <div class="hero-date" id="heroDate"></div>
             </div>
             <img src="assets/logo.png" alt="TRAOF Logo">
         </div>
 
         <!-- Stats Row -->
         <div class="stats-row">
-            <div class="stat-widget animate-in">
+            <div class="stat-widget bdr-teal animate-in">
                 <div class="stat-icon teal"><i class="fas fa-users"></i></div>
                 <div class="stat-info">
                     <h4>المستفيدون</h4>
-                    <div class="stat-value" id="statBeneficiaries">0</div>
-                    <div class="stat-sub"><i class="fas fa-user-check"></i> <span id="subBenLinked">مسجل</span></div>
+                    <div class="stat-value count-up" id="statBen">0</div>
+                    <div class="stat-sub"><i class="fas fa-user-check"></i> <span id="subBen">مسجل</span></div>
                 </div>
             </div>
-            <div class="stat-widget animate-in">
+            <div class="stat-widget bdr-green animate-in">
                 <div class="stat-icon green"><i class="fas fa-credit-card"></i></div>
                 <div class="stat-info">
-                    <h4>البطاقات النشطة</h4>
-                    <div class="stat-value" id="statActiveCards">0</div>
-                    <div class="stat-sub"><i class="fas fa-layer-group"></i> <span id="subTotalCards">إجمالي 0</span>
-                    </div>
+                    <h4>البطاقات</h4>
+                    <div class="stat-value count-up" id="statCards">0</div>
+                    <div class="stat-sub"><i class="fas fa-check-circle"></i> <span id="subCards">نشط</span></div>
                 </div>
             </div>
-            <div class="stat-widget animate-in">
+            <div class="stat-widget bdr-ink animate-in">
                 <div class="stat-icon ink"><i class="fas fa-wallet"></i></div>
                 <div class="stat-info">
                     <h4>المحافظ</h4>
-                    <div class="stat-value" id="statWallets">0</div>
-                    <div class="stat-sub"><i class="fas fa-coins"></i> <span id="subWalletFunds">0 ريال</span></div>
+                    <div class="stat-value count-up" id="statWallets">0</div>
+                    <div class="stat-sub"><i class="fas fa-coins"></i> <span id="subWallets">ريال</span></div>
                 </div>
             </div>
-            <div class="stat-widget animate-in">
+            <div class="stat-widget bdr-orange animate-in">
                 <div class="stat-icon orange"><i class="fas fa-store"></i></div>
                 <div class="stat-info">
                     <h4>المتاجر</h4>
-                    <div class="stat-value" id="statMerchants">0</div>
-                    <div class="stat-sub"><i class="fas fa-check-circle"></i> <span id="subMerchActive">نشط</span></div>
+                    <div class="stat-value count-up" id="statMerch">0</div>
+                    <div class="stat-sub"><i class="fas fa-toggle-on"></i> <span id="subMerch">نشط</span></div>
                 </div>
             </div>
-            <div class="stat-widget animate-in">
+            <div class="stat-widget bdr-purple animate-in">
                 <div class="stat-icon purple"><i class="fas fa-exchange-alt"></i></div>
                 <div class="stat-info">
                     <h4>العمليات</h4>
-                    <div class="stat-value" id="statTransactions">0</div>
-                    <div class="stat-sub"><i class="fas fa-chart-line"></i> <span id="subTxTotal">0 ريال</span></div>
+                    <div class="stat-value count-up" id="statTx">0</div>
+                    <div class="stat-sub"><i class="fas fa-chart-line"></i> <span id="subTx">إجمالي</span></div>
+                </div>
+            </div>
+            <div class="stat-widget bdr-red animate-in">
+                <div class="stat-icon red"><i class="fas fa-file-invoice-dollar"></i></div>
+                <div class="stat-info">
+                    <h4>أوامر التوريد</h4>
+                    <div class="stat-value count-up" id="statOrders">0</div>
+                    <div class="stat-sub"><i class="fas fa-truck"></i> <span id="subOrders">أمر</span></div>
                 </div>
             </div>
         </div>
 
-        <!-- Charts -->
-        <div class="charts-row">
+        <!-- Row 1: Daily Sales + Wallets Donut -->
+        <div class="charts-grid">
             <div class="chart-box animate-in">
-                <h3><i class="fas fa-chart-bar"></i> المبيعات - آخر 7 أيام</h3>
-                <div style="height:240px; position:relative;">
-                    <canvas id="dashboardChart"></canvas>
+                <h3><i class="fas fa-chart-area"></i> المبيعات اليومية — آخر 30 يوم</h3>
+                <div style="height:260px; position:relative;">
+                    <canvas id="dailySalesChart"></canvas>
                 </div>
             </div>
             <div class="chart-box animate-in">
                 <h3><i class="fas fa-chart-pie"></i> توزيع المحافظ</h3>
-                <div style="height:240px; position:relative;">
+                <div style="height:260px; position:relative;">
                     <canvas id="walletsDonut"></canvas>
                 </div>
             </div>
         </div>
 
+        <!-- Row 2: 3 smaller charts -->
+        <div class="charts-grid-3">
+            <div class="chart-box animate-in">
+                <h3><i class="fas fa-chart-bar"></i> أداء المتاجر</h3>
+                <div style="height:240px; position:relative;">
+                    <canvas id="merchantChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-box animate-in">
+                <h3><i class="fas fa-id-card"></i> حالة البطاقات</h3>
+                <div style="height:240px; position:relative;">
+                    <canvas id="cardsStatusChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-box animate-in">
+                <h3><i class="fas fa-truck"></i> حالة أوامر التوريد</h3>
+                <div style="height:240px; position:relative;">
+                    <canvas id="ordersStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
         <!-- Quick Access -->
-        <h2 style="font-size:1.1rem; color:#3E4559; margin-bottom:14px;"><i class="fas fa-bolt"
-                style="color:#f59e0b;"></i> الوصول السريع</h2>
+        <h2 class="section-title"><i class="fas fa-bolt" style="color:#f59e0b;"></i> الوصول السريع</h2>
         <div class="quick-row">
             <a href="cards.html" class="quick-card animate-in">
                 <i class="fas fa-plus-circle" style="color:#8CC240;"></i>
@@ -472,6 +623,10 @@
                 <i class="fas fa-user-plus" style="color:#8b5cf6;"></i>
                 <span>إضافة مستفيد</span>
             </a>
+            <a href="wallets.html" class="quick-card animate-in">
+                <i class="fas fa-wallet" style="color:#ef4444;"></i>
+                <span>إدارة المحافظ</span>
+            </a>
         </div>
 
         <!-- Data Tables -->
@@ -481,7 +636,7 @@
                 <h3>
                     <span><i class="fas fa-receipt" style="color:#00A59B; margin-inline-end:8px;"></i> آخر
                         العمليات</span>
-                    <span class="badge" id="txBadge">0 عملية</span>
+                    <span class="badge" id="txBadge">0</span>
                 </h3>
                 <table class="mini-table">
                     <thead>
@@ -505,7 +660,7 @@
                 <h3>
                     <span><i class="fas fa-credit-card" style="color:#8CC240; margin-inline-end:8px;"></i> أعلى
                         الأرصدة</span>
-                    <span class="badge" id="cardsBadge">0 بطاقة</span>
+                    <span class="badge" id="cardsBadge">0</span>
                 </h3>
                 <table class="mini-table">
                     <thead>
@@ -525,29 +680,55 @@
             </div>
         </div>
 
-        <!-- Supply Orders Summary -->
-        <div class="data-box animate-in" style="margin-bottom:28px;">
-            <h3>
-                <span><i class="fas fa-file-invoice-dollar" style="color:#f59e0b; margin-inline-end:8px;"></i> آخر أوامر
-                    التوريد</span>
-                <span class="badge" id="ordersBadge">0 أمر</span>
-            </h3>
-            <table class="mini-table">
-                <thead>
-                    <tr>
-                        <th>رقم الأمر</th>
-                        <th>الوصف</th>
-                        <th>الشريك</th>
-                        <th>التكلفة</th>
-                        <th>الحالة</th>
-                    </tr>
-                </thead>
-                <tbody id="ordersBody">
-                    <tr>
-                        <td colspan="5" style="text-align:center; color:#aaa; padding:30px;">لا توجد أوامر</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="data-section">
+            <!-- Supply Orders -->
+            <div class="data-box animate-in">
+                <h3>
+                    <span><i class="fas fa-file-invoice-dollar" style="color:#f59e0b; margin-inline-end:8px;"></i> أوامر
+                        التوريد</span>
+                    <span class="badge" id="ordersBadge">0</span>
+                </h3>
+                <table class="mini-table">
+                    <thead>
+                        <tr>
+                            <th>رقم</th>
+                            <th>الوصف</th>
+                            <th>الشريك</th>
+                            <th>التكلفة</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersBody">
+                        <tr>
+                            <td colspan="5" style="text-align:center; color:#aaa; padding:30px;">لا توجد أوامر</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Top Merchants -->
+            <div class="data-box animate-in">
+                <h3>
+                    <span><i class="fas fa-store" style="color:#8b5cf6; margin-inline-end:8px;"></i> أعلى المتاجر
+                        نشاطاً</span>
+                    <span class="badge" id="merchBadge">0</span>
+                </h3>
+                <table class="mini-table">
+                    <thead>
+                        <tr>
+                            <th>المتجر</th>
+                            <th>الفئة</th>
+                            <th>عدد العمليات</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topMerchBody">
+                        <tr>
+                            <td colspan="4" style="text-align:center; color:#aaa; padding:30px;">لا توجد متاجر</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <footer class="main-footer">
@@ -557,135 +738,297 @@
     </main>
 
     <!-- Scripts -->
-    <script src="script.js?v=5"></script>
+    <script src="script.js?v=6"></script>
     <script>
-        // ===== Dashboard Data Loader =====
-        function loadInteractiveDashboard() {
+        /* ===========================
+           DASHBOARD ENGINE
+        =========================== */
+        const BRAND = { teal: '#00A59B', green: '#8CC240', ink: '#3E4559', orange: '#f59e0b', purple: '#8b5cf6', red: '#ef4444' };
+
+        // --- Counter animation ---
+        function animateCounter(el, target) {
+            let current = 0;
+            const step = Math.max(1, Math.ceil(target / 40));
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) { current = target; clearInterval(timer); }
+                el.textContent = current.toLocaleString('ar-SA');
+            }, 25);
+        }
+
+        // --- Date display ---
+        function setHeroDate() {
+            const el = document.getElementById('heroDate');
+            if (!el) return;
+            const now = new Date();
+            const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            el.textContent = '📅 ' + now.toLocaleDateString('ar-SA', opts);
+        }
+
+        // --- Stats loader ---
+        function loadStats() {
+            const bens = Storage.get('beneficiaries') || [];
             const cards = Storage.get('cards') || [];
             const wallets = Storage.get('wallets') || [];
             const merchants = Storage.get('merchants') || [];
-            const transactions = Storage.get('transactions') || [];
-            const beneficiaries = Storage.get('beneficiaries') || [];
+            const tx = Storage.get('transactions') || [];
             const orders = Storage.get('supply_orders') || [];
 
-            // --- Stats ---
-            document.getElementById('statBeneficiaries').textContent = beneficiaries.length;
-            document.getElementById('subBenLinked').textContent = beneficiaries.length + ' مسجل';
+            animateCounter(document.getElementById('statBen'), bens.length);
+            document.getElementById('subBen').textContent = bens.length + ' مسجل';
 
-            const activeCards = cards.filter(c => c.status === 'نشط' || c.status === 'Active').length;
-            document.getElementById('statActiveCards').textContent = activeCards;
-            document.getElementById('subTotalCards').textContent = `إجمالي ${cards.length}`;
+            const activeCards = cards.filter(c => c.status === 'نشط').length;
+            animateCounter(document.getElementById('statCards'), cards.length);
+            document.getElementById('subCards').textContent = activeCards + ' نشط';
 
-            document.getElementById('statWallets').textContent = wallets.length;
+            animateCounter(document.getElementById('statWallets'), wallets.length);
             const totalFunds = wallets.reduce((s, w) => s + Number(w.funds || 0), 0);
-            document.getElementById('subWalletFunds').textContent = totalFunds.toLocaleString('ar-SA') + ' ريال';
+            document.getElementById('subWallets').textContent = totalFunds.toLocaleString('ar-SA') + ' ريال';
 
             const activeMerch = merchants.filter(m => m.status === 'نشط').length;
-            document.getElementById('statMerchants').textContent = merchants.length;
-            document.getElementById('subMerchActive').textContent = activeMerch + ' نشط';
+            animateCounter(document.getElementById('statMerch'), merchants.length);
+            document.getElementById('subMerch').textContent = activeMerch + ' نشط';
 
-            document.getElementById('statTransactions').textContent = transactions.length;
-            const totalTx = transactions.reduce((s, t) => s + Number(t.amount || 0), 0);
-            document.getElementById('subTxTotal').textContent = totalTx.toLocaleString('ar-SA') + ' ريال';
+            animateCounter(document.getElementById('statTx'), tx.length);
+            const totalTx = tx.reduce((s, t) => s + Number(t.amount || 0), 0);
+            document.getElementById('subTx').textContent = totalTx.toLocaleString('ar-SA') + ' ر.س';
 
-            // --- Recent Transactions Table ---
-            const txBody = document.getElementById('recentTxBody');
-            document.getElementById('txBadge').textContent = transactions.length + ' عملية';
-            if (transactions.length > 0) {
-                const recent = transactions.slice(-5).reverse();
-                txBody.innerHTML = recent.map(t => `
-                    <tr>
-                        <td style="font-family:monospace; font-weight:600">${t.card}</td>
-                        <td>${t.merchant}</td>
-                        <td style="font-weight:600; color:#00A59B">${Number(t.amount).toLocaleString('ar-SA')} ر.س</td>
-                        <td style="color:#8c97a8; font-size:0.8rem">${t.date}</td>
-                    </tr>
-                `).join('');
-            }
-
-            // --- Top Cards Table ---
-            const cardsBody = document.getElementById('topCardsBody');
-            document.getElementById('cardsBadge').textContent = cards.length + ' بطاقة';
-            if (cards.length > 0) {
-                const sorted = [...cards].sort((a, b) => b.balance - a.balance).slice(0, 5);
-                cardsBody.innerHTML = sorted.map(c => `
-                    <tr>
-                        <td>${c.beneficiary}</td>
-                        <td style="font-family:monospace">${c.number}</td>
-                        <td style="font-weight:600">${Number(c.balance).toLocaleString('ar-SA')}</td>
-                        <td><span class="status-dot ${c.status === 'نشط' ? 'active' : 'inactive'}"></span>${c.status}</td>
-                    </tr>
-                `).join('');
-            }
-
-            // --- Supply Orders Table ---
-            const ordBody = document.getElementById('ordersBody');
-            document.getElementById('ordersBadge').textContent = orders.length + ' أمر';
-            if (orders.length > 0) {
-                const statusMap = {
-                    'Completed': '<span style="color:#8CC240">✅ مكتمل</span>',
-                    'Pending': '<span style="color:#f59e0b">⏳ معلق</span>',
-                    'Accepted': '<span style="color:#00A59B">✔ مقبول</span>',
-                    'Rejected': '<span style="color:#ef4444">✗ مرفوض</span>',
-                    'Withdrawn': '<span style="color:#8c97a8">↩ مسحوب</span>'
-                };
-                ordBody.innerHTML = orders.slice(-5).reverse().map(o => `
-                    <tr>
-                        <td style="font-family:monospace; font-weight:600">#${o.id}</td>
-                        <td>${o.item ? o.item.substring(0, 30) + '...' : '-'}</td>
-                        <td>${o.partner}</td>
-                        <td style="font-weight:600">${Number(o.cost).toLocaleString('ar-SA')} ر.س</td>
-                        <td>${statusMap[o.status] || o.status}</td>
-                    </tr>
-                `).join('');
-            }
-
-            // --- Wallets Donut Chart ---
-            buildWalletsDonut(wallets);
+            animateCounter(document.getElementById('statOrders'), orders.length);
+            const completedOrders = orders.filter(o => o.status === 'Completed').length;
+            document.getElementById('subOrders').textContent = completedOrders + ' مكتمل';
         }
 
-        function buildWalletsDonut(wallets) {
-            const el = document.getElementById('walletsDonut');
+        // ===== CHART 1: Daily Sales (Line/Area) =====
+        function buildDailySales() {
+            const el = document.getElementById('dailySalesChart');
             if (!el || typeof Chart === 'undefined') return;
+            const tx = Storage.get('transactions') || [];
+            const labels = [], data = [], now = new Date();
 
-            const labels = wallets.map(w => w.name);
-            const data = wallets.map(w => Number(w.funds || 0));
-            const colors = ['#00A59B', '#8CC240', '#3E4559', '#f59e0b', '#8b5cf6', '#ef4444'];
+            for (let i = 29; i >= 0; i--) {
+                const d = new Date(now); d.setDate(now.getDate() - i);
+                const key = d.toLocaleDateString('ar-SA');
+                const display = d.toLocaleDateString('ar-SA', { day: 'numeric', month: 'numeric' });
+                labels.push(display);
+                data.push(tx.filter(t => t.date === key).reduce((s, t) => s + Number(t.amount || 0), 0));
+            }
 
             new Chart(el.getContext('2d'), {
-                type: 'doughnut',
+                type: 'line',
                 data: {
                     labels,
                     datasets: [{
+                        label: 'المبيعات (ريال)',
                         data,
-                        backgroundColor: colors.slice(0, wallets.length),
-                        borderWidth: 0,
-                        hoverOffset: 8
+                        borderColor: BRAND.teal,
+                        backgroundColor: 'rgba(0,165,155,0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        borderWidth: 2.5,
+                        pointBackgroundColor: BRAND.teal,
+                        pointRadius: 2,
+                        pointHoverRadius: 6
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '65%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                boxWidth: 12,
-                                padding: 12,
-                                font: { family: 'Tajawal', size: 11 }
-                            }
-                        }
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+                        x: { grid: { display: false }, ticks: { maxTicksLimit: 10, font: { size: 10 } } }
                     }
                 }
             });
         }
 
-        // Run on page load (after script.js initializes)
+        // ===== CHART 2: Wallets Donut =====
+        function buildWalletsDonut() {
+            const el = document.getElementById('walletsDonut');
+            if (!el || typeof Chart === 'undefined') return;
+            const wallets = Storage.get('wallets') || [];
+            const colors = [BRAND.teal, BRAND.green, BRAND.ink, BRAND.orange, BRAND.purple, BRAND.red, '#06b6d4', '#ec4899'];
+
+            new Chart(el.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: wallets.map(w => w.name),
+                    datasets: [{ data: wallets.map(w => Number(w.funds || 0)), backgroundColor: colors.slice(0, wallets.length), borderWidth: 0, hoverOffset: 8 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '62%',
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { family: 'Tajawal', size: 10 } } } }
+                }
+            });
+        }
+
+        // ===== CHART 3: Merchant Performance (Horizontal Bar) =====
+        function buildMerchantChart() {
+            const el = document.getElementById('merchantChart');
+            if (!el || typeof Chart === 'undefined') return;
+            const merchants = Storage.get('merchants') || [];
+            const tx = Storage.get('transactions') || [];
+
+            // Count actual transaction volume per merchant
+            const merchTx = {};
+            tx.forEach(t => { merchTx[t.merchant] = (merchTx[t.merchant] || 0) + Number(t.amount || 0); });
+
+            const sorted = merchants.map(m => ({ name: m.name, total: merchTx[m.name] || 0 }))
+                .sort((a, b) => b.total - a.total).slice(0, 8);
+
+            new Chart(el.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(m => m.name),
+                    datasets: [{
+                        label: 'إجمالي المبيعات (ريال)',
+                        data: sorted.map(m => m.total),
+                        backgroundColor: [BRAND.teal, BRAND.green, BRAND.ink, BRAND.orange, BRAND.purple, BRAND.red, '#06b6d4', '#ec4899'],
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+                        y: { grid: { display: false }, ticks: { font: { family: 'Tajawal', size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        // ===== CHART 4: Cards Status (Doughnut) =====
+        function buildCardsStatus() {
+            const el = document.getElementById('cardsStatusChart');
+            if (!el || typeof Chart === 'undefined') return;
+            const cards = Storage.get('cards') || [];
+            const active = cards.filter(c => c.status === 'نشط').length;
+            const suspended = cards.filter(c => c.status === 'موقوف').length;
+            const other = cards.length - active - suspended;
+
+            new Chart(el.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['نشط', 'موقوف', 'أخرى'],
+                    datasets: [{ data: [active, suspended, other], backgroundColor: [BRAND.green, BRAND.red, '#d1d5db'], borderWidth: 0, hoverOffset: 6 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '55%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10, font: { family: 'Tajawal', size: 11 } } }
+                    }
+                }
+            });
+        }
+
+        // ===== CHART 5: Supply Orders Status (Polar Area) =====
+        function buildOrdersStatus() {
+            const el = document.getElementById('ordersStatusChart');
+            if (!el || typeof Chart === 'undefined') return;
+            const orders = Storage.get('supply_orders') || [];
+
+            const statuses = { 'Completed': 0, 'Pending': 0, 'Accepted': 0, 'Rejected': 0, 'Withdrawn': 0 };
+            orders.forEach(o => { if (statuses.hasOwnProperty(o.status)) statuses[o.status]++; });
+            const labels = ['مكتمل', 'معلق', 'مقبول', 'مرفوض', 'مسحوب'];
+            const data = Object.values(statuses);
+            const colors = [BRAND.green, BRAND.orange, BRAND.teal, BRAND.red, '#9ca3af'];
+
+            new Chart(el.getContext('2d'), {
+                type: 'polarArea',
+                data: {
+                    labels,
+                    datasets: [{ data, backgroundColor: colors.map(c => c + 'cc'), borderWidth: 0 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 8, font: { family: 'Tajawal', size: 10 } } } },
+                    scales: { r: { display: false } }
+                }
+            });
+        }
+
+        // ===== DATA TABLES =====
+        function loadTables() {
+            const tx = Storage.get('transactions') || [];
+            const cards = Storage.get('cards') || [];
+            const orders = Storage.get('supply_orders') || [];
+            const merchants = Storage.get('merchants') || [];
+
+            // Recent Transactions (last 8)
+            const txBody = document.getElementById('recentTxBody');
+            document.getElementById('txBadge').textContent = tx.length + ' عملية';
+            if (tx.length > 0) {
+                txBody.innerHTML = tx.slice(-8).reverse().map(t => `
+                    <tr>
+                        <td style="font-family:monospace; font-weight:600; font-size:0.8rem">${t.card}</td>
+                        <td>${t.merchant}</td>
+                        <td style="font-weight:600; color:#00A59B">${Number(t.amount).toLocaleString('ar-SA')} ر.س</td>
+                        <td style="color:#8c97a8; font-size:0.75rem">${t.date}</td>
+                    </tr>`).join('');
+            }
+
+            // Top Cards (by balance)
+            document.getElementById('cardsBadge').textContent = cards.length + ' بطاقة';
+            if (cards.length > 0) {
+                document.getElementById('topCardsBody').innerHTML = [...cards].sort((a, b) => b.balance - a.balance).slice(0, 6).map(c => `
+                    <tr>
+                        <td>${c.beneficiary ? c.beneficiary.split(' ').slice(0, 2).join(' ') : '-'}</td>
+                        <td style="font-family:monospace; font-size:0.8rem">${c.number}</td>
+                        <td style="font-weight:600">${Number(c.balance).toLocaleString('ar-SA')}</td>
+                        <td><span class="status-dot ${c.status === 'نشط' ? 'active' : 'inactive'}"></span>${c.status}</td>
+                    </tr>`).join('');
+            }
+
+            // Supply Orders
+            const statusPills = {
+                'Completed': '<span class="pill pill-green">مكتمل</span>',
+                'Pending': '<span class="pill pill-yellow">معلق</span>',
+                'Accepted': '<span class="pill pill-blue">مقبول</span>',
+                'Rejected': '<span class="pill pill-red">مرفوض</span>',
+                'Withdrawn': '<span class="pill pill-gray">مسحوب</span>'
+            };
+            document.getElementById('ordersBadge').textContent = orders.length + ' أمر';
+            if (orders.length > 0) {
+                document.getElementById('ordersBody').innerHTML = orders.slice(-6).reverse().map(o => `
+                    <tr>
+                        <td style="font-family:monospace; font-weight:600">#${o.id}</td>
+                        <td style="font-size:0.78rem">${(o.item || '').substring(0, 25)}${(o.item || '').length > 25 ? '...' : ''}</td>
+                        <td>${o.partner}</td>
+                        <td style="font-weight:600">${Number(o.cost).toLocaleString('ar-SA')}</td>
+                        <td>${statusPills[o.status] || o.status}</td>
+                    </tr>`).join('');
+            }
+
+            // Top Merchants
+            document.getElementById('merchBadge').textContent = merchants.length + ' متجر';
+            if (merchants.length > 0) {
+                document.getElementById('topMerchBody').innerHTML = [...merchants].sort((a, b) => b.transactions - a.transactions).slice(0, 6).map(m => `
+                    <tr>
+                        <td style="font-weight:500">${m.name}</td>
+                        <td style="font-size:0.78rem; color:#8c97a8">${m.category}</td>
+                        <td style="font-weight:600; color:#8b5cf6">${m.transactions}</td>
+                        <td><span class="status-dot ${m.status === 'نشط' ? 'active' : 'inactive'}"></span>${m.status}</td>
+                    </tr>`).join('');
+            }
+        }
+
+        // ===== INIT =====
         const _origOnload = window.onload;
         window.onload = function () {
             if (_origOnload) _origOnload();
-            setTimeout(loadInteractiveDashboard, 100);
+            setTimeout(() => {
+                setHeroDate();
+                loadStats();
+                buildDailySales();
+                buildWalletsDonut();
+                buildMerchantChart();
+                buildCardsStatus();
+                buildOrdersStatus();
+                loadTables();
+            }, 100);
         };
     </script>
 </body>
