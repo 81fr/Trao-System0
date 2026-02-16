@@ -239,8 +239,8 @@ function initData() {
     }
     if (localStorage.getItem('beneficiaries') === null) {
         Storage.set('beneficiaries', [
-            { id: 1, name: 'محمد أحمد', identity: '1010101010' },
-            { id: 2, name: 'سارة خالد', identity: '2020202020' }
+            { id: 1, name: 'محمد أحمد علي الغامدي', firstName: 'محمد', fatherName: 'أحمد', grandName: 'علي', familyName: 'الغامدي', nationality: 'saudi', identity: '1010101010', mobile: '0512345678', fileNum: 'F001' },
+            { id: 2, name: 'سارة خالد عبدالله الشمري', firstName: 'سارة', fatherName: 'خالد', grandName: 'عبدالله', familyName: 'الشمري', nationality: 'saudi', identity: '2020202020', mobile: '0598765432', fileNum: 'F002' }
         ]);
     }
 }
@@ -432,14 +432,79 @@ const Settings = {
     },
 
     addBeneficiary: () => {
-        const name = document.getElementById('beneficiaryName').value;
-        const id = document.getElementById('beneficiaryID').value;
-        if (!name || !id) { alert('يرجى إدخال البيانات كاملة'); return; }
-        Storage.add('beneficiaries', { id: Date.now(), name, identity: id });
-        document.getElementById('beneficiaryName').value = '';
-        document.getElementById('beneficiaryID').value = '';
+        const firstName = (document.getElementById('benFirstName') || {}).value || '';
+        const fatherName = (document.getElementById('benFatherName') || {}).value || '';
+        const grandName = (document.getElementById('benGrandName') || {}).value || '';
+        const familyName = (document.getElementById('benFamilyName') || {}).value || '';
+        const nationality = document.getElementById('beneficiaryNationality').value;
+        const id = document.getElementById('beneficiaryID').value.trim();
+        const mobile = document.getElementById('beneficiaryMobile').value.trim();
+        const fileNum = document.getElementById('beneficiaryFileNum').value.trim();
+
+        // Build full name from 4 parts
+        let fullName = '';
+        if (firstName || fatherName || grandName || familyName) {
+            if (!firstName.trim() || !fatherName.trim() || !grandName.trim() || !familyName.trim()) {
+                alert('يرجى إدخال الاسم الرباعي كاملاً');
+                return;
+            }
+            fullName = `${firstName.trim()} ${fatherName.trim()} ${grandName.trim()} ${familyName.trim()}`;
+        } else {
+            const oldName = (document.getElementById('beneficiaryName') || {}).value || '';
+            if (!oldName.trim()) { alert('يرجى إدخال الاسم'); return; }
+            fullName = oldName.trim();
+        }
+
+        if (!id || !mobile || !fileNum) {
+            alert('يرجى إدخال رقم الهوية ورقم الجوال ورقم الملف');
+            return;
+        }
+
+        // Identity validation based on nationality
+        const idRules = {
+            'saudi':     { len: 10, label: 'رقم الهوية للسعوديين' },
+            'non_saudi': { len: 10, label: 'رقم الإقامة' },
+            'gulf':      { len: 10, label: 'رقم الهوية الخليجية' }
+        };
+        const rule = idRules[nationality] || idRules['saudi'];
+        if (!/^\d+$/.test(id)) {
+            alert('رقم الهوية يجب أن يحتوي على أرقام فقط');
+            return;
+        }
+        if (id.length !== rule.len) {
+            alert(`${rule.label} يجب أن يتكون من ${rule.len} أرقام`);
+            return;
+        }
+
+        // Phone validation
+        if (!/^05\d{8}$/.test(mobile)) {
+            alert('رقم الجوال يجب أن يبدأ بـ 05 ويتكون من 10 أرقام');
+            return;
+        }
+
+        Storage.add('beneficiaries', {
+            id: Date.now(),
+            name: fullName,
+            firstName: firstName.trim(),
+            fatherName: fatherName.trim(),
+            grandName: grandName.trim(),
+            familyName: familyName.trim(),
+            nationality,
+            identity: id,
+            mobile,
+            fileNum
+        });
+
+        // Clear fields
+        ['benFirstName','benFatherName','benGrandName','benFamilyName','beneficiaryID','beneficiaryMobile','beneficiaryFileNum'].forEach(fid => {
+            const el = document.getElementById(fid);
+            if (el) el.value = '';
+        });
+        document.getElementById('beneficiaryNationality').value = 'saudi';
+        if (typeof updateIdHint === 'function') updateIdHint();
+
         Settings.renderBeneficiaries();
-        alert('تم إضافة المستفيد');
+        alert('تم إضافة المستفيد بنجاح');
     },
 
     deleteBeneficiary: (id) => {
@@ -458,10 +523,14 @@ const Settings = {
         tbody.innerHTML = '';
         bens.forEach(b => {
             const cardCount = cards.filter(c => c.beneficiary === b.name).length;
+            const natDisplay = b.nationality === 'saudi' ? 'سعودي' : (b.nationality === 'non_saudi' ? 'غير سعودي' : '-');
             tbody.innerHTML += `
         <tr>
           <td>${b.name}</td>
+          <td>${natDisplay}</td>
           <td>${b.identity}</td>
+          <td>${b.mobile || '-'}</td>
+          <td>${b.fileNum || '-'}</td>
           <td>${cardCount} بطاقة</td>
           <td><button class="delete-btn" onclick="Settings.deleteBeneficiary(${b.id})"><i class="fas fa-trash"></i></button></td>
         </tr>`;
@@ -1826,3 +1895,19 @@ function injectDummyData() {
     alert('تم تحميل البيانات التجريبية بنجاح!');
     location.reload();
 }
+ 
+ / *   = = = = = = = = = = = = = = = = = = = = = = = = = = =  
+       I N I T I A L I Z A T I O N  
+ = = = = = = = = = = = = = = = = = = = = = = = = = = =   * /  
+ w i n d o w . o n l o a d   =   f u n c t i o n ( )   {  
+         i n i t D a t a ( ) ;  
+         m i g r a t e D a t a ( ) ;  
+         A u t h . c h e c k S e s s i o n ( ) ;  
+         S e t t i n g s . l o a d ( ) ;  
+         l o a d D a s h b o a r d ( ) ;  
+         l o a d U s e r s T a b l e ( ) ;  
+         l o a d C a r d s T a b l e ( ) ;  
+         l o a d W a l l e t s T a b l e ( ) ;  
+         l o a d M e r c h a n t s T a b l e ( ) ;  
+ } ;  
+ 

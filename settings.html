@@ -76,16 +76,73 @@
 
         <div class="form-container">
             <h3><i class="fas fa-users"></i> المستفيدون</h3>
-            <div class="form-group"><label>الاسم</label><input id="beneficiaryName" type="text"></div>
-            <div class="form-group"><label>رقم الهوية</label><input id="beneficiaryID" type="text"></div>
+
+            <!-- الاسم الرباعي - 4 حقول -->
+            <div
+                style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:15px;">
+                <div class="form-group" style="margin:0;">
+                    <label>الاسم الأول</label>
+                    <input id="benFirstName" type="text" placeholder="الاسم الأول">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>اسم الأب</label>
+                    <input id="benFatherName" type="text" placeholder="اسم الأب">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>اسم الجد</label>
+                    <input id="benGrandName" type="text" placeholder="اسم الجد">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>اسم العائلة</label>
+                    <input id="benFamilyName" type="text" placeholder="اسم العائلة">
+                </div>
+            </div>
+
+            <!-- الجنسية -->
+            <div class="form-group">
+                <label>الجنسية</label>
+                <select id="beneficiaryNationality" onchange="updateIdHint()">
+                    <option value="saudi">سعودي</option>
+                    <option value="non_saudi">مقيم (غير سعودي)</option>
+                    <option value="gulf">خليجي</option>
+                </select>
+            </div>
+
+            <!-- رقم الهوية -->
+            <div class="form-group">
+                <label>رقم الهوية / الإقامة</label>
+                <input id="beneficiaryID" type="text" inputmode="numeric" placeholder="أدخل رقم الهوية"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                <small id="idHint" style="color:#888; display:block; margin-top:4px;">
+                    🇸🇦 سعودي: يجب أن يتكون من 10 أرقام
+                </small>
+            </div>
+
+            <!-- رقم الجوال -->
+            <div class="form-group">
+                <label>رقم الجوال</label>
+                <input id="beneficiaryMobile" type="text" inputmode="numeric" maxlength="10" placeholder="05xxxxxxxx"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                <small style="color:#888; display:block; margin-top:4px;">يبدأ بـ 05 ويتكون من 10 أرقام</small>
+            </div>
+
+            <!-- رقم الملف -->
+            <div class="form-group">
+                <label>رقم الملف</label>
+                <input id="beneficiaryFileNum" type="text" placeholder="رقم الملف">
+            </div>
+
             <button onclick="Settings.addBeneficiary()"><i class="fas fa-user-plus"></i> إضافة مستفيد</button>
 
             <div class="table-container" style="margin-top:14px;">
                 <table>
                     <thead>
                         <tr>
-                            <th>الاسم</th>
+                            <th>الاسم الرباعي</th>
+                            <th>الجنسية</th>
                             <th>رقم الهوية</th>
+                            <th>رقم الجوال</th>
+                            <th>رقم الملف</th>
                             <th>عدد البطاقات</th>
                             <th>إجراء</th>
                         </tr>
@@ -94,6 +151,25 @@
                 </table>
             </div>
         </div>
+
+        <script>
+            function updateIdHint() {
+                const nat = document.getElementById('beneficiaryNationality').value;
+                const hint = document.getElementById('idHint');
+                const idInput = document.getElementById('beneficiaryID');
+                const rules = {
+                    'saudi': { text: '🇸🇦 سعودي: يجب أن يتكون من 10 أرقام', max: 10 },
+                    'non_saudi': { text: '🏢 مقيم: يجب أن يتكون من 10 أرقام (رقم الإقامة)', max: 10 },
+                    'gulf': { text: '🌍 خليجي: يجب أن يتكون من 10 أرقام', max: 10 }
+                };
+                const rule = rules[nat] || rules['saudi'];
+                hint.textContent = rule.text;
+                idInput.maxLength = rule.max;
+                idInput.value = idInput.value.substring(0, rule.max);
+            }
+            // Initialize hint on page load
+            document.addEventListener('DOMContentLoaded', updateIdHint);
+        </script>
 
         <div class="form-container" style="border-color: #ffc107; background: #fffdf5;">
             <h3><i class="fas fa-database"></i> بيانات تجريبية</h3>
@@ -107,8 +183,8 @@
             <img src="assets/logo.png" alt="TRAOF Logo">
         </footer>
     </main>
-    <script src="script.js?v=2"></script>
-    <script src="dummy_data.js?v=2"></script>
+    <script src="script.js?v=3"></script>
+    <script src="dummy_data.js?v=3"></script>
 </body>
 
 </html>
