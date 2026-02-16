@@ -1192,296 +1192,145 @@ const POS = {
 =========================== */
 const Orders = {
     create: () => {
-        const item = document.getElementById('orderItem').value;
-        const partner = document.getElementById('orderPartner').value;
-        const cost = document.getElementById('orderCost').value;
-        const notes = document.getElementById('orderNotes').value;
+        try {
+            const item = document.getElementById('orderItem').value;
+            const partner = document.getElementById('orderPartner').value;
+            const cost = document.getElementById('orderCost').value;
+            const notes = document.getElementById('orderNotes').value;
 
-        if (!item || !partner || !cost) return alert('يرجى تعبئة جميع الحقول المطلوبة');
+            if (!item || !partner || !cost) return alert('يرجى تعبئة جميع الحقول المطلوبة (الصنف، الشريك، القيمة)');
 
-        const order = {
-            id: Date.now().toString().slice(-6),
-            item,
-            partner,
-            cost: Number(cost),
-            notes,
-            date: new Date().toLocaleDateString('ar-SA'),
-            status: 'Pending' // Pending, Completed
-        };
+            const order = {
+                id: Date.now().toString().slice(-6),
+                item,
+                partner,
+                cost: Number(cost),
+                notes,
+                date: new Date().toLocaleDateString('ar-SA'),
+                status: 'Pending',
+                rejectionReason: ''
+            };
 
-        Storage.add('supply_orders', order);
-        alert('تم إنشاء أمر التوريد بنجاح');
-        location.reload();
+            Storage.add('supply_orders', order);
+            alert('تم إنشاء أمر التوريد بنجاح');
+            
+            // Reload to show changes
+            location.reload();
+        } catch (e) {
+            console.error(e);
+            alert('حدث خطأ أثناء إنشاء الطلب: ' + e.message);
+        }
     },
 
     load: () => {
-        const tbody = document.getElementById('ordersTableBody');
-        if (!tbody) return;
+        try {
+            const tbody = document.getElementById('ordersTableBody');
+            if (!tbody) return; // Not on orders page
 
-        const orders = Storage.get('supply_orders') || [];
-        tbody.innerHTML = orders.map(o => {
-            let actions = '';
-            let statusBadge = '';
-
-            // Status Logic
-            if (o.status === 'Completed') statusBadge = '<span class="status-badge status-active">منفذ</span>';
-            else if (o.status === 'Pending') statusBadge = '<span class="status-badge" style="background:#ffc107; color:#000">قيد الانتظار</span>';
-            else if (o.status === 'Withdrawn') statusBadge = '<span class="status-badge" style="background:#6c757d; color:#fff">مسحوب</span>';
-            else if (o.status === 'Rejected') statusBadge = `<span class="status-badge" style="background:#dc3545; color:#fff" title="${o.rejectionReason || 'لا يوجد سبب'}">مرفوض</span>`;
-            else if (o.status === 'Cancelled') statusBadge = '<span class="status-badge" style="background:#000; color:#fff">ملغي نهائياً</span>';
-            else statusBadge = `<span class="status-badge">${o.status}</span>`;
-
-            // Actions Logic
-            if (o.status === 'Pending') {
-                actions += `<button onclick="Orders.withdraw('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#ff9800; color:white; border:none; margin-left:5px;">سحب الطلب</button>`;
-                actions += `<button onclick="Orders.execute('${o.id}')" style="padding:5px 10px; font-size:0.8rem;">تنفيذ</button>`;
+            // Ensure data exists
+            let orders = Storage.get('supply_orders');
+            if (!orders || !Array.isArray(orders)) {
+                orders = []; 
+                Storage.set('supply_orders', []);
             }
 
-            if (o.status === 'Accepted') {
-                actions += `<button onclick="Orders.execute('${o.id}')" style="padding:5px 10px; font-size:0.8rem;">تنفيذ</button>`;
-                actions += `<button onclick="Orders.withdraw('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#ff9800; color:white; border:none; margin-left:5px;">سحب الطلب</button>`;
+            // Render table
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#777">لا توجد أوامر توريد حالياً</td></tr>';
+            } else {
+                tbody.innerHTML = orders.map(o => {
+                    if (!o) return ''; // Skip nulls
+                    let actions = '';
+                    let statusBadge = '';
+
+                    // Status Badge
+                    if (o.status === 'Completed') statusBadge = '<span class="status-badge status-active">منفذ</span>';
+                    else if (o.status === 'Pending') statusBadge = '<span class="status-badge" style="background:#ffc107; color:#000">قيد الانتظار</span>';
+                    else if (o.status === 'Withdrawn') statusBadge = '<span class="status-badge" style="background:#6c757d; color:#fff">مسحوب</span>';
+                    else if (o.status === 'Rejected') statusBadge = `<span class="status-badge" style="background:#dc3545; color:#fff" title="${o.rejectionReason || 'لا يوجد سبب'}">مرفوض</span>`;
+                    else if (o.status === 'Cancelled') statusBadge = '<span class="status-badge" style="background:#000; color:#fff">ملغي نهائياً</span>';
+                    else if (o.status === 'Accepted') statusBadge = '<span class="status-badge" style="background:#17a2b8; color:#fff">مقبول</span>';
+                    else statusBadge = `<span class="status-badge">${o.status}</span>`;
+
+                    // Actions
+                    if (o.status === 'Pending') {
+                        actions += `<button onclick="Orders.withdraw('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#ff9800; color:white; border:none; margin-inline-end:5px;">سحب</button>`;
+                        actions += `<button onclick="Orders.execute('${o.id}')" style="padding:5px 10px; font-size:0.8rem; margin-inline-end:5px;">تنفيذ</button>`;
+                    }
+                    if (o.status === 'Accepted') {
+                        actions += `<button onclick="Orders.execute('${o.id}')" style="padding:5px 10px; font-size:0.8rem; margin-inline-end:5px;">تنفيذ</button>`;
+                        actions += `<button onclick="Orders.withdraw('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#ff9800; color:white; border:none; margin-inline-end:5px;">سحب</button>`;
+                    }
+                    if (o.status === 'Rejected') {
+                        actions += `<button onclick="Orders.reopen('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#17a2b8; color:white; border:none; margin-inline-end:5px;">إعادة فتح</button>`;
+                        actions += `<button onclick="Orders.cancelFinal('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#343a40; color:white; border:none; margin-inline-end:5px;">إلغاء</button>`;
+                    }
+
+                    actions += `<button class="secondary" onclick="Orders.printInvoice('${o.id}')" style="padding:5px 10px; font-size:0.8rem; margin-inline-end:5px;"><i class="fas fa-print"></i></button>`;
+                    
+                    if (['Pending','Withdrawn','Cancelled'].includes(o.status) || !o.status) {
+                        actions += `<button class="secondary" onclick="Orders.delete('${o.id}')" style="padding:5px 10px; font-size:0.8rem; color:red; border-color:red; margin-inline-end:5px;"><i class="fas fa-trash"></i></button>`;
+                    }
+
+                    return `
+                    <tr>
+                        <td>#${o.id}</td>
+                        <td>${o.item} ${o.status==='Rejected'?('<br><small style="color:red">'+(o.rejectionReason||'')+'</small>'):''}</td>
+                        <td style="font-weight:600;color:#00A59B">${o.partner || "—"}</td>
+                        <td>${Number(o.cost||0).toLocaleString('ar-SA')} ريال</td>
+                        <td>${o.date}</td>
+                        <td>${statusBadge}</td>
+                        <td>${actions}</td>
+                    </tr>`;
+                }).join('');
             }
 
-            if (o.status === 'Rejected') {
-                actions += `<button onclick="Orders.reopen('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#17a2b8; color:white; border:none; margin-left:5px;">إعادة فتح</button>`;
-                actions += `<button onclick="Orders.cancelFinal('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#343a40; color:white; border:none;">إلغاء نهائي</button>`;
-            }
+            // Populate merchants dropdown
+            Orders.populateMerchants();
 
-            actions += `<button class="secondary" onclick="Orders.printInvoice('${o.id}')" style="padding:5px 10px; font-size:0.8rem; margin-right:5px;"><i class="fas fa-print"></i> فاتورة</button>`;
-
-            // Allow delete for non-critical states or admin
-            if (o.status === 'Pending' || o.status === 'Withdrawn' || o.status === 'Cancelled') {
-                actions += `<button class="secondary" onclick="Orders.delete('${o.id}')" style="padding:5px 10px; font-size:0.8rem; color:red; border-color:red; margin-right:5px;">حذف</button>`;
-            }
-
-            return `
-            <tr>
-                <td>#${o.id}</td>
-                <td>${o.item}
-                    ${o.status === 'Rejected' ? `<br><small style="color:red">سبب الرفض: ${o.rejectionReason}</small>` : ''}
-                </td>
-                <td>${o.partner || "—"}</td>
-                <td>${Number(o.cost).toFixed(2)} ريال</td>
-                <td>${o.date}</td>
-                <td>${statusBadge}</td>
-                <td>${actions}</td>
-            </tr>
-        `}).join('');
-
-        Orders.populateMerchants();
-    },
-
-    execute: (id) => {
-        if (!confirm('هل أنت متأكد من تنفيذ هذا الأمر؟ سيتحول إلى مكتمل.')) return;
-        const orders = Storage.get('supply_orders') || [];
-        const order = orders.find(o => o.id === id);
-        if (order) {
-            order.status = 'Completed';
-            Storage.set('supply_orders', orders);
-            Orders.load();
+        } catch (e) {
+            console.error('Orders.load error:', e);
+            const tbody = document.getElementById('ordersTableBody');
+            if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="color:red;text-align:center">حدث خطأ في تحميل البيانات: ${e.message}</td></tr>`;
         }
     },
 
-    delete: (id) => {
-        if (!confirm('هل أنت متأكد من حذف هذا الأمر؟')) return;
-        let orders = Storage.get('supply_orders') || [];
-        orders = orders.filter(o => o.id !== id);
-        Storage.set('supply_orders', orders);
-        Orders.load();
-    },
-
-    printInvoice: (id) => {
-        const orders = Storage.get('supply_orders') || [];
-        const order = orders.find(o => o.id === id);
-        if (!order) return;
-
-        const printWindow = window.open('', '', 'width=800,height=600');
-        printWindow.document.write(`
-            <html lang="ar" dir="rtl">
-            <head>
-                <title>فاتورة أمر توريد #${order.id}</title>
-                <style>
-                    body { font-family: 'Tahoma', sans-serif; padding: 20px; }
-                    .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 20px; }
-                    .details { margin-bottom: 20px; font-size: 1.1rem; line-height: 1.8; }
-                    .footer { margin-top: 50px; text-align: center; font-size: 0.9rem; color: #555; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                    th, td { border: 1px solid #ddd; padding: 10px; text-align: right; }
-                    th { background-color: #f9f9f9; }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h2>فاتورة أمر توريد</h2>
-                    <p>جمعية رعاية الأيتام - تراوف</p>
-                </div>
-                <div class="details">
-                    <p><strong>رقم الأمر:</strong> #${order.id}</p>
-                    <p><strong>تاريخ الأمر:</strong> ${order.date}</p>
-                    <p><strong>الشريك المنفذ:</strong> ${order.partner}</p>
-                    <p><strong>حالة الطلب:</strong> ${order.status === 'Completed' ? 'منفذ ومكتمل' : 'قيد الانتظار'}</p>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>الصنف / الخدمة</th>
-                            <th>الملاحظات</th>
-                            <th>التكلفة</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>${order.item}</td>
-                            <td>${order.notes || '-'}</td>
-                            <td>${Number(order.cost).toFixed(2)} ريال</td>
-                        </tr>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <th colspan="2">الإجمالي</th>
-                            <th>${Number(order.cost).toFixed(2)} ريال</th>
-                        </tr>
-                    </tfoot>
-                </table>
-                <div class="footer">
-                    <p>تم استخراج هذه الفاتورة إلكترونياً من نظام تراوف</p>
-                </div>
-                <script>window.print();</script>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
-    },
-
-    populateMerchants: () => {
-        const select = document.getElementById('orderPartner');
-        if (!select) return;
-        const merchants = Storage.get('merchants') || [];
-        if (select.options.length <= 1) {
-            merchants.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m.name;
-                opt.text = m.name;
-                select.appendChild(opt);
-            });
-        }
-    },
-
-    loadForMerchant: (merchantName) => {
-        const tbody = document.getElementById('merchantOrdersTable');
-        if (!tbody) return;
-
-        const allOrders = Storage.get('supply_orders') || [];
-        const myOrders = allOrders.filter(o => o.partner === merchantName && o.status !== 'Withdrawn' && o.status !== 'Cancelled');
-
-        if (myOrders.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">لا توجد أوامر توريد واردة</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = myOrders.map(o => {
-            let actions = '';
-            let statusBadge = '';
-
-            if (o.status === 'Pending') {
-                actions = `
-                    <button onclick="Orders.updateStatus('${o.id}', 'Accepted')" style="padding:5px 10px; font-size:0.8rem; background-color:#28a745; color:white; border:none; border-radius:4px; margin-left:5px;">قبول</button>
-                    <button onclick="Orders.reject('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#dc3545; color:white; border:none; border-radius:4px;">رفض</button>
-                `;
-                statusBadge = '<span class="status-badge">قيد الانتظار</span>';
-            } else if (o.status === 'Accepted') {
-                actions = `<button onclick="Orders.updateStatus('${o.id}', 'Completed')" style="padding:5px 10px; font-size:0.8rem; background-color:#007bff; color:white; border:none; border-radius:4px;">تنفيذ</button>`;
-                statusBadge = '<span class="status-badge" style="background:#17a2b8; color:#fff">مقبول</span>';
-            } else if (o.status === 'Completed') {
-                actions = '<span style="color:green;"><i class="fas fa-check"></i> مكتمل</span>';
-                statusBadge = '<span class="status-badge status-active">منفذ</span>';
-            } else if (o.status === 'Rejected') {
-                actions = '<span style="color:red;"><i class="fas fa-times"></i> مرفوض</span>';
-                statusBadge = '<span class="status-badge" style="background:#dc3545; color:#fff">مرفوض</span>';
-            }
-
-            return `
-            <tr>
-                <td>#${o.id}</td>
-                <td>${o.item}</td>
-                <td>${Number(o.cost).toFixed(2)} ريال</td>
-                <td>${o.date}</td>
-                <td>${statusBadge}</td>
-                <td>${actions}</td>
-            </tr>
-        `}).join('');
-    },
-
-    updateStatus: (id, newStatus, reason = null) => {
-        const actionMap = { 'Accepted': 'قبول', 'Rejected': 'رفض', 'Completed': 'تنفيذ', 'Withdrawn': 'سحب', 'Pending': 'إعادة فتح', 'Cancelled': 'إلغاء' };
-        const actionName = actionMap[newStatus] || newStatus;
-
-        // Skip confirm for Withdraw/Reject/Reopen as they might have their own prompt or flow, 
-        // but for basic updateStatus usage via buttons, we keep it.
-        // However, since we call this from buttons directly, let's keep confirm unless it's a programmatic call.
-        // We can check if reason is passed or logic flow implies it.
-
-        let orders = Storage.get('supply_orders') || [];
-        const index = orders.findIndex(o => o.id === id);
-        if (index === -1) return;
-
-        orders[index].status = newStatus;
-        if (reason) orders[index].rejectionReason = reason;
-        if (newStatus === 'Pending') delete orders[index].rejectionReason; // Clear reason if reopened
-
-        Storage.set('supply_orders', orders);
-        alert(`تم ${actionName} الطلب بنجاح`);
-        location.reload();
-    },
+    currentWithdrawId: null,
 
     withdraw: (id) => {
-        // Open Modal
-        const modal = document.getElementById('withdrawModal');
-        if (!modal) return;
-
         Orders.currentWithdrawId = id;
-
-        // Populate reassignment dropdown
-        const select = document.getElementById('reassignPartnerSelect');
-        if (select) {
-            select.innerHTML = '<option value="">اختر شريكاً جديداً...</option>';
-            const merchants = Storage.get('merchants') || [];
-            merchants.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m.name;
-                opt.text = m.name;
-                select.appendChild(opt);
-            });
-        }
-
-        modal.classList.add('active'); // active class triggers display block in css
-        if (modal.style.display !== 'block') modal.style.display = 'block'; // Fallback if css class missing
+        document.getElementById('withdrawModal').style.display = 'flex';
+        Orders.populateReassignDropdown();
     },
 
     closeWithdrawModal: () => {
-        const modal = document.getElementById('withdrawModal');
-        if (modal) {
-            modal.classList.remove('active');
-            modal.style.display = 'none';
-        }
+        document.getElementById('withdrawModal').style.display = 'none';
         Orders.currentWithdrawId = null;
+    },
+
+    populateReassignDropdown: () => {
+        const select = document.getElementById('reassignPartnerSelect');
+        if (!select) return;
+        const merchants = Storage.get('merchants') || [];
+        select.innerHTML = '<option value="">اختر شريكاً جديداً...</option>';
+        merchants.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.name;
+            opt.text = m.name;
+            select.appendChild(opt);
+        });
     },
 
     confirmReassign: () => {
         const id = Orders.currentWithdrawId;
         const newPartner = document.getElementById('reassignPartnerSelect').value;
-
-        if (!newPartner) return alert('يرجى اختيار شريك جديد للإسناد');
-
-        if (!confirm(`هل أنت متأكد من إسناد الطلب للشريك الجديد: ${newPartner}؟`)) return;
+        if (!newPartner) return alert('يرجى اختيار شريك جديد');
 
         let orders = Storage.get('supply_orders') || [];
         const index = orders.findIndex(o => o.id === id);
         if (index !== -1) {
             orders[index].partner = newPartner;
-            orders[index].status = 'Pending'; // Reset to Pending just in case
-            delete orders[index].rejectionReason;
-
+            orders[index].status = 'Pending'; // Reset to pending
             Storage.set('supply_orders', orders);
             alert('تم إسناد الطلب للشريك الجديد بنجاح');
             Orders.closeWithdrawModal();
@@ -1504,23 +1353,105 @@ const Orders = {
         }
     },
 
-    reject: (id) => {
-        const reason = prompt('يرجى إدخال سبب الرفض:');
-        if (reason === null) return; // Cancelled
-        if (!reason.trim()) return alert('يجب ذكر سبب الرفض');
-        Orders.updateStatus(id, 'Rejected', reason);
+    delete: (id) => {
+        if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return;
+        let orders = Storage.get('supply_orders') || [];
+        orders = orders.filter(o => o.id !== id);
+        Storage.set('supply_orders', orders);
+        Orders.load();
     },
 
+    printInvoice: (id) => {
+        const orders = Storage.get('supply_orders') || [];
+        const order = orders.find(o => o.id === id);
+        if (!order) return;
+
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>فاتورة أمر توريد #${order.id}</title>
+                <style>
+                    body { font-family: 'Tajawal', sans-serif; direction: rtl; padding: 40px; }
+                    .header { text-align: center; margin-bottom: 40px; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+                    .details { font-size: 1.1rem; line-height: 1.8; }
+                    .total { margin-top: 30px; font-size: 1.5rem; font-weight: bold; border-top: 2px solid #000; padding-top: 10px; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>فاتورة أمر توريد</h1>
+                    <p>رقم الأمر: #${order.id}</p>
+                    <p>التاريخ: ${order.date}</p>
+                </div>
+                <div class="details">
+                    <p><strong>الصنف/الخدمة:</strong> ${order.item}</p>
+                    <p><strong>الشريك المنفذ:</strong> ${order.partner}</p>
+                    <p><strong>الحالة:</strong> ${order.status}</p>
+                    <div class="total">الإجمالي: ${Number(order.cost).toLocaleString('ar-SA')} ريال</div>
+                </div>
+                <script>window.print();</script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    },
+
+    populateMerchants: () => {
+        const select = document.getElementById('orderPartner');
+        if (!select) return;
+        
+        // Always refresh options to ensure they are up to date
+        // But keep the first "select..." option
+        select.innerHTML = '<option value="">اختر الشريك...</option>';
+        
+        let merchants = Storage.get('merchants') || [];
+        // Fallback if no merchants
+        if (merchants.length === 0) {
+             merchants = [{name: 'غير محدد'}];
+        }
+
+        merchants.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.name;
+            opt.text = m.name;
+            select.appendChild(opt);
+        });
+    },
+
+    execute: (id) => {
+        if (!confirm('هل أنت متأكد من تنفيذ هذا الطلب؟')) return;
+        let orders = Storage.get('supply_orders') || [];
+        const index = orders.findIndex(o => o.id === id);
+        if (index !== -1) {
+            orders[index].status = 'Completed';
+            Storage.set('supply_orders', orders);
+            Orders.load();
+        }
+    },
+    
     reopen: (id) => {
-        if (!confirm('هل أنت متأكد من إعادة فتح هذا الطلب؟ سيعود لحالة الانتظار.')) return;
-        Orders.updateStatus(id, 'Pending');
+        if (!confirm('هل أنت متأكد من إعادة فتح هذا الطلب؟')) return;
+        let orders = Storage.get('supply_orders') || [];
+        const index = orders.findIndex(o => o.id === id);
+        if (index !== -1) {
+            orders[index].status = 'Pending';
+            Storage.set('supply_orders', orders);
+            Orders.load();
+        }
     },
-
-    cancelFinal: (id) => {
-        if (!confirm('هل أنت متأكد من إلغاء هذا الطلب نهائياً؟')) return;
-        Orders.updateStatus(id, 'Cancelled');
+    
+    updateStatus: (id, status, reason) => {
+        let orders = Storage.get('supply_orders') || [];
+        const index = orders.findIndex(o => o.id === id);
+        if (index !== -1) {
+            orders[index].status = status;
+            if (reason) orders[index].rejectionReason = reason;
+            Storage.set('supply_orders', orders);
+            Orders.load();
+        }
     }
-};
+};;
 
 /* ===========================
    ONLOAD CONTROLLER
