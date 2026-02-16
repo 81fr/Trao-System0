@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>فحص النظام الشامل - تراوف</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: #f0f2f5;
+            padding: 24px;
+            color: #3E4559
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 24px;
+            color: #00A59B;
+            font-size: 1.5rem
+        }
+
+        .actions {
+            text-align: center;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap
+        }
+
+        .btn {
+            padding: 10px 22px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Tajawal';
+            font-size: .9rem;
+            font-weight: 600;
+            transition: all .2s
+        }
+
+        .btn-teal {
+            background: linear-gradient(135deg, #00A59B, #8CC240);
+            color: white
+        }
+
+        .btn-red {
+            background: #ef4444;
+            color: white
+        }
+
+        .btn-blue {
+            background: #3b82f6;
+            color: white
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .15)
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, .05)
+        }
+
+        .card h3 {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: .95rem
+        }
+
+        .test-row {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: .85rem
+        }
+
+        .test-row:last-child {
+            border: none
+        }
+
+        .test-name {
+            flex: 1
+        }
+
+        .test-status {
+            min-width: 90px;
+            text-align: center;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: .75rem;
+            font-weight: 600
+        }
+
+        .pass {
+            background: #ecfdf5;
+            color: #059669
+        }
+
+        .fail {
+            background: #fef2f2;
+            color: #dc2626
+        }
+
+        .warn {
+            background: #fffbeb;
+            color: #d97706
+        }
+
+        .info {
+            background: #eff6ff;
+            color: #2563eb
+        }
+
+        .details {
+            font-size: .78rem;
+            color: #8c97a8;
+            margin-top: 2px
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px
+        }
+
+        .sbox {
+            background: white;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .04)
+        }
+
+        .sbox .sv {
+            font-size: 1.6rem;
+            font-weight: 800
+        }
+
+        .sbox .sl {
+            font-size: .72rem;
+            color: #8c97a8
+        }
+
+        .s-green .sv {
+            color: #059669
+        }
+
+        .s-red .sv {
+            color: #dc2626
+        }
+
+        .s-blue .sv {
+            color: #3b82f6
+        }
+
+        .s-orange .sv {
+            color: #d97706
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px
+        }
+
+        th {
+            text-align: right;
+            padding: 8px;
+            font-size: .72rem;
+            color: #8c97a8;
+            background: #fafbfc;
+            border-bottom: 2px solid #eee
+        }
+
+        td {
+            padding: 8px;
+            font-size: .82rem;
+            border-bottom: 1px solid #f5f5f5
+        }
+
+        .log {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 10px;
+            padding: 14px;
+            font-family: monospace;
+            font-size: .78rem;
+            max-height: 200px;
+            overflow-y: auto;
+            direction: ltr;
+            text-align: left
+        }
+
+        .log .ok {
+            color: #4ade80
+        }
+
+        .log .err {
+            color: #f87171
+        }
+
+        .log .wrn {
+            color: #fbbf24
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 فحص النظام الشامل — TRAOF System Check</h1>
+
+    <div class="actions">
+        <button class="btn btn-red" onclick="clearAndReload()">🗑 مسح البيانات وإعادة تحميل</button>
+        <button class="btn btn-teal" onclick="runAllTests()">▶ تشغيل جميع الفحوصات</button>
+        <button class="btn btn-blue" onclick="createTestOrders()">📦 إنشاء أوامر توريد تجريبية</button>
+    </div>
+
+    <div class="summary" id="summaryBox"></div>
+
+    <div class="card">
+        <h3>📦 فحص أوامر التوريد</h3>
+        <div id="ordersTests"></div>
+    </div>
+
+    <div class="card">
+        <h3>💾 فحص البيانات المخزنة</h3>
+        <div id="dataTests"></div>
+    </div>
+
+    <div class="card">
+        <h3>📄 فحص الصفحات</h3>
+        <div id="pageTests"></div>
+    </div>
+
+    <div class="card">
+        <h3>📦 جدول أوامر التوريد الحالية</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>الصنف</th>
+                    <th>الشريك المنفذ</th>
+                    <th>القيمة</th>
+                    <th>التاريخ</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody id="ordersTable"></tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>📋 سجل الفحص</h3>
+        <div class="log" id="logBox"></div>
+    </div>
+
+    <script>
+        // ====== Storage Helper ======
+        const Storage = {
+            get: (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+            set: (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+            add: (k, item) => { const arr = Storage.get(k) || []; arr.push(item); Storage.set(k, arr); }
+        };
+
+        let log = [];
+        function addLog(msg, type = 'ok') {
+            log.push({ msg, type });
+            const box = document.getElementById('logBox');
+            box.innerHTML = log.map(l => `<div class="${l.type}">${l.type === 'ok' ? '✅' : l.type === 'err' ? '❌' : '⚠️'} ${l.msg}</div>`).join('');
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function addTest(containerId, name, passed, detail = '') {
+            const div = document.getElementById(containerId);
+            div.innerHTML += `<div class="test-row">
+            <div class="test-name">${name}${detail ? '<div class="details">' + detail + '</div>' : ''}</div>
+            <div class="test-status ${passed === true ? 'pass' : passed === false ? 'fail' : 'warn'}">${passed === true ? '✅ ناجح' : passed === false ? '❌ فاشل' : '⚠️ تحذير'}</div>
+        </div>`;
+        }
+
+        function clearAndReload() {
+            localStorage.clear();
+            addLog('تم مسح جميع البيانات من localStorage', 'ok');
+            alert('تم مسح البيانات! سيتم إعادة تحميل الصفحة...');
+            location.reload();
+        }
+
+        function createTestOrders() {
+            addLog('بدء إنشاء أوامر توريد تجريبية...', 'ok');
+
+            // Ensure merchants exist
+            let merchants = Storage.get('merchants');
+            if (!merchants || merchants.length === 0) {
+                merchants = [
+                    { id: 101, name: 'أسواق العثيم', category: 'مواد غذائية', transactions: 245, status: 'نشط' },
+                    { id: 102, name: 'بندة', category: 'مواد غذائية', transactions: 198, status: 'نشط' },
+                    { id: 103, name: 'الدانوب', category: 'مواد غذائية', transactions: 145, status: 'نشط' },
+                    { id: 104, name: 'التميمي', category: 'مواد غذائية', transactions: 88, status: 'نشط' },
+                    { id: 201, name: 'سنتربوينت', category: 'ملابس', transactions: 176, status: 'نشط' },
+                    { id: 202, name: 'إكسترا', category: 'إلكترونيات', transactions: 82, status: 'نشط' },
+                    { id: 301, name: 'صيدلية النهدي', category: 'أدوية', transactions: 310, status: 'نشط' },
+                    { id: 302, name: 'مكتبة جرير', category: 'مستلزمات مدرسية', transactions: 67, status: 'نشط' },
+                    { id: 303, name: 'المنيع', category: 'إلكترونيات', transactions: 43, status: 'نشط' },
+                    { id: 304, name: 'ماكس', category: 'ملابس', transactions: 95, status: 'نشط' },
+                    { id: 305, name: 'صيدلية الدواء', category: 'أدوية', transactions: 120, status: 'نشط' },
+                    { id: 306, name: 'ايكيا', category: 'أثاث', transactions: 35, status: 'نشط' },
+                    { id: 307, name: 'ساكو', category: 'أدوات منزلية', transactions: 52, status: 'نشط' },
+                    { id: 308, name: 'هوم سنتر', category: 'أثاث', transactions: 28, status: 'نشط' }
+                ];
+                Storage.set('merchants', merchants);
+                addLog('تم إنشاء 14 متجر', 'ok');
+            }
+
+            const testOrders = [
+                { id: '100201', item: 'توريد سلال غذائية (أرز، سكر، زيت) - 500 سلة', partner: 'أسواق العثيم', cost: 15000, date: '2024-01-05', status: 'Completed' },
+                { id: '100202', item: 'توريد بطانيات شتوية (200 بطانية)', partner: 'سنتربوينت', cost: 8000, date: '2024-01-10', status: 'Completed' },
+                { id: '100203', item: 'توريد أجهزة تكييف سبليت (15 جهاز)', partner: 'إكسترا', cost: 25000, date: '2024-02-01', status: 'Completed' },
+                { id: '100204', item: 'صيانة مستودع الجمعية وتجديد الأرفف', partner: 'ساكو', cost: 4500, date: '2024-02-15', status: 'Rejected', rejectionReason: 'السعر مرتفع جداً مقارنة بالسوق' },
+                { id: '100205', item: 'توريد ملابس أطفال صيفية (300 قطعة)', partner: 'ماكس', cost: 12000, date: '2024-03-01', status: 'Completed' },
+                { id: '100206', item: 'كوبونات شرائية للعائلات المحتاجة', partner: 'الدانوب', cost: 50000, date: '2024-03-15', status: 'Withdrawn' },
+                { id: '100207', item: 'توريد أدوية أطفال ومكملات غذائية', partner: 'صيدلية النهدي', cost: 18000, date: '2024-04-01', status: 'Completed' },
+                { id: '100208', item: 'حقائب مدرسية وأدوات قرطاسية (500 طالب)', partner: 'مكتبة جرير', cost: 9500, date: '2024-04-20', status: 'Completed' },
+                { id: '100209', item: 'توريد مواد تنظيف ومعقمات', partner: 'بندة', cost: 5200, date: '2024-05-10', status: 'Accepted' },
+                { id: '100210', item: 'توريد ثلاجات للعائلات المحتاجة (20 ثلاجة)', partner: 'إكسترا', cost: 32000, date: '2024-06-01', status: 'Pending' },
+                { id: '100211', item: 'أدوات كهربائية منزلية (غسالات + مكانس)', partner: 'المنيع', cost: 21000, date: '2024-06-15', status: 'Completed' },
+                { id: '100212', item: 'ملابس شتوية نسائية ورجالية', partner: 'سنتربوينت', cost: 14000, date: '2024-07-01', status: 'Accepted' },
+                { id: '100213', item: 'أثاث منزلي أساسي (أسرّة وخزائن)', partner: 'ايكيا', cost: 45000, date: '2024-07-20', status: 'Completed' },
+                { id: '100214', item: 'أدوات مطبخ ومستلزمات طبخ', partner: 'ساكو', cost: 7800, date: '2024-08-05', status: 'Completed' },
+                { id: '100215', item: 'سجاد ومفروشات للعائلات الجديدة', partner: 'هوم سنتر', cost: 19000, date: '2024-08-20', status: 'Pending' },
+                { id: '100216', item: 'لوازم مدرسية للفصل الدراسي الثاني', partner: 'مكتبة جرير', cost: 11000, date: '2024-09-01', status: 'Accepted' },
+                { id: '100217', item: 'توريد حليب أطفال ومواد غذائية خاصة', partner: 'التميمي', cost: 22000, date: '2024-09-15', status: 'Completed' },
+                { id: '100218', item: 'أجهزة تدفئة للشتاء (50 جهاز)', partner: 'إكسترا', cost: 17500, date: '2024-10-01', status: 'Pending' }
+            ];
+
+            Storage.set('supply_orders', testOrders);
+            addLog(`تم إنشاء ${testOrders.length} أمر توريد تجريبي`, 'ok');
+
+            // Verify
+            const saved = Storage.get('supply_orders');
+            if (saved && saved.length === testOrders.length) {
+                addLog('✅ تم التحقق: جميع الأوامر محفوظة بنجاح', 'ok');
+                // Check all have partners
+                const withPartner = saved.filter(o => o.partner && o.partner.length > 0);
+                addLog(`✅ ${withPartner.length} من ${saved.length} أمر لديهم شريك منفذ`, 'ok');
+            } else {
+                addLog('❌ فشل حفظ بعض الأوامر', 'err');
+            }
+
+            alert('✅ تم إنشاء 18 أمر توريد تجريبي!\nاذهب الآن إلى صفحة أوامر التوريد للتحقق.');
+            renderOrdersTable();
+            runAllTests();
+        }
+
+        function renderOrdersTable() {
+            const orders = Storage.get('supply_orders') || [];
+            const tbody = document.getElementById('ordersTable');
+            const statusMap = {
+                'Completed': '<span style="background:#ecfdf5;color:#059669;padding:2px 8px;border-radius:10px;font-size:.72rem">مكتمل</span>',
+                'Pending': '<span style="background:#fffbeb;color:#d97706;padding:2px 8px;border-radius:10px;font-size:.72rem">معلق</span>',
+                'Accepted': '<span style="background:#eff6ff;color:#2563eb;padding:2px 8px;border-radius:10px;font-size:.72rem">مقبول</span>',
+                'Rejected': '<span style="background:#fef2f2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:.72rem">مرفوض</span>',
+                'Withdrawn': '<span style="background:#f3f4f6;color:#6b7280;padding:2px 8px;border-radius:10px;font-size:.72rem">مسحوب</span>'
+            };
+            tbody.innerHTML = orders.length ? orders.map((o, i) => `<tr>
+            <td>${i + 1}</td>
+            <td>${o.item || '—'}</td>
+            <td style="font-weight:600;color:#00A59B">${o.partner || '<span style="color:red">❌ فارغ</span>'}</td>
+            <td>${Number(o.cost || 0).toLocaleString('ar-SA')} ر.س</td>
+            <td>${o.date || '—'}</td>
+            <td>${statusMap[o.status] || o.status}</td>
+        </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px">لا توجد أوامر توريد</td></tr>';
+        }
+
+        function runAllTests() {
+            // Clear previous
+            ['ordersTests', 'dataTests', 'pageTests'].forEach(id => document.getElementById(id).innerHTML = '');
+            log = [];
+            document.getElementById('logBox').innerHTML = '';
+            addLog('بدء فحص النظام الشامل...', 'ok');
+
+            // ===== DATA TESTS =====
+            const keys = ['users', 'beneficiaries', 'cards', 'wallets', 'merchants', 'transactions', 'supply_orders'];
+            let totalPass = 0, totalFail = 0, totalWarn = 0;
+
+            keys.forEach(key => {
+                const data = Storage.get(key);
+                const exists = data && Array.isArray(data) && data.length > 0;
+                addTest('dataTests', key, exists, exists ? `${data.length} عنصر` : 'لا توجد بيانات');
+                if (exists) { totalPass++; addLog(`${key}: ${data.length} عنصر`, 'ok'); }
+                else { totalFail++; addLog(`${key}: لا توجد بيانات!`, 'err'); }
+            });
+
+            // Check customLabels
+            const labels = Storage.get('customLabels');
+            addTest('dataTests', 'customLabels', !!labels, labels ? 'موجود' : 'غير موجود');
+            if (labels) totalPass++; else totalWarn++;
+
+            // ===== ORDERS TESTS =====
+            const orders = Storage.get('supply_orders') || [];
+            addTest('ordersTests', 'وجود أوامر توريد', orders.length > 0, `${orders.length} أمر`);
+
+            // Test partner field
+            const withPartner = orders.filter(o => o.partner && o.partner.trim().length > 0);
+            const partnerOk = withPartner.length === orders.length;
+            addTest('ordersTests', 'حقل الشريك المنفذ', partnerOk,
+                `${withPartner.length} من ${orders.length} أوامر لديها شريك`);
+            if (!partnerOk) {
+                const missing = orders.filter(o => !o.partner || o.partner.trim().length === 0);
+                missing.forEach(o => addLog(`أمر #${o.id} بدون شريك منفذ!`, 'err'));
+            }
+
+            // Test statuses
+            const statuses = {};
+            orders.forEach(o => { statuses[o.status] = (statuses[o.status] || 0) + 1; });
+            addTest('ordersTests', 'توزيع الحالات', true,
+                Object.entries(statuses).map(s => `${s[0]}: ${s[1]}`).join(' | '));
+
+            // Test cost field
+            const withCost = orders.filter(o => o.cost && Number(o.cost) > 0);
+            addTest('ordersTests', 'حقل القيمة', withCost.length === orders.length,
+                `${withCost.length} أوامر بقيمة صحيحة`);
+
+            // Test date field
+            const withDate = orders.filter(o => o.date && o.date.length > 0);
+            addTest('ordersTests', 'حقل التاريخ', withDate.length === orders.length,
+                `${withDate.length} أوامر بتاريخ صحيح`);
+
+            // Test item field
+            const withItem = orders.filter(o => o.item && o.item.length > 0);
+            addTest('ordersTests', 'حقل الصنف', withItem.length === orders.length,
+                `${withItem.length} أوامر بوصف صحيح`);
+
+            // Test merchants exist and match partners
+            const merchants = Storage.get('merchants') || [];
+            addTest('ordersTests', 'المتاجر المسجلة', merchants.length > 0,
+                `${merchants.length} متجر`);
+            const merchantNames = merchants.map(m => m.name);
+            const partnerMatch = orders.filter(o => merchantNames.includes(o.partner));
+            addTest('ordersTests', 'تطابق الشركاء مع المتاجر',
+                partnerMatch.length >= orders.length * 0.8,
+                `${partnerMatch.length} من ${orders.length} شريك مطابق لمتجر مسجل`);
+
+            // Total cost
+            const totalCost = orders.reduce((s, o) => s + Number(o.cost || 0), 0);
+            addTest('ordersTests', 'إجمالي قيمة الأوامر', true,
+                totalCost.toLocaleString('ar-SA') + ' ر.س');
+
+            // ===== PAGE TESTS =====
+            const pages = [
+                'index.html', 'orders.html', 'reports.html', 'cards.html',
+                'wallets.html', 'merchants.html', 'pos.html', 'users.html',
+                'settings.html', 'support.html'
+            ];
+            pages.forEach(page => {
+                // We check if the page can be fetched
+                const xhr = new XMLHttpRequest();
+                xhr.open('HEAD', page, false);
+                try {
+                    xhr.send();
+                    const ok = xhr.status === 200 || xhr.status === 304;
+                    addTest('pageTests', page, ok, ok ? 'متاح' : `خطأ ${xhr.status}`);
+                    if (ok) totalPass++; else totalFail++;
+                    addLog(`${page}: ${ok ? 'متاح' : 'خطأ ' + xhr.status}`, ok ? 'ok' : 'err');
+                } catch (e) {
+                    addTest('pageTests', page, null, 'تعذر الوصول');
+                    totalWarn++;
+                    addLog(`${page}: تعذر الوصول`, 'wrn');
+                }
+            });
+
+            // Check script.js and style.css
+            ['script.js', 'style.css', 'dummy_data.js'].forEach(file => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('HEAD', file, false);
+                try {
+                    xhr.send();
+                    const ok = xhr.status === 200;
+                    addTest('pageTests', file, ok, ok ? 'متاح' : `خطأ ${xhr.status}`);
+                    addLog(`${file}: ${ok ? 'متاح' : 'خطأ'}`, ok ? 'ok' : 'err');
+                } catch (e) { addTest('pageTests', file, null, 'تعذر'); }
+            });
+
+            // ===== SUMMARY =====
+            const statsCompleted = (statuses['Completed'] || 0);
+            const statsPending = (statuses['Pending'] || 0);
+            const statsAccepted = (statuses['Accepted'] || 0);
+
+            document.getElementById('summaryBox').innerHTML = `
+            <div class="sbox s-green"><div class="sv">${totalPass}</div><div class="sl">ناجح</div></div>
+            <div class="sbox s-red"><div class="sv">${totalFail}</div><div class="sl">فاشل</div></div>
+            <div class="sbox s-orange"><div class="sv">${totalWarn}</div><div class="sl">تحذير</div></div>
+            <div class="sbox s-blue"><div class="sv">${orders.length}</div><div class="sl">أمر توريد</div></div>
+            <div class="sbox s-green"><div class="sv">${statsCompleted}</div><div class="sl">مكتمل</div></div>
+            <div class="sbox s-orange"><div class="sv">${statsPending}</div><div class="sl">معلق</div></div>
+            <div class="sbox s-blue"><div class="sv">${statsAccepted}</div><div class="sl">مقبول</div></div>
+            <div class="sbox s-green"><div class="sv">${merchants.length}</div><div class="sl">متجر</div></div>
+        `;
+
+            addLog('انتهى فحص النظام ✅', 'ok');
+            renderOrdersTable();
+        }
+
+        // Auto-run on load
+        window.onload = () => {
+            renderOrdersTable();
+            runAllTests();
+        };
+    </script>
+</body>
+
+</html>
