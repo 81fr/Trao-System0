@@ -155,7 +155,20 @@ const Auth = {
     },
 
     updateSidebar: () => {
-        if (!Auth.user || Auth.user.role === 'admin') return;
+        if (!Auth.user) return;
+
+        // Admin Specific: Add System Check Link
+        if (Auth.user.role === 'admin') {
+            const ul = document.querySelector('.nav-links');
+            if (ul && !document.getElementById('sysCheckLink')) {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="test_system.html" id="sysCheckLink" style="color:#ffc107"><i class="fas fa-microchip"></i> فحص النظام</a>`;
+                const logout = document.getElementById('logoutBtn')?.parentElement; 
+                if (logout) ul.insertBefore(li, logout);
+                else ul.appendChild(li);
+            }
+            return;
+        }
 
         const links = document.querySelectorAll('.nav-links li a');
         const role = Auth.user.role;
@@ -496,9 +509,9 @@ const Settings = {
 
         // Identity validation based on nationality
         const idRules = {
-            'saudi':     { len: 10, label: 'رقم الهوية للسعوديين' },
+            'saudi': { len: 10, label: 'رقم الهوية للسعوديين' },
             'non_saudi': { len: 10, label: 'رقم الإقامة' },
-            'gulf':      { len: 10, label: 'رقم الهوية الخليجية' }
+            'gulf': { len: 10, label: 'رقم الهوية الخليجية' }
         };
         const rule = idRules[nationality] || idRules['saudi'];
         if (!/^\d+$/.test(id)) {
@@ -530,7 +543,7 @@ const Settings = {
         });
 
         // Clear fields
-        ['benFirstName','benFatherName','benGrandName','benFamilyName','beneficiaryID','beneficiaryMobile','beneficiaryFileNum'].forEach(fid => {
+        ['benFirstName', 'benFatherName', 'benGrandName', 'benFamilyName', 'beneficiaryID', 'beneficiaryMobile', 'beneficiaryFileNum'].forEach(fid => {
             const el = document.getElementById(fid);
             if (el) el.value = '';
         });
@@ -1213,7 +1226,7 @@ const Orders = {
 
             Storage.add('supply_orders', order);
             alert('تم إنشاء أمر التوريد بنجاح');
-            
+
             // Reload to show changes
             location.reload();
         } catch (e) {
@@ -1230,7 +1243,7 @@ const Orders = {
             // Ensure data exists
             let orders = Storage.get('supply_orders');
             if (!orders || !Array.isArray(orders)) {
-                orders = []; 
+                orders = [];
                 Storage.set('supply_orders', []);
             }
 
@@ -1267,17 +1280,17 @@ const Orders = {
                     }
 
                     actions += `<button class="secondary" onclick="Orders.printInvoice('${o.id}')" style="padding:5px 10px; font-size:0.8rem; margin-inline-end:5px;"><i class="fas fa-print"></i></button>`;
-                    
-                    if (['Pending','Withdrawn','Cancelled'].includes(o.status) || !o.status) {
+
+                    if (['Pending', 'Withdrawn', 'Cancelled'].includes(o.status) || !o.status) {
                         actions += `<button class="secondary" onclick="Orders.delete('${o.id}')" style="padding:5px 10px; font-size:0.8rem; color:red; border-color:red; margin-inline-end:5px;"><i class="fas fa-trash"></i></button>`;
                     }
 
                     return `
                     <tr>
                         <td>#${o.id}</td>
-                        <td>${o.item} ${o.status==='Rejected'?('<br><small style="color:red">'+(o.rejectionReason||'')+'</small>'):''}</td>
+                        <td>${o.item} ${o.status === 'Rejected' ? ('<br><small style="color:red">' + (o.rejectionReason || '') + '</small>') : ''}</td>
                         <td style="font-weight:600;color:#00A59B">${o.partner || "—"}</td>
-                        <td>${Number(o.cost||0).toLocaleString('ar-SA')} ريال</td>
+                        <td>${Number(o.cost || 0).toLocaleString('ar-SA')} ريال</td>
                         <td>${o.date}</td>
                         <td>${statusBadge}</td>
                         <td>${actions}</td>
@@ -1400,15 +1413,15 @@ const Orders = {
     populateMerchants: () => {
         const select = document.getElementById('orderPartner');
         if (!select) return;
-        
+
         // Always refresh options to ensure they are up to date
         // But keep the first "select..." option
         select.innerHTML = '<option value="">اختر الشريك...</option>';
-        
+
         let merchants = Storage.get('merchants') || [];
         // Fallback if no merchants
         if (merchants.length === 0) {
-             merchants = [{name: 'غير محدد'}];
+            merchants = [{ name: 'غير محدد' }];
         }
 
         merchants.forEach(m => {
@@ -1429,7 +1442,7 @@ const Orders = {
             Orders.load();
         }
     },
-    
+
     reopen: (id) => {
         if (!confirm('هل أنت متأكد من إعادة فتح هذا الطلب؟')) return;
         let orders = Storage.get('supply_orders') || [];
@@ -1440,7 +1453,7 @@ const Orders = {
             Orders.load();
         }
     },
-    
+
     updateStatus: (id, status, reason) => {
         let orders = Storage.get('supply_orders') || [];
         const index = orders.findIndex(o => o.id === id);
@@ -1881,7 +1894,7 @@ function injectDummyData() {
 /* ===========================
    INITIALIZATION
 =========================== */
-window.onload = function() {
+window.onload = function () {
     initData();
     migrateData();
     Auth.checkSession();
