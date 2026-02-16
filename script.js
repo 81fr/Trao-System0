@@ -216,14 +216,48 @@ function initData() {
     }
     if (localStorage.getItem('merchants') === null) {
         Storage.set('merchants', [
-            { id: 101, name: 'سوبرماركت الرياض', category: 'مواد غذائية', transactions: 12, status: 'نشط' },
-            { id: 201, name: 'متجر الملابس العصرية', category: 'ملابس', transactions: 5, status: 'نشط' }
+            { id: 101, name: 'أسواق العثيم', category: 'مواد غذائية', transactions: 245, status: 'نشط' },
+            { id: 102, name: 'بندة', category: 'مواد غذائية', transactions: 198, status: 'نشط' },
+            { id: 103, name: 'الدانوب', category: 'مواد غذائية', transactions: 145, status: 'نشط' },
+            { id: 104, name: 'التميمي', category: 'مواد غذائية', transactions: 88, status: 'نشط' },
+            { id: 201, name: 'سنتربوينت', category: 'ملابس', transactions: 176, status: 'نشط' },
+            { id: 202, name: 'إكسترا', category: 'إلكترونيات', transactions: 82, status: 'نشط' },
+            { id: 301, name: 'صيدلية النهدي', category: 'أدوية', transactions: 310, status: 'نشط' },
+            { id: 302, name: 'مكتبة جرير', category: 'مستلزمات مدرسية', transactions: 67, status: 'نشط' },
+            { id: 303, name: 'المنيع', category: 'إلكترونيات', transactions: 43, status: 'نشط' },
+            { id: 304, name: 'ماكس', category: 'ملابس', transactions: 95, status: 'نشط' },
+            { id: 305, name: 'صيدلية الدواء', category: 'أدوية', transactions: 120, status: 'نشط' },
+            { id: 306, name: 'ايكيا', category: 'أثاث', transactions: 35, status: 'نشط' },
+            { id: 307, name: 'ساكو', category: 'أدوات منزلية', transactions: 52, status: 'نشط' },
+            { id: 308, name: 'هوم سنتر', category: 'أثاث', transactions: 28, status: 'نشط' }
         ]);
     }
     if (localStorage.getItem('transactions') === null) {
         Storage.set('transactions', [
-            { id: 101, card: '10001001', amount: 50, date: '2023-10-25', merchant: 'سوبرماركت الرياض' },
-            { id: 102, card: '10001002', amount: 200, date: '2023-10-26', merchant: 'متجر الملابس العصرية' }
+            { id: 101, card: '10001001', amount: 50, date: '2023-10-25', merchant: 'أسواق العثيم' },
+            { id: 102, card: '10001002', amount: 200, date: '2023-10-26', merchant: 'سنتربوينت' }
+        ]);
+    }
+    if (localStorage.getItem('supply_orders') === null) {
+        Storage.set('supply_orders', [
+            { id: '100201', item: 'توريد سلال غذائية (أرز، سكر، زيت) - 500 سلة', partner: 'أسواق العثيم', cost: 15000, date: '2024-01-05', status: 'Completed' },
+            { id: '100202', item: 'توريد بطانيات شتوية (200 بطانية)', partner: 'سنتربوينت', cost: 8000, date: '2024-01-10', status: 'Completed' },
+            { id: '100203', item: 'توريد أجهزة تكييف سبليت (15 جهاز)', partner: 'إكسترا', cost: 25000, date: '2024-02-01', status: 'Completed' },
+            { id: '100204', item: 'صيانة مستودع الجمعية وتجديد الأرفف', partner: 'ساكو', cost: 4500, date: '2024-02-15', status: 'Rejected', rejectionReason: 'السعر مرتفع جداً مقارنة بالسوق' },
+            { id: '100205', item: 'توريد ملابس أطفال صيفية (300 قطعة)', partner: 'ماكس', cost: 12000, date: '2024-03-01', status: 'Completed' },
+            { id: '100206', item: 'كوبونات شرائية للعائلات المحتاجة', partner: 'الدانوب', cost: 50000, date: '2024-03-15', status: 'Withdrawn' },
+            { id: '100207', item: 'توريد أدوية أطفال ومكملات غذائية', partner: 'صيدلية النهدي', cost: 18000, date: '2024-04-01', status: 'Completed' },
+            { id: '100208', item: 'حقائب مدرسية وأدوات قرطاسية (500 طالب)', partner: 'مكتبة جرير', cost: 9500, date: '2024-04-20', status: 'Completed' },
+            { id: '100209', item: 'توريد مواد تنظيف ومعقمات', partner: 'بندة', cost: 5200, date: '2024-05-10', status: 'Accepted' },
+            { id: '100210', item: 'توريد ثلاجات للعائلات المحتاجة (20 ثلاجة)', partner: 'إكسترا', cost: 32000, date: '2024-06-01', status: 'Pending' },
+            { id: '100211', item: 'أدوات كهربائية منزلية (غسالات + مكانس)', partner: 'المنيع', cost: 21000, date: '2024-06-15', status: 'Completed' },
+            { id: '100212', item: 'ملابس شتوية نسائية ورجالية', partner: 'سنتربوينت', cost: 14000, date: '2024-07-01', status: 'Accepted' },
+            { id: '100213', item: 'أثاث منزلي أساسي (أسرّة وخزائن)', partner: 'ايكيا', cost: 45000, date: '2024-07-20', status: 'Completed' },
+            { id: '100214', item: 'أدوات مطبخ ومستلزمات طبخ', partner: 'ساكو', cost: 7800, date: '2024-08-05', status: 'Completed' },
+            { id: '100215', item: 'سجاد ومفروشات للعائلات الجديدة', partner: 'هوم سنتر', cost: 19000, date: '2024-08-20', status: 'Pending' },
+            { id: '100216', item: 'لوازم مدرسية للفصل الدراسي الثاني', partner: 'مكتبة جرير', cost: 11000, date: '2024-09-01', status: 'Accepted' },
+            { id: '100217', item: 'توريد حليب أطفال ومواد غذائية خاصة', partner: 'التميمي', cost: 22000, date: '2024-09-15', status: 'Completed' },
+            { id: '100218', item: 'أجهزة تدفئة للشتاء (50 جهاز)', partner: 'إكسترا', cost: 17500, date: '2024-10-01', status: 'Pending' }
         ]);
     }
     if (localStorage.getItem('customLabels') === null) {
