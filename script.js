@@ -1878,12 +1878,24 @@ function injectDummyData() {
     ];
 
     const supplyOrders = [
-        { id: '100201', item: 'توريد سلال غذائية (أرز، سكر، زيت)', partner: 'أسواق العثيم', cost: 15000, date: '2023-10-01', status: 'Completed' },
-        { id: '100202', item: 'توريد بطانيات شتوية', partner: 'سنتربوينت', cost: 8000, date: '2023-10-05', status: 'Pending' },
-        { id: '100203', item: 'توريد أجهزة تكييف', partner: 'إكسترا', cost: 25000, date: '2023-10-10', status: 'Pending' },
-        { id: '100204', item: 'صيانة مستودع الجمعية', partner: 'خدمات إلكترونية', cost: 4500, date: '2023-10-12', status: 'Rejected', rejectionReason: 'السعر مرتفع جداً مقارنة بالسوق' },
-        { id: '100205', item: 'توريد ملابس أطفال', partner: 'ماكس', cost: 12000, date: '2023-10-15', status: 'Accepted' },
-        { id: '100206', item: 'كوبونات شرائية', partner: 'الدانوب', cost: 50000, date: '2023-10-20', status: 'Withdrawn' }
+        { id: '100201', item: 'توريد سلال غذائية (أرز، سكر، زيت) - 500 سلة', partner: 'أسواق العثيم', cost: 15000, date: '2024-01-05', status: 'Completed' },
+        { id: '100202', item: 'توريد بطانيات شتوية (200 بطانية)', partner: 'سنتربوينت', cost: 8000, date: '2024-01-10', status: 'Completed' },
+        { id: '100203', item: 'توريد أجهزة تكييف سبليت (15 جهاز)', partner: 'إكسترا', cost: 25000, date: '2024-02-01', status: 'Completed' },
+        { id: '100204', item: 'صيانة مستودع الجمعية وتجديد الأرفف', partner: 'خدمات إلكترونية', cost: 4500, date: '2024-02-15', status: 'Rejected', rejectionReason: 'السعر مرتفع جداً مقارنة بالسوق' },
+        { id: '100205', item: 'توريد ملابس أطفال صيفية (300 قطعة)', partner: 'ماكس', cost: 12000, date: '2024-03-01', status: 'Completed' },
+        { id: '100206', item: 'كوبونات شرائية للعائلات المحتاجة', partner: 'الدانوب', cost: 50000, date: '2024-03-15', status: 'Withdrawn' },
+        { id: '100207', item: 'توريد أدوية أطفال ومكملات غذائية', partner: 'صيدلية النهدي', cost: 18000, date: '2024-04-01', status: 'Completed' },
+        { id: '100208', item: 'حقائب مدرسية وأدوات قرطاسية (500 طالب)', partner: 'مكتبة جرير', cost: 9500, date: '2024-04-20', status: 'Completed' },
+        { id: '100209', item: 'توريد مواد تنظيف ومعقمات', partner: 'بندة', cost: 5200, date: '2024-05-10', status: 'Accepted' },
+        { id: '100210', item: 'توريد ثلاجات للعائلات المحتاجة (20 ثلاجة)', partner: 'إكسترا', cost: 32000, date: '2024-06-01', status: 'Pending' },
+        { id: '100211', item: 'أدوات كهربائية منزلية (غسالات + مكانس)', partner: 'المنيع', cost: 21000, date: '2024-06-15', status: 'Completed' },
+        { id: '100212', item: 'ملابس شتوية نسائية ورجالية', partner: 'سنتربوينت', cost: 14000, date: '2024-07-01', status: 'Accepted' },
+        { id: '100213', item: 'أثاث منزلي أساسي (أسرّة وخزائن)', partner: 'ايكيا', cost: 45000, date: '2024-07-20', status: 'Completed' },
+        { id: '100214', item: 'أدوات مطبخ ومستلزمات طبخ', partner: 'ساكو', cost: 7800, date: '2024-08-05', status: 'Completed' },
+        { id: '100215', item: 'سجاد ومفروشات للعائلات الجديدة', partner: 'هوم سنتر', cost: 19000, date: '2024-08-20', status: 'Pending' },
+        { id: '100216', item: 'لوازم مدرسية للفصل الدراسي الثاني', partner: 'مكتبة جرير', cost: 11000, date: '2024-09-01', status: 'Accepted' },
+        { id: '100217', item: 'توريد حليب أطفال ومواد غذائية خاصة', partner: 'التميمي', cost: 22000, date: '2024-09-15', status: 'Completed' },
+        { id: '100218', item: 'أجهزة تدفئة للشتاء (50 جهاز)', partner: 'إكسترا', cost: 17500, date: '2024-10-01', status: 'Pending' }
     ];
 
     Storage.set('users', [{ id: 1, name: 'مدير النظام', username: 'admin', password: '123', role: 'admin' }, { id: 2, name: 'تاجر', username: 'merchant', password: '123', role: 'merchant' }]);
