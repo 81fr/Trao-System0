@@ -1895,19 +1895,18 @@ function injectDummyData() {
     alert('تم تحميل البيانات التجريبية بنجاح!');
     location.reload();
 }
- 
- / *   = = = = = = = = = = = = = = = = = = = = = = = = = = =  
-       I N I T I A L I Z A T I O N  
- = = = = = = = = = = = = = = = = = = = = = = = = = = =   * /  
- w i n d o w . o n l o a d   =   f u n c t i o n ( )   {  
-         i n i t D a t a ( ) ;  
-         m i g r a t e D a t a ( ) ;  
-         A u t h . c h e c k S e s s i o n ( ) ;  
-         S e t t i n g s . l o a d ( ) ;  
-         l o a d D a s h b o a r d ( ) ;  
-         l o a d U s e r s T a b l e ( ) ;  
-         l o a d C a r d s T a b l e ( ) ;  
-         l o a d W a l l e t s T a b l e ( ) ;  
-         l o a d M e r c h a n t s T a b l e ( ) ;  
- } ;  
- 
+
+/* ===========================
+   INITIALIZATION
+=========================== */
+window.onload = function() {
+    initData();
+    migrateData();
+    Auth.checkSession();
+    Settings.load();
+    loadDashboard();
+    loadUsersTable();
+    loadCardsTable();
+    loadWalletsTable();
+    loadMerchantsTable();
+};
