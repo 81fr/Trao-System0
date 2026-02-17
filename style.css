@@ -631,3 +631,33 @@ body.layout-top .main-content {
   color: #f57f17;
   border-color: #ffecb3;
 }
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(100%);
+    z-index: 1000;
+    transition: transform 0.3s ease;
+  }
+  .sidebar.active {
+    transform: translateX(0);
+  }
+  .main-content {
+    margin-inline-start: 0 !important;
+    padding: 16px;
+  }
+  .sidebar-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none;
+  }
+  .sidebar-overlay.active { display: block; }
+  .mobile-toggle {
+    display: block !important;
+    font-size: 1.5rem;
+    cursor: pointer;
+    background: none; border: none; color: var(--brand-ink);
+  }
+  /* Fix Tables */
+  table { display: block; overflow-x: auto; white-space: nowrap; }
+  /* Fix Grid */
+  .dashboard-grid { grid-template-columns: 1fr; }
+}
+.mobile-toggle { display: none; }
