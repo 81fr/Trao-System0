@@ -1414,37 +1414,39 @@ const Orders = {
         const select = document.getElementById('orderPartner');
         if (!select) return;
         
-        // Always refresh options to ensure they are up to date
+        // Always refresh options
         select.innerHTML = '<option value="">اختر الشريك...</option>';
         
         let merchants = Storage.get('merchants') || [];
-        // Fallback if no merchants: Auto-seed initial data
-        if (!merchants || merchants.length === 0) {
-             merchants = [
-                { id: 101, name: 'أسواق العثيم', category: 'مواد غذائية', transactions: 245, status: 'نشط' },
-                { id: 102, name: 'بندة', category: 'مواد غذائية', transactions: 198, status: 'نشط' },
-                { id: 103, name: 'الدانوب', category: 'مواد غذائية', transactions: 145, status: 'نشط' },
-                { id: 104, name: 'التميمي', category: 'مواد غذائية', transactions: 88, status: 'نشط' },
-                { id: 201, name: 'سنتربوينت', category: 'ملابس', transactions: 176, status: 'نشط' },
-                { id: 202, name: 'إكسترا', category: 'إلكترونيات', transactions: 82, status: 'نشط' },
-                { id: 301, name: 'صيدلية النهدي', category: 'أدوية', transactions: 310, status: 'نشط' },
-                { id: 302, name: 'مكتبة جرير', category: 'مستلزمات مدرسية', transactions: 67, status: 'نشط' },
-                { id: 303, name: 'المنيع', category: 'إلكترونيات', transactions: 43, status: 'نشط' },
-                { id: 304, name: 'ماكس', category: 'ملابس', transactions: 95, status: 'نشط' },
-                { id: 305, name: 'صيدلية الدواء', category: 'أدوية', transactions: 120, status: 'نشط' },
-                { id: 306, name: 'ايكيا', category: 'أثاث', transactions: 35, status: 'نشط' },
-                { id: 307, name: 'ساكو', category: 'أدوات منزلية', transactions: 52, status: 'نشط' },
-                { id: 308, name: 'هوم سنتر', category: 'أثاث', transactions: 28, status: 'نشط' }
-             ];
-             Storage.set('merchants', merchants);
+        
+        // Filter only Active merchants
+        const activeMerchants = merchants.filter(m => m.status === 'نشط' || m.status === 'Active');
+        
+        // Sort alphabetically
+        activeMerchants.sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+
+        if (activeMerchants.length === 0) {
+             // Fallback if no active merchants found (show all or seed?)
+             // Let's fallback to showing all if none active, or just keep empty
+             if (merchants.length > 0) {
+                 // Show all if none active
+                 merchants.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.name;
+                    opt.text = m.name + ' (' + m.status + ')';
+                    select.appendChild(opt);
+                 });
+             }
+             return;
         }
 
-        merchants.forEach(m => {
+        activeMerchants.forEach(m => {
             const opt = document.createElement('option');
             opt.value = m.name;
             opt.text = m.name;
             select.appendChild(opt);
         });
+        console.log('Populated ' + activeMerchants.length + ' active merchants');
     },
 
     execute: (id) => {
