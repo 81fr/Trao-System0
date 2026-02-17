@@ -628,6 +628,18 @@ const Settings = {
    ACTIONS
 =========================== */
 const Actions = {
+    addWalletFunds: (id) => {
+        const amount = prompt('أدخل المبلغ للإيداع:');
+        if(!amount || isNaN(amount)) return;
+        let wallets = Storage.get('wallets') || [];
+        const w = wallets.find(x => x.id === id);
+        if(w) {
+            w.funds = parseFloat(w.funds || 0) + parseFloat(amount);
+            w.collected = parseFloat(w.collected || 0) + parseFloat(amount);
+            Storage.set('wallets', wallets);
+            loadWalletsTable();
+        }
+    },
     addCard: () => {
         const id = document.getElementById('editingCardId').value;
         const number = document.getElementById('cardNumInput').value;
@@ -872,34 +884,87 @@ function loadCardsTable() {
 
 function loadWalletsTable() {
     const wallets = Storage.get('wallets') || [];
-    const tbody = document.getElementById('walletsTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+    const container = document.getElementById('walletsGrid');
+    if (!container) return;
+    container.innerHTML = '';
+    
     wallets.forEach(w => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-      <td>${w.name}</td>
-      <td>${w.funds} ريال</td>
-      <td>${w.merchants}</td>
-      <td><span class="status-badge status-active">${w.status}</span></td>`;
-        tbody.appendChild(tr);
+        // Safe defaults
+        const collected = (w.collected !== undefined) ? w.collected : 0;
+        const target = (w.target !== undefined) ? w.target : 50000;
+        const funds = (w.funds !== undefined) ? w.funds : 0;
+        const percent = Math.min(100, Math.round((collected / target) * 100));
+        
+        const card = document.createElement('div');
+        card.className = 'wallet-card';
+        card.innerHTML = `
+            <div class="card-menu-btn"><i class="fas fa-ellipsis-v"></i></div>
+            <div class="card-icon" style="background:${w.color || '#00A59B'}">
+                <i class="${w.icon || 'fas fa-wallet'}"></i>
+            </div>
+            <span class="wallet-category">${w.category || 'عام'}</span>
+            <h3>${w.name}</h3>
+            <div style="font-size:1.8rem; font-weight:bold; color:#333; margin-bottom:10px;">
+                ${Number(funds).toLocaleString('ar-SA')} <small style="font-size:1rem;color:#777">ريال</small>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-labels">
+                    <span>المحقق: ${Number(collected).toLocaleString('ar-SA')}</span>
+                    <span>الهدف: ${Number(target).toLocaleString('ar-SA')}</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width:${percent}%; background:${w.color || '#00A59B'}"></div>
+                </div>
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-top:16px;">
+                 <button class="secondary" style="flex:1" onclick="alert('تفاصيل المحفظة قريباً')">التفاصيل</button>
+                 <button style="flex:1; background:${w.color || '#00A59B'}; color:white; border:none;" onclick="Actions.addWalletFunds(${w.id})">إيداع</button>
+            </div>
+        `;
+        container.appendChild(card);
     });
 }
 
 function loadMerchantsTable() {
     const merchants = Storage.get('merchants') || [];
-    const tbody = document.getElementById('merchantsTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+    const container = document.getElementById('merchantsGrid');
+    if (!container) return;
+    container.innerHTML = '';
+    
     merchants.forEach(m => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-      <td>${m.id}</td>
-      <td>${m.name}</td>
-      <td>${m.category}</td>
-      <td>${m.transactions}</td>
-      <td><span class="status-badge status-active">${m.status}</span></td>`;
-        tbody.appendChild(tr);
+        const isActive = (m.status === 'نشط' || m.status === 'Active');
+        const badge = isActive ? 
+            '<span class="badge-gold" style="background:#e6fffa; color:#00A59B; border-color:#b2f5ea">نشط</span>' : 
+            '<span class="badge-gold" style="background:#fff5f5; color:#c53030; border-color:#feb2b2">غير نشط</span>';
+            
+        const card = document.createElement('div');
+        card.className = 'merchant-card';
+        card.innerHTML = `
+            <div class="card-menu-btn"><i class="fas fa-ellipsis-v"></i></div>
+            <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:16px;">
+                <img src="${m.logo || 'assets/logo.png'}" style="width:50px; height:50px; border-radius:8px; object-fit:contain; border:1px solid #eee;">
+                ${badge}
+            </div>
+            
+            <h3>${m.name}</h3>
+            <p style="color:#777; font-size:0.9rem; margin-bottom:16px;">${m.category || 'عام'}</p>
+            
+            <div class="merchant-contact">
+                <div class="contact-row"><i class="fas fa-map-marker-alt"></i> <span>${m.location || 'الرياض'}</span></div>
+                <div class="contact-row"><i class="fas fa-user-tie"></i> <span>${m.contactPerson || '-'}</span></div>
+                <div class="contact-row"><i class="fas fa-phone"></i> <span>${m.phone || '-'}</span></div>
+                <div class="contact-row"><i class="fas fa-envelope"></i> <span>${m.email || '-'}</span></div>
+            </div>
+            
+            <div style="margin-top:20px; text-align:center;">
+                <button class="secondary" style="width:100%" onclick="alert('عرض سجل العمليات')">
+                    <i class="fas fa-history"></i> سجل العمليات (${m.transactions || 0})
+                </button>
+            </div>
+        `;
+        container.appendChild(card);
     });
 }
 
@@ -1928,3 +1993,42 @@ window.Storage = Storage;
 window.Auth = Auth;
 window.Orders = Orders;
 window.Support = Support;
+
+/* ===========================
+   DATA MIGRATION (v2)
+   Adds missing fields for Grid View
+   =========================== */
+(function migrateData() {
+    // 1. Migrate Wallets
+    let wallets = Storage.get('wallets') || [];
+    let walletsChanged = false;
+    wallets.forEach(w => {
+        if (!w.target) {
+             w.target = 50000;
+             w.collected = Math.floor(Math.random() * 20000) + 5000;
+             w.category = 'عام';
+             w.color = '#00A59B';
+             w.icon = 'fas fa-wallet';
+             walletsChanged = true;
+        }
+    });
+    if (walletsChanged) Storage.set('wallets', wallets);
+
+    // 2. Migrate Merchants
+    let merchants = Storage.get('merchants') || [];
+    let merchantsChanged = false;
+    merchants.forEach(m => {
+        if (!m.current_balance) {
+             // Add contact info and location
+             m.contactPerson = 'مدير الفرع';
+             m.phone = '050xxxxxxx';
+             m.email = 'info@' + m.name.replace(/\s/g,'') + '.com';
+             m.location = 'الرياض - حي العليا';
+             m.logo = 'assets/logo.png'; // Placeholder
+             merchantsChanged = true;
+        }
+    });
+    if (merchantsChanged) Storage.set('merchants', merchants);
+    
+    console.log('Data Migration v2 Complete');
+})();
