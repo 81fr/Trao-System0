@@ -1,0 +1,30 @@
+{
+    "appId": "com.traof.app",
+    "appName": "Traof",
+    "webDir": "dist",
+    "bundledWebRuntime": false,
+    "server": {
+        "url": "https://81fr.github.io/Trao-System0/",
+        "cleartext": true,
+        "allowNavigation": [
+            "81fr.github.io"
+        ]
+    },
+    "android": {
+        "allowMixedContent": true,
+        "captureInput": true,
+        "webContentsDebuggingEnabled": true
+    },
+    "ios": {
+        "contentInset": "always"
+    },
+    "plugins": {
+        "SplashScreen": {
+            "launchShowDuration": 2000,
+            "launchAutoHide": true,
+            "backgroundColor": "#00A59B",
+            "androidSplashResourceName": "splash",
+            "iosSplashResourceName": "Splash"
+        }
+    }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "تراوف - نظام الجمعيات الخيرية",
+  "short_name": "Traof",
+  "start_url": "index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#00A59B",
+  "background_color": "#00A59B",
+  "description": "نظام إدارة الجمعيات الخيرية المتكامل - تراوف",
+  "icons": [
+    {
+      "src": "assets/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/logo.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    }
+  ]
+}
