@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    
+
     <title>المحافظ - تراوف</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
@@ -48,16 +48,54 @@
         </header>
 
         <div class="form-container">
-            <h3>إنشاء محفظة جديدة</h3>
-            <div class="form-group">
-                <label>اسم المحفظة</label>
-                <input id="walletNameInput" type="text" placeholder="مثال: إعانة غذائية">
+            <h3 id="formTitle">إنشاء محفظة جديدة</h3>
+            <input type="hidden" id="editingWalletId">
+            <div class="form-group-row" style="display:flex; gap:10px;">
+                <div class="form-group" style="flex:1">
+                    <label>اسم المحفظة</label>
+                    <input id="walletNameInput" type="text" placeholder="مثال: إعانة غذائية">
+                </div>
+                <div class="form-group" style="flex:1">
+                    <label>الفئة</label>
+                    <select id="walletCategoryInput"
+                        style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                        <option value="عام">عام</option>
+                        <option value="زكاة">زكاة</option>
+                        <option value="صدقة">صدقة</option>
+                        <option value="كفالة">كفالة</option>
+                        <option value="مشاريع">مشاريع</option>
+                        <option value="إغاثة">إغاثة</option>
+                    </select>
+                </div>
             </div>
-            <div class="form-group">
-                <label>الرصيد</label>
-                <input id="walletFundsInput" type="number" placeholder="0.00">
+            <div class="form-group-row" style="display:flex; gap:10px;">
+                <div class="form-group" style="flex:1">
+                    <label>الرصيد الحالي</label>
+                    <input id="walletFundsInput" type="number" placeholder="0.00">
+                </div>
+                <div class="form-group" style="flex:1">
+                    <label>الهدف المالي (اختياري)</label>
+                    <input id="walletTargetInput" type="number" placeholder="50000">
+                </div>
             </div>
-            <button onclick="Actions.addWallet()"><i class="fas fa-plus"></i> إنشاء المحفظة</button>
+            <div class="form-group-row" style="display:flex; gap:10px; align-items:center;">
+                <div class="form-group" style="flex:1">
+                    <label>لون البطاقة</label>
+                    <input id="walletColorInput" type="color" value="#00A59B"
+                        style="width:100%; height:40px; padding:0; border:none;">
+                </div>
+                <div class="form-group" style="flex:2">
+                    <label>أيقونة (FontAwesome class)</label>
+                    <input id="walletIconInput" type="text" placeholder="fas fa-wallet" value="fas fa-wallet">
+                </div>
+            </div>
+
+            <div style="margin-top:10px;">
+                <button id="saveWalletBtn" onclick="Actions.addWallet()"><i class="fas fa-plus"></i> إنشاء
+                    المحفظة</button>
+                <button id="cancelWalletEditBtn" onclick="Actions.cancelWalletEdit()"
+                    style="display:none; background:#6c757d;">إلغاء</button>
+            </div>
         </div>
 
         <div id="walletsGrid" class="grid-container"></div>

@@ -889,29 +889,35 @@ function loadWalletsTable() {
     container.innerHTML = '';
     
     wallets.forEach(w => {
-        // Safe defaults
-        const collected = (w.collected !== undefined) ? w.collected : 0;
-        const target = (w.target !== undefined) ? w.target : 50000;
-        const funds = (w.funds !== undefined) ? w.funds : 0;
+        const collected = (w.collected !== undefined) ? Number(w.collected) : 0;
+        const target = (w.target !== undefined && w.target > 0) ? Number(w.target) : 50000;
+        const funds = (w.funds !== undefined) ? Number(w.funds) : 0;
         const percent = Math.min(100, Math.round((collected / target) * 100));
         
         const card = document.createElement('div');
         card.className = 'wallet-card';
         card.innerHTML = `
-            <div class="card-menu-btn"><i class="fas fa-ellipsis-v"></i></div>
+            <div class="card-menu-btn" onclick="toggleCardMenu(this)">
+                <i class="fas fa-ellipsis-v"></i>
+                <div class="card-menu-dropdown" style="display:none;">
+                    <button onclick="Actions.editWallet(${w.id})"><i class="fas fa-edit"></i> تعديل</button>
+                    <button onclick="Actions.deleteWallet(${w.id})" style="color:red"><i class="fas fa-trash"></i> حذف</button>
+                </div>
+            </div>
+            
             <div class="card-icon" style="background:${w.color || '#00A59B'}">
                 <i class="${w.icon || 'fas fa-wallet'}"></i>
             </div>
             <span class="wallet-category">${w.category || 'عام'}</span>
             <h3>${w.name}</h3>
             <div style="font-size:1.8rem; font-weight:bold; color:#333; margin-bottom:10px;">
-                ${Number(funds).toLocaleString('ar-SA')} <small style="font-size:1rem;color:#777">ريال</small>
+                ${funds.toLocaleString('ar-SA')} <small style="font-size:1rem;color:#777">ريال</small>
             </div>
             
             <div class="progress-container">
                 <div class="progress-labels">
-                    <span>المحقق: ${Number(collected).toLocaleString('ar-SA')}</span>
-                    <span>الهدف: ${Number(target).toLocaleString('ar-SA')}</span>
+                    <span>المحقق: ${collected.toLocaleString('ar-SA')}</span>
+                    <span>الهدف: ${target.toLocaleString('ar-SA')}</span>
                 </div>
                 <div class="progress-bar">
                     <div class="progress-fill" style="width:${percent}%; background:${w.color || '#00A59B'}"></div>
@@ -942,7 +948,14 @@ function loadMerchantsTable() {
         const card = document.createElement('div');
         card.className = 'merchant-card';
         card.innerHTML = `
-            <div class="card-menu-btn"><i class="fas fa-ellipsis-v"></i></div>
+            <div class="card-menu-btn" onclick="toggleCardMenu(this)">
+                <i class="fas fa-ellipsis-v"></i>
+                <div class="card-menu-dropdown" style="display:none;">
+                    <button onclick="Actions.editMerchant(${m.id})"><i class="fas fa-edit"></i> تعديل</button>
+                    <button onclick="Actions.deleteMerchant(${m.id})" style="color:red"><i class="fas fa-trash"></i> حذف</button>
+                </div>
+            </div>
+            
             <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:16px;">
                 <img src="${m.logo || 'assets/logo.png'}" style="width:50px; height:50px; border-radius:8px; object-fit:contain; border:1px solid #eee;">
                 ${badge}
@@ -2031,4 +2044,247 @@ window.Support = Support;
     if (merchantsChanged) Storage.set('merchants', merchants);
     
     console.log('Data Migration v2 Complete');
+})();
+
+/* ===========================
+   CRUD EXTENSIONS
+=========================== */
+Object.assign(Actions, {
+    addWallet: () => {
+        const idInput = document.getElementById('editingWalletId');
+        const name = document.getElementById('walletNameInput').value;
+        const funds = document.getElementById('walletFundsInput').value;
+        const target = document.getElementById('walletTargetInput').value;
+        const category = document.getElementById('walletCategoryInput').value;
+        const color = document.getElementById('walletColorInput').value;
+        const icon = document.getElementById('walletIconInput').value;
+
+        if (!name) return alert('يرجى إدخال اسم المحفظة');
+
+        let wallets = Storage.get('wallets') || [];
+        
+        if (idInput && idInput.value) {
+            // Edit Mode
+            const id = parseInt(idInput.value);
+            const idx = wallets.findIndex(w => w.id === id);
+            if (idx !== -1) {
+                wallets[idx].name = name;
+                if(funds) wallets[idx].funds = Number(funds);
+                if(target) wallets[idx].target = Number(target);
+                wallets[idx].category = category;
+                wallets[idx].color = color;
+                wallets[idx].icon = icon;
+                Storage.set('wallets', wallets);
+                alert('تم تعديل المحفظة بنجاح');
+                Actions.cancelWalletEdit();
+            }
+        } else {
+            // Add Mode
+            const newId = Date.now();
+            wallets.push({
+                id: newId,
+                name,
+                funds: Number(funds || 0),
+                collected: 0,
+                target: Number(target || 50000),
+                category: category || 'عام',
+                color: color || '#00A59B',
+                icon: icon || 'fas fa-wallet',
+                merchants: '',
+                status: 'نشط'
+            });
+            Storage.set('wallets', wallets);
+            alert('تم إضافة المحفظة بنجاح');
+            // Clear inputs
+            document.getElementById('walletNameInput').value = '';
+            document.getElementById('walletFundsInput').value = '';
+        }
+        loadWalletsTable();
+    },
+
+    editWallet: (id) => {
+        const wallets = Storage.get('wallets') || [];
+        const w = wallets.find(x => x.id === id);
+        if (!w) return;
+
+        document.getElementById('editingWalletId').value = w.id;
+        document.getElementById('walletNameInput').value = w.name;
+        document.getElementById('walletFundsInput').value = w.funds;
+        if(document.getElementById('walletTargetInput')) document.getElementById('walletTargetInput').value = w.target || '';
+        if(document.getElementById('walletCategoryInput')) document.getElementById('walletCategoryInput').value = w.category || 'عام';
+        if(document.getElementById('walletColorInput')) document.getElementById('walletColorInput').value = w.color || '#00A59B';
+        if(document.getElementById('walletIconInput')) document.getElementById('walletIconInput').value = w.icon || 'fas fa-wallet';
+
+        document.getElementById('formTitle').innerText = 'تعديل المحفظة';
+        document.getElementById('saveWalletBtn').innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
+        document.getElementById('cancelWalletEditBtn').style.display = 'inline-block';
+        
+        // Scroll to form
+        document.querySelector('.form-container').scrollIntoView({behavior: 'smooth'});
+    },
+
+    cancelWalletEdit: () => {
+        document.getElementById('editingWalletId').value = '';
+        document.getElementById('walletNameInput').value = '';
+        document.getElementById('walletFundsInput').value = '';
+        document.getElementById('walletTargetInput').value = '';
+        document.getElementById('formTitle').innerText = 'إنشاء محفظة جديدة';
+        document.getElementById('saveWalletBtn').innerHTML = '<i class="fas fa-plus"></i> إنشاء المحفظة';
+        document.getElementById('cancelWalletEditBtn').style.display = 'none';
+    },
+
+    deleteWallet: (id) => {
+        if (!confirm('هل أنت متأكد من حذف هذه المحفظة؟')) return;
+        let wallets = Storage.get('wallets') || [];
+        wallets = wallets.filter(w => w.id !== id);
+        Storage.set('wallets', wallets);
+        loadWalletsTable();
+    },
+
+    addMerchant: () => {
+        const idInput = document.getElementById('editingMerchantId');
+        const name = document.getElementById('merchantNameInput').value;
+        const cat = document.getElementById('merchantCatInput').value;
+        const contact = document.getElementById('merchantContactInput').value;
+        const phone = document.getElementById('merchantPhoneInput').value;
+        const email = document.getElementById('merchantEmailInput').value;
+        const loc = document.getElementById('merchantLocationInput').value;
+
+        if (!name) return alert('يرجى إدخال اسم المتجر');
+
+        let merchants = Storage.get('merchants') || [];
+
+        if (idInput && idInput.value) {
+            // Edit
+            const id = parseInt(idInput.value);
+            const idx = merchants.findIndex(m => m.id === id);
+            if (idx !== -1) {
+                merchants[idx].name = name;
+                if(cat) merchants[idx].category = cat;
+                if(contact) merchants[idx].contactPerson = contact;
+                if(phone) merchants[idx].phone = phone;
+                if(email) merchants[idx].email = email;
+                if(loc) merchants[idx].location = loc;
+                Storage.set('merchants', merchants);
+                alert('تم تعديل بيانات المتجر');
+                Actions.cancelMerchantEdit();
+            }
+        } else {
+            // Add
+            merchants.push({
+                id: Date.now(),
+                name,
+                category: cat || 'عام',
+                contactPerson: contact,
+                phone,
+                email,
+                location: loc,
+                transactions: 0,
+                status: 'نشط'
+            });
+            Storage.set('merchants', merchants);
+            alert('تم إضافة المتجر بنجاح');
+            Actions.cancelMerchantEdit(); // Clear form
+        }
+        loadMerchantsTable();
+    },
+
+    editMerchant: (id) => {
+        const merchants = Storage.get('merchants') || [];
+        const m = merchants.find(x => x.id === id);
+        if (!m) return;
+
+        document.getElementById('editingMerchantId').value = m.id;
+        document.getElementById('merchantNameInput').value = m.name;
+        document.getElementById('merchantCatInput').value = m.category;
+        document.getElementById('merchantContactInput').value = m.contactPerson || '';
+        document.getElementById('merchantPhoneInput').value = m.phone || '';
+        document.getElementById('merchantEmailInput').value = m.email || '';
+        document.getElementById('merchantLocationInput').value = m.location || '';
+
+        document.getElementById('merchantFormTitle').innerText = 'تعديل بيانات المتجر';
+        document.getElementById('saveMerchantBtn').innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
+        document.getElementById('cancelMerchantEditBtn').style.display = 'inline-block';
+        
+        document.querySelector('.form-container').scrollIntoView({behavior: 'smooth'});
+    },
+
+    cancelMerchantEdit: () => {
+        document.getElementById('editingMerchantId').value = '';
+        document.getElementById('merchantNameInput').value = '';
+        document.getElementById('merchantCatInput').value = '';
+        document.getElementById('merchantContactInput').value = '';
+        document.getElementById('merchantPhoneInput').value = '';
+        document.getElementById('merchantEmailInput').value = '';
+        document.getElementById('merchantLocationInput').value = '';
+
+        document.getElementById('merchantFormTitle').innerText = 'إضافة متجر جديد';
+        document.getElementById('saveMerchantBtn').innerHTML = '<i class="fas fa-plus"></i> إضافة متجر';
+        document.getElementById('cancelMerchantEditBtn').style.display = 'none';
+    },
+
+    deleteMerchant: (id) => {
+        if (!confirm('هل أنت متأكد من حذف هذا المتجر؟')) return;
+        let merchants = Storage.get('merchants') || [];
+        merchants = merchants.filter(m => m.id !== id);
+        Storage.set('merchants', merchants);
+        loadMerchantsTable();
+    }
+});
+
+// Helper for card menu
+window.toggleCardMenu = function(el) {
+    const dropdown = el.querySelector('.card-menu-dropdown');
+    const wasVisible = dropdown.style.display === 'block';
+    // Close all others
+    document.querySelectorAll('.card-menu-dropdown').forEach(d => d.style.display = 'none');
+    
+    if (!wasVisible) {
+        dropdown.style.display = 'block';
+    }
+    // Simple click-away listener could be added
+};
+
+(function() {
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .card-menu-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px; /* RTL means left */
+            cursor: pointer;
+            color: #ccc;
+            padding: 5px;
+            z-index: 10;
+        }
+        .card-menu-btn:hover { color: #333; }
+        .card-menu-dropdown {
+            position: absolute;
+            top: 25px;
+            left: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 120px;
+            z-index: 20;
+            overflow: hidden;
+        }
+        .card-menu-dropdown button {
+            display: block;
+            width: 100%;
+            text-align: right;
+            padding: 8px 12px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #333;
+        }
+        .card-menu-dropdown button:hover {
+            background: #f8f9fa;
+        }
+        .card-menu-dropdown button i { margin-left: 5px; width: 16px; text-align: center; }
+    `;
+    document.head.appendChild(style);
 })();
