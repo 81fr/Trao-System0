@@ -251,7 +251,8 @@ function initData() {
             { id: 102, card: '10001002', amount: 200, date: '2023-10-26', merchant: 'سنتربوينت' }
         ]);
     }
-    if (localStorage.getItem('supply_orders') === null) {
+    const existingOrders = Storage.get('supply_orders');
+    if (!existingOrders || existingOrders.length === 0) {
         Storage.set('supply_orders', [
             { id: '100201', item: 'توريد سلال غذائية (أرز، سكر، زيت) - 500 سلة', partner: 'أسواق العثيم', cost: 15000, date: '2024-01-05', status: 'Completed' },
             { id: '100202', item: 'توريد بطانيات شتوية (200 بطانية)', partner: 'سنتربوينت', cost: 8000, date: '2024-01-10', status: 'Completed' },
@@ -1383,14 +1384,19 @@ const Orders = {
             alert('حدث خطأ أثناء إنشاء الطلب: ' + e.message);
         }
     },
-
     load: () => {
+        console.log('Orders.load() called');
         try {
             const grid = document.getElementById('ordersGrid');
-            if (!grid) return; // Not on orders page
+            if (!grid) {
+                console.warn('ordersGrid not found');
+                return;
+            }
 
             // Ensure data exists
             let orders = Storage.get('supply_orders');
+            console.log('Retrieved orders:', orders);
+
             if (!orders || !Array.isArray(orders)) {
                 orders = [];
                 Storage.set('supply_orders', []);
@@ -1402,8 +1408,10 @@ const Orders = {
             // Render grid
             grid.innerHTML = '';
             if (orders.length === 0) {
+                console.log('No orders to display');
                 grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#777; background:#fff; border-radius:16px; border:1px dashed #ccc;">لا توجد أوامر توريد حالياً. قم بإنشاء أول طلب!</div>';
             } else {
+                console.log('Rendering ' + orders.length + ' orders');
                 // Sort by ID desc (newest first)
                 orders.slice().reverse().forEach(o => {
                     if (!o) return;
@@ -1645,6 +1653,17 @@ const Orders = {
         }
     },
 
+    cancelFinal: (id) => {
+        if (!confirm('هل أنت متأكد من إلغاء هذا الطلب نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+        let orders = Storage.get('supply_orders') || [];
+        const index = orders.findIndex(o => o.id === id);
+        if (index !== -1) {
+            orders[index].status = 'Cancelled';
+            Storage.set('supply_orders', orders);
+            Orders.load();
+        }
+    },
+
     updateStatus: (id, status, reason) => {
         let orders = Storage.get('supply_orders') || [];
         const index = orders.findIndex(o => o.id === id);
@@ -1656,6 +1675,7 @@ const Orders = {
         }
     }
 };
+window.Orders = Orders;
 
 /* ===========================
    ONLOAD CONTROLLER
@@ -2089,17 +2109,7 @@ function injectDummyData() {
 /* ===========================
    INITIALIZATION
 =========================== */
-window.onload = function () {
-    initData();
-    migrateData();
-    Auth.checkSession();
-    Settings.load();
-    loadDashboard();
-    loadUsersTable();
-    loadCardsTable();
-    loadWalletsTable();
-    loadMerchantsTable();
-};
+
 
 // Expose globals
 window.Storage = Storage;

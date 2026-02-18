@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    
+
     <title>أوامر التوريد - تراوف</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
@@ -70,22 +70,10 @@
             <button onclick="Orders.create()"><i class="fas fa-paper-plane"></i> إنشاء الأمر</button>
         </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>رقم الأمر</th>
-                        <th>الصنف</th>
-                        <th>الشريك</th>
-                        <th>القيمة</th>
-                        <th>التاريخ</th>
-                        <th>الحالة</th>
-                        <th>إجراءات</th>
-                    </tr>
-                </thead>
-                <tbody id="ordersTableBody"></tbody>
-            </table>
+        <div id="ordersGrid" class="grid-container">
+            <!-- Orders will be loaded here via script.js -->
         </div>
+
         <footer class="main-footer">
             <p>صنع في تراؤف</p>
             <img src="assets/logo.png" alt="TRAOF Logo">
@@ -125,7 +113,7 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=20"></script>
 
     <script>
         // PWA Service Worker Register
