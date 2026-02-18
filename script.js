@@ -291,6 +291,29 @@ function initData() {
             { id: 2, name: 'سارة خالد عبدالله الشمري', firstName: 'سارة', fatherName: 'خالد', grandName: 'عبدالله', familyName: 'الشمري', nationality: 'saudi', identity: '2020202020', mobile: '0598765432', fileNum: 'F002' }
         ]);
     }
+    // Seed POS Products
+    if (localStorage.getItem('products') === null) {
+        Storage.set('products', [
+            // فواد غذائية
+            { id: 1, name: 'أرز بسمتي 5كج', category: 'مواد غذائية', price: 45.00, image: '🌾' },
+            { id: 2, name: 'زيت دوار الشمس 1.5ل', category: 'مواد غذائية', price: 18.50, image: '🌻' },
+            { id: 3, name: 'سكر ناعم 2كج', category: 'مواد غذائية', price: 12.00, image: '🍭' },
+            { id: 4, name: 'حليب كامل الدسم 1ل', category: 'ألبان', price: 6.00, image: '🥛' },
+            { id: 5, name: 'زبادي طازج 200جم', category: 'ألبان', price: 2.00, image: '🍦' },
+            { id: 6, name: 'جبنة فيتا 500جم', category: 'ألبان', price: 14.00, image: '🧀' },
+            { id: 7, name: 'دجاج مجمد 1000جم', category: 'لحوم ومجمدات', price: 19.00, image: '🍗' },
+            { id: 8, name: 'لحم غنم مفروم 400جم', category: 'لحوم ومجمدات', price: 22.00, image: '🥩' },
+            { id: 9, name: 'مياه معدنية 330مل * 40', category: 'مشروبات', price: 15.00, image: '💧' },
+            { id: 10, name: 'عصير برتقال طازج', category: 'مشروبات', price: 9.00, image: '🍊' },
+            { id: 11, name: 'شاي أحمر 100 كيس', category: 'مشروبات', price: 14.50, image: '☕' },
+            // قرطاسية وملابس
+            { id: 12, name: 'حقيبة مدرسية', category: 'قرطاسية', price: 85.00, image: '🎒' },
+            { id: 13, name: 'دفتر جامعي 100 ورقة', category: 'قرطاسية', price: 5.00, image: '📓' },
+            { id: 14, name: 'طقم أقلام حبر', category: 'قرطاسية', price: 12.00, image: '🖋️' },
+            { id: 15, name: 'ثوب رجالي شتوي', category: 'ملابس', price: 150.00, image: '🧥' },
+            { id: 16, name: 'فستان أطفال', category: 'ملابس', price: 95.00, image: '👗' }
+        ]);
+    }
 }
 
 /* ===========================
@@ -1241,112 +1264,261 @@ function renderBeneficiaryQR(containerId, text) {
    POS
 =========================== */
 const POS = {
+    products: [],
+    cart: [],
     currentCard: null,
-    amount: '0',
+    total: 0,
 
-    verifyCard: () => {
-        const cardNumber = document.getElementById('cardNumber')?.value;
+    init: () => {
+        console.log('POS.init()');
+        POS.products = Storage.get('products') || [];
+        POS.renderCategories();
+        POS.filterProducts();
+        POS.renderCart();
+    },
+
+    renderCategories: () => {
+        const categories = ['الكل', ...new Set(POS.products.map(p => p.category))];
+        const container = document.getElementById('posCategories');
+        if (!container) return;
+        container.innerHTML = categories.map(cat => `
+            <div class="category-tab ${cat === 'الكل' ? 'active' : ''}" onclick="POS.selectCategory(this, '${cat}')">${cat}</div>
+        `).join('');
+    },
+
+    selectCategory: (el, category) => {
+        document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        POS.filterProducts(category);
+    },
+
+    filterProducts: (category = 'الكل') => {
+        const query = document.getElementById('posSearch')?.value.toLowerCase() || '';
+        const grid = document.getElementById('posProductGrid');
+        if (!grid) return;
+
+        const filtered = POS.products.filter(p => {
+            const matchesCategory = category === 'الكل' || p.category === category;
+            const matchesQuery = p.name.toLowerCase().includes(query) || p.category.toLowerCase().includes(query);
+            return matchesCategory && matchesQuery;
+        });
+
+        grid.innerHTML = filtered.map(p => `
+            <div class="pos-item-card" onclick="POS.addToCart(${p.id})">
+                <div class="pos-item-icon">${p.image || '📦'}</div>
+                <div class="pos-item-name">${p.name}</div>
+                <div class="pos-item-price">${p.price.toFixed(2)} ر.س</div>
+            </div>
+        `).join('');
+    },
+
+    addToCart: (productId) => {
+        const product = POS.products.find(p => p.id === productId);
+        if (!product) return;
+
+        const existing = POS.cart.find(item => item.id === productId);
+        if (existing) {
+            existing.qty++;
+        } else {
+            POS.cart.push({ ...product, qty: 1 });
+        }
+        POS.renderCart();
+        if (typeof showToast === 'function') showToast(`تم إضافة ${product.name}`, 'success');
+    },
+
+    updateQuantity: (productId, delta) => {
+        const item = POS.cart.find(p => p.id === productId);
+        if (!item) return;
+        item.qty += delta;
+        if (item.qty <= 0) {
+            POS.cart = POS.cart.filter(p => p.id !== productId);
+        }
+        POS.renderCart();
+    },
+
+    clearCart: () => {
+        if (POS.cart.length === 0) return;
+        if (confirm('هل أنت متأكد من مسح السلة؟')) {
+            POS.cart = [];
+            POS.renderCart();
+        }
+    },
+
+    renderCart: () => {
+        const container = document.getElementById('cartItems');
+        if (!container) return;
+
+        if (POS.cart.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; margin-top:50px; color:var(--muted)">
+                    <i class="fas fa-shopping-bag" style="font-size:3rem; opacity:0.2; margin-bottom:10px; display:block;"></i>
+                    السلة فارغة حالياً
+                </div>`;
+            POS.updateTotals(0);
+            return;
+        }
+
+        container.innerHTML = POS.cart.map(item => `
+            <div class="cart-item">
+                <div class="cart-item-info">
+                    <div class="cart-item-title">${item.name}</div>
+                    <div class="cart-item-price">${item.price.toFixed(2)} × ${item.qty}</div>
+                </div>
+                <div class="cart-qty-controls">
+                    <button class="cart-qty-btn" onclick="POS.updateQuantity(${item.id}, 1)"><i class="fas fa-plus"></i></button>
+                    <span>${item.qty}</span>
+                    <button class="cart-qty-btn" onclick="POS.updateQuantity(${item.id}, -1)"><i class="fas fa-minus"></i></button>
+                </div>
+                <div style="font-weight:700;">${(item.price * item.qty).toFixed(2)}</div>
+            </div>
+        `).join('');
+
+        const subtotal = POS.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        POS.updateTotals(subtotal);
+    },
+
+    updateTotals: (subtotal) => {
+        const tax = subtotal * 0.15;
+        const total = subtotal + tax;
+        POS.total = total;
+
+        const subEl = document.getElementById('cartSubtotal');
+        const taxEl = document.getElementById('cartTax');
+        const totalEl = document.getElementById('cartTotal');
+
+        if (subEl) subEl.innerText = subtotal.toFixed(2) + ' ر.س';
+        if (taxEl) taxEl.innerText = tax.toFixed(2) + ' ر.س';
+        if (totalEl) totalEl.innerText = total.toFixed(2) + ' ر.س';
+    },
+
+    openCheckout: () => {
+        if (POS.cart.length === 0) return alert('السلة فارغة!');
+        document.getElementById('checkoutTotalVal').innerText = POS.total.toFixed(2) + ' ر.س';
+        document.getElementById('checkoutModal').classList.add('active');
+
+        // Auto-fill from merchants if possible
+        const savedCard = sessionStorage.getItem('posCardNumber');
+        if (savedCard) {
+            document.getElementById('posCardNumber').value = savedCard;
+            POS.verifyCardAction();
+            sessionStorage.removeItem('posCardNumber');
+        }
+    },
+
+    closeCheckout: () => {
+        document.getElementById('checkoutModal').classList.remove('active');
+        document.getElementById('posCardStatus').innerHTML = '';
+        document.getElementById('posConfirmCode').value = '';
+    },
+
+    verifyCardAction: () => {
+        const cardNumber = document.getElementById('posCardNumber')?.value.trim();
+        if (!cardNumber) return;
+
         const cards = Storage.get('cards') || [];
-        const card = cards.find(c => c.number === cardNumber);
-        const display = document.getElementById('cardStatusDisplay');
-        if (!display) return;
+        const card = cards.find(c => c.number === cardNumber || c.identity === cardNumber);
+        const display = document.getElementById('posCardStatus');
 
         if (!card) {
             POS.currentCard = null;
-            display.innerHTML = '<span style="color:red">البطاقة غير موجودة</span>';
+            display.innerHTML = '<div style="color:red; background:#fff5f5; padding:10px; border-radius:8px;">البطاقة غير موجودة</div>';
             return;
         }
-        if (card.status === 'موقوف' || card.status === 'Inactive') {
+
+        if (card.status !== 'نشط' && card.status !== 'Active') {
             POS.currentCard = null;
-            display.innerHTML = '<span style="color:red">البطاقة موقوفة</span>';
+            display.innerHTML = '<div style="color:red; background:#fff5f5; padding:10px; border-radius:8px;">البطاقة موقوفة</div>';
             return;
         }
+
         POS.currentCard = card;
-        display.innerHTML = `<span style="color:green">تم التحقق: محفظة ${card.wallet} (الرصيد: ${card.balance} ريال)</span><br><small>المستفيد: ${card.beneficiary || 'غير معروف'}</small>`;
+        display.innerHTML = `
+            <div style="background:#f0fafe; padding:12px; border-radius:8px; border:1px solid #d0eaf5;">
+                <div style="font-weight:700;">${card.beneficiary}</div>
+                <div style="font-size:0.9rem; color:#005a8d;">الرصيد: ${Number(card.balance).toFixed(2)} ر.س</div>
+            </div>`;
     },
 
-    addToAmount: (num) => {
-        if (num === '.' && String(POS.amount).includes('.')) return;
-        POS.amount = (POS.amount === '0') ? String(num) : String(POS.amount) + String(num);
-        POS.updateDisplay();
-    },
+    processCartPayment: () => {
+        if (!POS.currentCard) return alert('يرجى التحقق من البطاقة');
+        const code = document.getElementById('posConfirmCode').value.trim();
+        if (!code) return alert('يرجى إدخال كود التأكيد');
 
-    clearAmount: () => { POS.amount = '0'; POS.updateDisplay(); },
-
-    updateDisplay: () => {
-        const el = document.getElementById('amountDisplay');
-        if (!el) return;
-        const val = parseFloat(POS.amount || '0');
-        el.innerText = isNaN(val) ? '0.00' : val.toFixed(2);
-    },
-
-    processPayment: () => {
-        if (!POS.currentCard) return alert('يرجى التحقق من البطاقة أولاً.');
-        const amount = parseFloat(POS.amount);
-        if (isNaN(amount) || amount <= 0) return alert('يرجى إدخال مبلغ صحيح.');
-
-        // === Purchase Code Verification Gate ===
+        // Verify with Pending Purchases
         const pending = Storage.get('pendingPurchases') || [];
-        const confirmedReq = pending.find(p =>
+        const req = pending.find(p =>
             p.cardNumber === POS.currentCard.number &&
             p.status === 'confirmed' &&
-            Math.abs(p.amount - amount) < 0.01
+            p.code === code
         );
 
-        if (!confirmedReq) {
-            return alert('⚠️ لا يمكن تنفيذ العملية!\n\nيجب أولاً:\n1. إنشاء طلب شراء من صفحة التاجر\n2. انتظار تأكيد المستفيد\n\nلم يتم العثور على طلب شراء مؤكد لهذه البطاقة بهذا المبلغ.');
+        if (!req) {
+            return alert('كود التأكيد غير صحيح أو الطلب غير موجود.');
         }
 
-        if (POS.currentCard.balance < amount) return alert('الرصيد غير كافٍ!');
+        // Check balance (against requirement or cart total?)
+        // In the professional POS, we use the cart total
+        if (POS.currentCard.balance < POS.total) {
+            return alert('الرصيد في البطاقة لا يكفي لإتمام عملية الشراء.');
+        }
 
+        // Execute payment
         const cards = Storage.get('cards') || [];
-        const i = cards.findIndex(c => c.number === POS.currentCard.number);
-        if (i === -1) return alert('حدث خطأ: لم يتم العثور على البطاقة.');
-        cards[i].balance -= amount;
+        const cardIdx = cards.findIndex(c => c.number === POS.currentCard.number);
+        cards[cardIdx].balance -= POS.total;
         Storage.set('cards', cards);
 
+        // Transaction record
         const transaction = {
             id: Date.now(),
             card: POS.currentCard.number,
-            amount,
+            amount: POS.total,
+            items: POS.cart.map(i => `${i.name} (${i.qty})`),
             date: new Date().toLocaleDateString('ar-SA'),
-            merchant: confirmedReq.merchant || 'نقطة بيع 1'
+            merchant: req.merchant || 'نقطة بيع'
         };
         Storage.add('transactions', transaction);
 
-        // Mark purchase request as completed
-        const updatedPending = Storage.get('pendingPurchases') || [];
-        const pReq = updatedPending.find(p => p.code === confirmedReq.code);
-        if (pReq) pReq.status = 'completed';
-        Storage.set('pendingPurchases', updatedPending);
+        // Mark req as completed
+        req.status = 'completed';
+        Storage.set('pendingPurchases', pending);
 
-        const modal = document.getElementById('successModal');
-        const receipt = document.getElementById('receiptContent');
-        if (receipt) {
-            receipt.innerHTML = `
-        <strong>رقم العملية:</strong> ${transaction.id}<br>
-        <strong>التاريخ:</strong> ${transaction.date}<br>
-        <strong>البطاقة:</strong> ${transaction.card}<br>
-        <strong>المستفيد:</strong> ${cards[i].beneficiary || 'غير محدد'}<br>
-        <strong>المبلغ:</strong> ${transaction.amount.toFixed(2)} ريال<br>
-        <strong>الرصيد المتبقي:</strong> ${cards[i].balance.toFixed(2)} ريال<br>
-        <strong>كود الشراء:</strong> ${confirmedReq.code}<br>
-        <strong>الحالة:</strong> مقبولة ✅`;
-        }
-        if (modal) modal.style.display = 'block';
+        // Show receipt
+        POS.showReceipt(transaction, cards[cardIdx]);
+        POS.cart = [];
+        POS.renderCart();
+        POS.closeCheckout();
+    },
 
-        POS.amount = '0';
-        POS.currentCard = null;
-        const cardInput = document.getElementById('cardNumber');
-        const statusDisplay = document.getElementById('cardStatusDisplay');
-        if (cardInput) cardInput.value = '';
-        if (statusDisplay) statusDisplay.innerText = '';
-        POS.updateDisplay();
+    showReceipt: (tx, card) => {
+        const backdrop = document.getElementById('posReceiptBackdrop');
+        const holder = document.getElementById('receiptContent');
+        if (!holder) return;
+
+        holder.innerHTML = `
+            <div style="text-align:center; margin-bottom:15px;">
+                <img src="assets/logo.png" style="height:50px;">
+                <h4>إيصال عملية ناجحة</h4>
+            </div>
+            <div style="font-size:0.9rem; line-height:1.6;">
+                <strong>رقم العملية:</strong> #${tx.id}<br>
+                <strong>التاريخ:</strong> ${tx.date}<br>
+                <strong>المستفيد:</strong> ${card.beneficiary}<br>
+                <strong>البطاقة:</strong> ${tx.card}<br>
+                <hr style="border:none; border-top:1px dashed #ccc; margin:10px 0;">
+                <div style="margin-bottom:10px;">
+                    ${POS.cart.map(i => `<div>${i.name} × ${i.qty} <span style="float:left;">${(i.price * i.qty).toFixed(2)}</span></div>`).join('')}
+                </div>
+                <hr style="border:none; border-top:1px dashed #ccc; margin:10px 0;">
+                <div style="font-size:1.1rem; font-weight:800;">الإجمالي: <span style="float:left;">${tx.amount.toFixed(2)} ريال</span></div>
+                <div style="color:var(--muted); font-size:0.8rem; margin-top:10px;">الرصيد المتبقي: ${Number(card.balance).toFixed(2)} ريال</div>
+            </div>
+        `;
+        backdrop.classList.add('active');
     },
 
     closeModal: () => {
-        const modal = document.getElementById('successModal');
-        if (modal) modal.style.display = 'none';
+        document.getElementById('posReceiptBackdrop').classList.remove('active');
     }
 };
 

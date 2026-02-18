@@ -3,7 +3,6 @@
 
 <head>
     <meta charset="UTF-8" />
-    
     <title>نقطة البيع - تراوف</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
@@ -15,7 +14,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="assets/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
 </head>
 
 <body>
@@ -36,7 +34,6 @@
             <li><a href="settings.html"><i class="fas fa-cog"></i> الإعدادات</a></li>
             <li><a href="support.html"><i class="fas fa-headset"></i> الدعم الفني</a></li>
         </ul>
-
     </nav>
 
     <main class="main-content">
@@ -47,48 +44,114 @@
             </div>
         </header>
 
-        <div class="form-container pos-container" style="max-width:520px;">
-            <div class="form-group">
-                <label>رقم البطاقة</label>
-                <input id="cardNumber" type="text" placeholder="أدخل رقم البطاقة">
-            </div>
-            <button class="secondary" onclick="POS.verifyCard()"><i class="fas fa-search"></i> تحقق</button>
-            <div id="cardStatusDisplay" style="margin-top:10px; min-height:24px;"></div>
+        <div class="pos-layout">
+            <!-- Main POS Area -->
+            <div class="pos-main">
+                <!-- Search & Filters -->
+                <div style="display:flex; gap:12px; margin-bottom:10px;">
+                    <div style="flex:1; position:relative;">
+                        <i class="fas fa-search"
+                            style="position:absolute; right:15px; top:12px; color:var(--muted)"></i>
+                        <input type="text" id="posSearch" placeholder="بحث عن منتج..." style="padding-right:40px;"
+                            oninput="POS.filterProducts()">
+                    </div>
+                </div>
 
-            <hr style="margin:16px 0; border:none; border-top:1px solid var(--border)">
+                <!-- Categories -->
+                <div class="pos-categories" id="posCategories">
+                    <!-- Dynamic categories -->
+                </div>
 
-            <div class="form-group">
-                <label>المبلغ</label>
-                <div style="font-size:2rem; font-weight:800; color:var(--brand-ink);">
-                    <span id="amountDisplay">0.00</span> <small>ريال</small>
+                <!-- Product Grid -->
+                <div class="pos-grid" id="posProductGrid">
+                    <!-- Dynamic products -->
                 </div>
             </div>
 
-            <div class="keypad">
-                <button onclick="POS.addToAmount(1)">1</button>
-                <button onclick="POS.addToAmount(2)">2</button>
-                <button onclick="POS.addToAmount(3)">3</button>
-                <button onclick="POS.addToAmount(4)">4</button>
-                <button onclick="POS.addToAmount(5)">5</button>
-                <button onclick="POS.addToAmount(6)">6</button>
-                <button onclick="POS.addToAmount(7)">7</button>
-                <button onclick="POS.addToAmount(8)">8</button>
-                <button onclick="POS.addToAmount(9)">9</button>
-                <button class="secondary" onclick="POS.clearAmount()">مسح</button>
-                <button onclick="POS.addToAmount(0)">0</button>
-                <button class="secondary" onclick="POS.addToAmount('.')">.</button>
-                <button class="wide" style="background:var(--brand-green);" onclick="POS.processPayment()">
-                    <i class="fas fa-check"></i> تنفيذ العملية
-                </button>
+            <!-- Sidebar / Cart Area -->
+            <div class="pos-sidebar">
+                <div class="cart-header">
+                    <h3><i class="fas fa-shopping-basket"></i> السلة</h3>
+                    <button class="secondary" style="padding:5px 10px;" onclick="POS.clearCart()">مسح</button>
+                </div>
+
+                <div class="cart-items" id="cartItems">
+                    <!-- Dynamic cart items -->
+                    <div style="text-align:center; margin-top:50px; color:var(--muted)">
+                        <i class="fas fa-shopping-bag"
+                            style="font-size:3rem; opacity:0.2; margin-bottom:10px; display:block;"></i>
+                        السلة فارغة حالياً
+                    </div>
+                </div>
+
+                <div class="cart-footer">
+                    <div class="cart-total-row">
+                        <span>المجموع الفرعي</span>
+                        <span id="cartSubtotal">0.00 ر.س</span>
+                    </div>
+                    <div class="cart-total-row">
+                        <span>الضريبة (15%)</span>
+                        <span id="cartTax">0.00 ر.س</span>
+                    </div>
+                    <div class="cart-total-row grand-total">
+                        <span>الإجمالي</span>
+                        <span id="cartTotal">0.00 ر.س</span>
+                    </div>
+
+                    <button class="checkout-btn" onclick="POS.openCheckout()">
+                        <i class="fas fa-credit-card"></i> إتمام العملية
+                    </button>
+                </div>
             </div>
         </div>
+
         <footer class="main-footer">
             <p>صنع في تراؤف</p>
             <img src="assets/logo.png" alt="TRAOF Logo">
         </footer>
     </main>
 
-    <!-- Backdrop + Modal -->
+    <!-- Modal for Checkout (Card Verification) -->
+    <div id="checkoutModal" class="modal-backdrop">
+        <div class="modal" style="max-width:450px;">
+            <header>
+                <strong><i class="fas fa-shield-alt"></i> إتمام العملية</strong>
+                <button class="secondary" onclick="POS.closeCheckout()"><i class="fas fa-times"></i></button>
+            </header>
+            <div class="modal-body">
+                <div id="checkoutSummary"
+                    style="margin-bottom:20px; padding:15px; background:#f8fbfa; border-radius:12px; text-align:center;">
+                    <div style="font-size:0.9rem; color:var(--muted)">إجمالي المبلغ المطلوب</div>
+                    <div style="font-size:2rem; font-weight:800; color:var(--brand-teal);" id="checkoutTotalVal">0.00
+                        ر.س</div>
+                </div>
+
+                <div class="form-group">
+                    <label>رقم البطاقة</label>
+                    <input id="posCardNumber" type="text" placeholder="امسح البطاقة أو أدخل الرقم">
+                </div>
+                <button class="secondary" style="width:100%; margin-bottom:15px;" onclick="POS.verifyCardAction()">
+                    <i class="fas fa-search"></i> تحقق من الرصيد
+                </button>
+
+                <div id="posCardStatus" style="margin-bottom:15px;"></div>
+
+                <div class="form-group">
+                    <label>كود سري (تأكيد الشراء)</label>
+                    <input id="posConfirmCode" type="text" placeholder="أدخل الكود الظاهر عند المستفيد" maxlength="6"
+                        style="letter-spacing:10px; text-align:center; font-weight:bold; font-size:1.2rem;">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="secondary" onclick="POS.closeCheckout()">إلغاء</button>
+                <button onclick="POS.processCartPayment()">
+                    <i class="fas fa-check"></i> تأكيد ودفع
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receipt Modal -->
     <div id="posReceiptBackdrop" class="modal-backdrop">
         <div class="modal">
             <header>
@@ -105,59 +168,15 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=20"></script>
     <script>
-        // ربط المودال مع دوال POS الحالية
-        (function () {
-            const backdrop = document.getElementById('posReceiptBackdrop');
-            const _open = (contentHTML) => {
-                const holder = document.getElementById('receiptContent');
-                if (holder) holder.innerHTML = contentHTML || '';
-                backdrop?.classList.add('active');
-            };
-            const _close = () => backdrop?.classList.remove('active');
-
-            const _origProcess = POS.processPayment.bind(POS);
-            POS.processPayment = function () {
-                const before = document.getElementById('receiptContent')?.innerHTML || '';
-                _origProcess();
-                if (document.getElementById('receiptContent')?.innerHTML !== before) {
-                    backdrop?.classList.add('active');
-                }
-            };
-            POS.closeModal = function () { _close(); };
-
-            // Auto-fill card and amount from merchant scanner
-            const scannedCard = sessionStorage.getItem('posCardNumber');
-            const confirmedCode = sessionStorage.getItem('posConfirmedCode');
-            const confirmedAmount = sessionStorage.getItem('posConfirmedAmount');
-
-            if (scannedCard) {
-                const inp = document.getElementById('cardNumber');
-                if (inp) { inp.value = scannedCard; POS.verifyCard(); }
-                sessionStorage.removeItem('posCardNumber');
+        // Initialize POS UI
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof POS !== 'undefined' && POS.init) {
+                POS.init();
             }
+        });
 
-            // Auto-fill amount from confirmed purchase request
-            if (confirmedCode && confirmedAmount) {
-                POS.amount = confirmedAmount;
-                POS.updateDisplay();
-
-                // Show confirmation status
-                const statusDiv = document.getElementById('cardStatusDisplay');
-                if (statusDiv) {
-                    statusDiv.innerHTML += '<div style="margin-top:10px; padding:10px; background:#d4edda; border:1px solid #28a745; border-radius:8px; color:#155724; text-align:center;">' +
-                        '<i class="fas fa-check-circle"></i> كود الشراء مؤكد: <strong>' + confirmedCode + '</strong> | المبلغ: <strong>' + Number(confirmedAmount).toFixed(2) + '</strong> ريال' +
-                        '</div>';
-                }
-
-                sessionStorage.removeItem('posConfirmedCode');
-                sessionStorage.removeItem('posConfirmedAmount');
-            }
-        })();
-    </script>
-
-    <script>
         // PWA Service Worker Register
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
