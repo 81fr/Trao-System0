@@ -163,7 +163,7 @@ const Auth = {
             if (ul && !document.getElementById('sysCheckLink')) {
                 const li = document.createElement('li');
                 li.innerHTML = `<a href="test_system.html" id="sysCheckLink" style="color:#ffc107"><i class="fas fa-microchip"></i> فحص النظام</a>`;
-                const logout = document.getElementById('logoutBtn')?.parentElement; 
+                const logout = document.getElementById('logoutBtn')?.parentElement;
                 if (logout) ul.insertBefore(li, logout);
                 else ul.appendChild(li);
             }
@@ -630,10 +630,10 @@ const Settings = {
 const Actions = {
     addWalletFunds: (id) => {
         const amount = prompt('أدخل المبلغ للإيداع:');
-        if(!amount || isNaN(amount)) return;
+        if (!amount || isNaN(amount)) return;
         let wallets = Storage.get('wallets') || [];
         const w = wallets.find(x => x.id === id);
-        if(w) {
+        if (w) {
             w.funds = parseFloat(w.funds || 0) + parseFloat(amount);
             w.collected = parseFloat(w.collected || 0) + parseFloat(amount);
             Storage.set('wallets', wallets);
@@ -730,7 +730,7 @@ const Actions = {
         const phone = document.getElementById('merchantPhoneInput').value;
         const email = document.getElementById('merchantEmailInput').value;
         const loc = document.getElementById('merchantLocationInput').value;
-        
+
         // New Fields
         const cr = document.getElementById('merchantCRInput').value;
         const vat = document.getElementById('merchantVATInput').value;
@@ -740,7 +740,7 @@ const Actions = {
         if (!name) return alert('يرجى إدخال اسم المتجر');
 
         let merchants = Storage.get('merchants') || [];
-        
+
         // Get temp files
         const currentFiles = window.tempMerchantFiles || [];
 
@@ -750,19 +750,19 @@ const Actions = {
             const idx = merchants.findIndex(m => m.id === id);
             if (idx !== -1) {
                 merchants[idx].name = name;
-                if(cat) merchants[idx].category = cat;
-                if(contact) merchants[idx].contactPerson = contact;
-                if(phone) merchants[idx].phone = phone;
-                if(email) merchants[idx].email = email;
-                if(loc) merchants[idx].location = loc;
-                
+                if (cat) merchants[idx].category = cat;
+                if (contact) merchants[idx].contactPerson = contact;
+                if (phone) merchants[idx].phone = phone;
+                if (email) merchants[idx].email = email;
+                if (loc) merchants[idx].location = loc;
+
                 merchants[idx].crNumber = cr;
                 merchants[idx].vatNumber = vat;
                 merchants[idx].bankName = bank;
                 merchants[idx].iban = iban;
-                
+
                 // Append new files to existing
-                if(currentFiles.length > 0) {
+                if (currentFiles.length > 0) {
                     merchants[idx].attachments = (merchants[idx].attachments || []).concat(currentFiles);
                 }
 
@@ -790,7 +790,7 @@ const Actions = {
             });
             Storage.set('merchants', merchants);
             alert('تم إضافة المتجر بنجاح');
-            Actions.cancelMerchantEdit(); 
+            Actions.cancelMerchantEdit();
         }
         loadMerchantsTable();
     },
@@ -951,13 +951,13 @@ function loadWalletsTable() {
     const container = document.getElementById('walletsGrid');
     if (!container) return;
     container.innerHTML = '';
-    
+
     wallets.forEach(w => {
         const collected = (w.collected !== undefined) ? Number(w.collected) : 0;
         const target = (w.target !== undefined && w.target > 0) ? Number(w.target) : 50000;
         const funds = (w.funds !== undefined) ? Number(w.funds) : 0;
         const percent = Math.min(100, Math.round((collected / target) * 100));
-        
+
         const card = document.createElement('div');
         card.className = 'wallet-card';
         card.innerHTML = `
@@ -1002,20 +1002,20 @@ function loadMerchantsTable() {
     const container = document.getElementById('merchantsGrid');
     if (!container) return;
     container.innerHTML = '';
-    
+
     merchants.forEach(m => {
         const isActive = (m.status === 'نشط' || m.status === 'Active');
         const isVerified = (m.crNumber && m.vatNumber);
-        
-        const badge = isActive ? 
-            '<span class="badge-gold" style="background:#e6fffa; color:#00A59B; border-color:#b2f5ea">نشط</span>' : 
+
+        const badge = isActive ?
+            '<span class="badge-gold" style="background:#e6fffa; color:#00A59B; border-color:#b2f5ea">نشط</span>' :
             '<span class="badge-gold" style="background:#fff5f5; color:#c53030; border-color:#feb2b2">غير نشط</span>';
-            
-        const verifiedBadge = isVerified ? 
+
+        const verifiedBadge = isVerified ?
             '<span title="موثق (سجل + ضريبة)" style="color:#28a745; margin-right:5px;"><i class="fas fa-check-circle"></i></span>' : '';
 
         const attachCount = (m.attachments && m.attachments.length) || 0;
-            
+
         const card = document.createElement('div');
         card.className = 'merchant-card';
         card.innerHTML = `
@@ -1562,31 +1562,31 @@ const Orders = {
     populateMerchants: () => {
         const select = document.getElementById('orderPartner');
         if (!select) return;
-        
+
         // Always refresh options
         select.innerHTML = '<option value="">اختر الشريك...</option>';
-        
+
         let merchants = Storage.get('merchants') || [];
-        
+
         // Filter only Active merchants
         const activeMerchants = merchants.filter(m => m.status === 'نشط' || m.status === 'Active');
-        
+
         // Sort alphabetically
         activeMerchants.sort((a, b) => a.name.localeCompare(b.name, 'ar'));
 
         if (activeMerchants.length === 0) {
-             // Fallback if no active merchants found (show all or seed?)
-             // Let's fallback to showing all if none active, or just keep empty
-             if (merchants.length > 0) {
-                 // Show all if none active
-                 merchants.forEach(m => {
+            // Fallback if no active merchants found (show all or seed?)
+            // Let's fallback to showing all if none active, or just keep empty
+            if (merchants.length > 0) {
+                // Show all if none active
+                merchants.forEach(m => {
                     const opt = document.createElement('option');
                     opt.value = m.name;
                     opt.text = m.name + ' (' + m.status + ')';
                     select.appendChild(opt);
-                 });
-             }
-             return;
+                });
+            }
+            return;
         }
 
         activeMerchants.forEach(m => {
@@ -2088,12 +2088,12 @@ window.Support = Support;
     let walletsChanged = false;
     wallets.forEach(w => {
         if (!w.target) {
-             w.target = 50000;
-             w.collected = Math.floor(Math.random() * 20000) + 5000;
-             w.category = 'عام';
-             w.color = '#00A59B';
-             w.icon = 'fas fa-wallet';
-             walletsChanged = true;
+            w.target = 50000;
+            w.collected = Math.floor(Math.random() * 20000) + 5000;
+            w.category = 'عام';
+            w.color = '#00A59B';
+            w.icon = 'fas fa-wallet';
+            walletsChanged = true;
         }
     });
     if (walletsChanged) Storage.set('wallets', wallets);
@@ -2103,17 +2103,17 @@ window.Support = Support;
     let merchantsChanged = false;
     merchants.forEach(m => {
         if (!m.current_balance) {
-             // Add contact info and location
-             m.contactPerson = 'مدير الفرع';
-             m.phone = '050xxxxxxx';
-             m.email = 'info@' + m.name.replace(/\s/g,'') + '.com';
-             m.location = 'الرياض - حي العليا';
-             m.logo = 'assets/logo.png'; // Placeholder
-             merchantsChanged = true;
+            // Add contact info and location
+            m.contactPerson = 'مدير الفرع';
+            m.phone = '050xxxxxxx';
+            m.email = 'info@' + m.name.replace(/\s/g, '') + '.com';
+            m.location = 'الرياض - حي العليا';
+            m.logo = 'assets/logo.png'; // Placeholder
+            merchantsChanged = true;
         }
     });
     if (merchantsChanged) Storage.set('merchants', merchants);
-    
+
     console.log('Data Migration v2 Complete');
 })();
 
@@ -2133,15 +2133,15 @@ Object.assign(Actions, {
         if (!name) return alert('يرجى إدخال اسم المحفظة');
 
         let wallets = Storage.get('wallets') || [];
-        
+
         if (idInput && idInput.value) {
             // Edit Mode
             const id = parseInt(idInput.value);
             const idx = wallets.findIndex(w => w.id === id);
             if (idx !== -1) {
                 wallets[idx].name = name;
-                if(funds) wallets[idx].funds = Number(funds);
-                if(target) wallets[idx].target = Number(target);
+                if (funds) wallets[idx].funds = Number(funds);
+                if (target) wallets[idx].target = Number(target);
                 wallets[idx].category = category;
                 wallets[idx].color = color;
                 wallets[idx].icon = icon;
@@ -2181,17 +2181,17 @@ Object.assign(Actions, {
         document.getElementById('editingWalletId').value = w.id;
         document.getElementById('walletNameInput').value = w.name;
         document.getElementById('walletFundsInput').value = w.funds;
-        if(document.getElementById('walletTargetInput')) document.getElementById('walletTargetInput').value = w.target || '';
-        if(document.getElementById('walletCategoryInput')) document.getElementById('walletCategoryInput').value = w.category || 'عام';
-        if(document.getElementById('walletColorInput')) document.getElementById('walletColorInput').value = w.color || '#00A59B';
-        if(document.getElementById('walletIconInput')) document.getElementById('walletIconInput').value = w.icon || 'fas fa-wallet';
+        if (document.getElementById('walletTargetInput')) document.getElementById('walletTargetInput').value = w.target || '';
+        if (document.getElementById('walletCategoryInput')) document.getElementById('walletCategoryInput').value = w.category || 'عام';
+        if (document.getElementById('walletColorInput')) document.getElementById('walletColorInput').value = w.color || '#00A59B';
+        if (document.getElementById('walletIconInput')) document.getElementById('walletIconInput').value = w.icon || 'fas fa-wallet';
 
         document.getElementById('formTitle').innerText = 'تعديل المحفظة';
         document.getElementById('saveWalletBtn').innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
         document.getElementById('cancelWalletEditBtn').style.display = 'inline-block';
-        
+
         // Scroll to form
-        document.querySelector('.form-container').scrollIntoView({behavior: 'smooth'});
+        document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
     },
 
     cancelWalletEdit: () => {
@@ -2231,11 +2231,11 @@ Object.assign(Actions, {
             const idx = merchants.findIndex(m => m.id === id);
             if (idx !== -1) {
                 merchants[idx].name = name;
-                if(cat) merchants[idx].category = cat;
-                if(contact) merchants[idx].contactPerson = contact;
-                if(phone) merchants[idx].phone = phone;
-                if(email) merchants[idx].email = email;
-                if(loc) merchants[idx].location = loc;
+                if (cat) merchants[idx].category = cat;
+                if (contact) merchants[idx].contactPerson = contact;
+                if (phone) merchants[idx].phone = phone;
+                if (email) merchants[idx].email = email;
+                if (loc) merchants[idx].location = loc;
                 Storage.set('merchants', merchants);
                 alert('تم تعديل بيانات المتجر');
                 Actions.cancelMerchantEdit();
@@ -2276,8 +2276,8 @@ Object.assign(Actions, {
         document.getElementById('merchantFormTitle').innerText = 'تعديل بيانات المتجر';
         document.getElementById('saveMerchantBtn').innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
         document.getElementById('cancelMerchantEditBtn').style.display = 'inline-block';
-        
-        document.querySelector('.form-container').scrollIntoView({behavior: 'smooth'});
+
+        document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
     },
 
     cancelMerchantEdit: () => {
@@ -2288,12 +2288,12 @@ Object.assign(Actions, {
         document.getElementById('merchantPhoneInput').value = '';
         document.getElementById('merchantEmailInput').value = '';
         document.getElementById('merchantLocationInput').value = '';
-        
+
         document.getElementById('merchantCRInput').value = '';
         document.getElementById('merchantVATInput').value = '';
         document.getElementById('merchantBankInput').value = '';
         document.getElementById('merchantIBANInput').value = '';
-        
+
         document.getElementById('fileList').innerHTML = '';
         window.tempMerchantFiles = [];
 
@@ -2312,19 +2312,19 @@ Object.assign(Actions, {
 });
 
 // Helper for card menu
-window.toggleCardMenu = function(el) {
+window.toggleCardMenu = function (el) {
     const dropdown = el.querySelector('.card-menu-dropdown');
     const wasVisible = dropdown.style.display === 'block';
     // Close all others
     document.querySelectorAll('.card-menu-dropdown').forEach(d => d.style.display = 'none');
-    
+
     if (!wasVisible) {
         dropdown.style.display = 'block';
     }
     // Simple click-away listener could be added
 };
 
-(function() {
+(function () {
     const style = document.createElement('style');
     style.innerHTML = `
         .card-menu-btn {
@@ -2377,19 +2377,19 @@ Object.assign(Actions, {
         const fileList = document.getElementById('fileList');
         // Don't clear, append
         Array.from(input.files).forEach(file => {
-             // Simulate "upload"
-             const fileObj = {
-                 name: file.name,
-                 size: file.size,
-                 type: file.type,
-                 date: new Date().toISOString()
-             };
-             window.tempMerchantFiles.push(fileObj);
-             
-             const div = document.createElement('div');
-             div.style.cssText = 'background:#e3f2fd; padding:5px 10px; border-radius:4px; font-size:0.9rem; display:flex; justify-content:space-between; align-items:center; color: #0d47a1;';
-             div.innerHTML = `<span><i class="fas fa-file-upload"></i> ${file.name}</span> <i class="fas fa-check"></i>`;
-             fileList.appendChild(div);
+            // Simulate "upload"
+            const fileObj = {
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                date: new Date().toISOString()
+            };
+            window.tempMerchantFiles.push(fileObj);
+
+            const div = document.createElement('div');
+            div.style.cssText = 'background:#e3f2fd; padding:5px 10px; border-radius:4px; font-size:0.9rem; display:flex; justify-content:space-between; align-items:center; color: #0d47a1;';
+            div.innerHTML = `<span><i class="fas fa-file-upload"></i> ${file.name}</span> <i class="fas fa-check"></i>`;
+            fileList.appendChild(div);
         });
     }
 });
@@ -2402,22 +2402,22 @@ Object.assign(Actions, {
         const merchants = Storage.get('merchants') || [];
         const m = merchants.find(x => x.id == id); // loose check string/number
         if (!m) return alert('المتجر غير موجود');
-        
+
         // Header
         document.getElementById('viewName').innerText = m.name;
         document.getElementById('viewCategory').innerText = m.category || '-';
-        
+
         const isActive = (m.status === 'نشط' || m.status === 'Active');
-        const badge = isActive ? 
-            '<span class="badge-gold" style="background:#e6fffa; color:#00A59B; border-color:#b2f5ea; padding:5px 15px; border-radius:20px;">نشط</span>' : 
+        const badge = isActive ?
+            '<span class="badge-gold" style="background:#e6fffa; color:#00A59B; border-color:#b2f5ea; padding:5px 15px; border-radius:20px;">نشط</span>' :
             '<span class="badge-gold" style="background:#fff5f5; color:#c53030; border-color:#feb2b2; padding:5px 15px; border-radius:20px;">غير نشط</span>';
-        
+
         let badgesHtml = badge;
-        if(m.crNumber && m.vatNumber) {
+        if (m.crNumber && m.vatNumber) {
             badgesHtml += ' <span style="color:#28a745; font-weight:bold; margin-right:10px;"><i class="fas fa-check-circle"></i> موثق</span>';
         }
         document.getElementById('viewBadges').innerHTML = badgesHtml;
-        
+
         // Contact
         document.getElementById('viewContact').innerText = m.contactPerson || '-';
         document.getElementById('viewPhone').innerText = m.phone || '-';
@@ -2432,7 +2432,7 @@ Object.assign(Actions, {
 
         // Attachments
         const attachList = document.getElementById('viewAttachmentsList');
-        if(m.attachments && m.attachments.length > 0) {
+        if (m.attachments && m.attachments.length > 0) {
             attachList.innerHTML = '';
             m.attachments.forEach(f => {
                 const div = document.createElement('div');
@@ -2448,3 +2448,12 @@ Object.assign(Actions, {
         }
     }
 });
+
+
+function loadTables() {
+    console.log('Calling loadTables wrapper');
+    if(typeof loadWalletsTable === 'function') loadWalletsTable();
+    if(typeof loadMerchantsTable === 'function') loadMerchantsTable();
+    if(typeof loadCardsTable === 'function') loadCardsTable();
+    if(typeof loadUsersTable === 'function') loadUsersTable();
+}
