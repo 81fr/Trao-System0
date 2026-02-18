@@ -136,6 +136,14 @@
 
                 <div id="posCardStatus" style="margin-bottom:15px;"></div>
 
+                <div id="posRequestArea" style="display:none; margin-bottom:15px; text-align:center;">
+                    <button id="sendRequestBtn" style="width:100%; background:var(--brand-teal);"
+                        onclick="POS.sendPurchaseRequest()">
+                        <i class="fas fa-paper-plane"></i> إرسال طلب الشراء للمستفيد
+                    </button>
+                    <div id="posRequestStatus" style="margin-top:10px;"></div>
+                </div>
+
                 <div class="form-group">
                     <label>كود سري (تأكيد الشراء)</label>
                     <input id="posConfirmCode" type="text" placeholder="أدخل الكود الظاهر عند المستفيد" maxlength="6"

@@ -1409,6 +1409,14 @@ const POS = {
         document.getElementById('checkoutModal').classList.remove('active');
         document.getElementById('posCardStatus').innerHTML = '';
         document.getElementById('posConfirmCode').value = '';
+
+        // Reset Request Area
+        const reqArea = document.getElementById('posRequestArea');
+        const reqBtn = document.getElementById('sendRequestBtn');
+        const reqStatus = document.getElementById('posRequestStatus');
+        if (reqArea) reqArea.style.display = 'none';
+        if (reqBtn) reqBtn.disabled = false;
+        if (reqStatus) reqStatus.innerHTML = '';
     },
 
     verifyCardAction: () => {
@@ -1437,6 +1445,45 @@ const POS = {
                 <div style="font-weight:700;">${card.beneficiary}</div>
                 <div style="font-size:0.9rem; color:#005a8d;">الرصيد: ${Number(card.balance).toFixed(2)} ر.س</div>
             </div>`;
+
+        // Show request area
+        const reqArea = document.getElementById('posRequestArea');
+        if (reqArea) reqArea.style.display = 'block';
+    },
+
+    sendPurchaseRequest: () => {
+        if (!POS.currentCard) return alert('يرجى التحقق من البطاقة أولاً');
+
+        const btn = document.getElementById('sendRequestBtn');
+        const status = document.getElementById('posRequestStatus');
+
+        // Generate Code
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+        const request = {
+            id: Date.now(),
+            cardNumber: POS.currentCard.number,
+            beneficiaryName: POS.currentCard.beneficiary,
+            amount: POS.total,
+            merchant: 'نقطة بيع احترافية',
+            code: code,
+            status: 'confirmed', // Auto-confirming for simulation in POS
+            timestamp: new Date().toISOString()
+        };
+
+        Storage.add('pendingPurchases', request);
+
+        if (btn) btn.disabled = true;
+        if (status) {
+            status.innerHTML = `
+                <div style="background:#e7f7f6; color:var(--brand-teal); padding:10px; border-radius:8px; border:1px solid #c9e8e5;">
+                    <i class="fas fa-check-circle"></i> تم إرسال الطلب!<br>
+                    <strong>كود التأكيد للمستفيد: ${code}</strong>
+                </div>
+            `;
+        }
+
+        if (typeof showToast === 'function') showToast('تم إرسال طلب الشراء بنجاح', 'success');
     },
 
     processCartPayment: () => {
