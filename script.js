@@ -723,12 +723,76 @@ const Actions = {
     },
 
     addMerchant: () => {
+        const idInput = document.getElementById('editingMerchantId');
         const name = document.getElementById('merchantNameInput').value;
-        const category = document.getElementById('merchantCatInput').value;
+        const cat = document.getElementById('merchantCatInput').value;
+        const contact = document.getElementById('merchantContactInput').value;
+        const phone = document.getElementById('merchantPhoneInput').value;
+        const email = document.getElementById('merchantEmailInput').value;
+        const loc = document.getElementById('merchantLocationInput').value;
+        
+        // New Fields
+        const cr = document.getElementById('merchantCRInput').value;
+        const vat = document.getElementById('merchantVATInput').value;
+        const bank = document.getElementById('merchantBankInput').value;
+        const iban = document.getElementById('merchantIBANInput').value;
+
         if (!name) return alert('يرجى إدخال اسم المتجر');
-        Storage.add('merchants', { id: Math.floor(Math.random() * 1000), name, category, transactions: 0, status: 'نشط' });
-        alert('تم إضافة المتجر بنجاح!');
-        location.reload();
+
+        let merchants = Storage.get('merchants') || [];
+        
+        // Get temp files
+        const currentFiles = window.tempMerchantFiles || [];
+
+        if (idInput && idInput.value) {
+            // Edit
+            const id = parseInt(idInput.value);
+            const idx = merchants.findIndex(m => m.id === id);
+            if (idx !== -1) {
+                merchants[idx].name = name;
+                if(cat) merchants[idx].category = cat;
+                if(contact) merchants[idx].contactPerson = contact;
+                if(phone) merchants[idx].phone = phone;
+                if(email) merchants[idx].email = email;
+                if(loc) merchants[idx].location = loc;
+                
+                merchants[idx].crNumber = cr;
+                merchants[idx].vatNumber = vat;
+                merchants[idx].bankName = bank;
+                merchants[idx].iban = iban;
+                
+                // Append new files to existing
+                if(currentFiles.length > 0) {
+                    merchants[idx].attachments = (merchants[idx].attachments || []).concat(currentFiles);
+                }
+
+                Storage.set('merchants', merchants);
+                alert('تم تعديل بيانات المتجر');
+                Actions.cancelMerchantEdit();
+            }
+        } else {
+            // Add
+            merchants.push({
+                id: Date.now(),
+                name,
+                category: cat || 'عام',
+                contactPerson: contact,
+                phone,
+                email,
+                location: loc,
+                crNumber: cr,
+                vatNumber: vat,
+                bankName: bank,
+                iban: iban,
+                attachments: currentFiles,
+                transactions: 0,
+                status: 'نشط'
+            });
+            Storage.set('merchants', merchants);
+            alert('تم إضافة المتجر بنجاح');
+            Actions.cancelMerchantEdit(); 
+        }
+        loadMerchantsTable();
     },
 
     saveUser: () => {
@@ -941,9 +1005,16 @@ function loadMerchantsTable() {
     
     merchants.forEach(m => {
         const isActive = (m.status === 'نشط' || m.status === 'Active');
+        const isVerified = (m.crNumber && m.vatNumber);
+        
         const badge = isActive ? 
             '<span class="badge-gold" style="background:#e6fffa; color:#00A59B; border-color:#b2f5ea">نشط</span>' : 
             '<span class="badge-gold" style="background:#fff5f5; color:#c53030; border-color:#feb2b2">غير نشط</span>';
+            
+        const verifiedBadge = isVerified ? 
+            '<span title="موثق (سجل + ضريبة)" style="color:#28a745; margin-right:5px;"><i class="fas fa-check-circle"></i></span>' : '';
+
+        const attachCount = (m.attachments && m.attachments.length) || 0;
             
         const card = document.createElement('div');
         card.className = 'merchant-card';
@@ -958,17 +1029,19 @@ function loadMerchantsTable() {
             
             <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:16px;">
                 <img src="${m.logo || 'assets/logo.png'}" style="width:50px; height:50px; border-radius:8px; object-fit:contain; border:1px solid #eee;">
-                ${badge}
+                <div>
+                   ${badge}
+                </div>
             </div>
             
-            <h3>${m.name}</h3>
+            <h3>${m.name} ${verifiedBadge}</h3>
             <p style="color:#777; font-size:0.9rem; margin-bottom:16px;">${m.category || 'عام'}</p>
             
             <div class="merchant-contact">
                 <div class="contact-row"><i class="fas fa-map-marker-alt"></i> <span>${m.location || 'الرياض'}</span></div>
                 <div class="contact-row"><i class="fas fa-user-tie"></i> <span>${m.contactPerson || '-'}</span></div>
-                <div class="contact-row"><i class="fas fa-phone"></i> <span>${m.phone || '-'}</span></div>
-                <div class="contact-row"><i class="fas fa-envelope"></i> <span>${m.email || '-'}</span></div>
+                <div class="contact-row"><i class="fas fa-id-card"></i> <span>${m.crNumber || 'لا يوجد سجل'}</span></div>
+                <div class="contact-row"><i class="fas fa-paperclip"></i> <span>${attachCount} مرفقات</span></div>
             </div>
             
             <div style="margin-top:20px; text-align:center;">
@@ -2217,6 +2290,14 @@ Object.assign(Actions, {
         document.getElementById('merchantPhoneInput').value = '';
         document.getElementById('merchantEmailInput').value = '';
         document.getElementById('merchantLocationInput').value = '';
+        
+        document.getElementById('merchantCRInput').value = '';
+        document.getElementById('merchantVATInput').value = '';
+        document.getElementById('merchantBankInput').value = '';
+        document.getElementById('merchantIBANInput').value = '';
+        
+        document.getElementById('fileList').innerHTML = '';
+        window.tempMerchantFiles = [];
 
         document.getElementById('merchantFormTitle').innerText = 'إضافة متجر جديد';
         document.getElementById('saveMerchantBtn').innerHTML = '<i class="fas fa-plus"></i> إضافة متجر';
@@ -2288,3 +2369,29 @@ window.toggleCardMenu = function(el) {
     `;
     document.head.appendChild(style);
 })();
+
+/* ===========================
+   FILE UPLOAD HELPER
+=========================== */
+window.tempMerchantFiles = [];
+Object.assign(Actions, {
+    handleFileUpload: (input) => {
+        const fileList = document.getElementById('fileList');
+        // Don't clear, append
+        Array.from(input.files).forEach(file => {
+             // Simulate "upload"
+             const fileObj = {
+                 name: file.name,
+                 size: file.size,
+                 type: file.type,
+                 date: new Date().toISOString()
+             };
+             window.tempMerchantFiles.push(fileObj);
+             
+             const div = document.createElement('div');
+             div.style.cssText = 'background:#e3f2fd; padding:5px 10px; border-radius:4px; font-size:0.9rem; display:flex; justify-content:space-between; align-items:center; color: #0d47a1;';
+             div.innerHTML = `<span><i class="fas fa-file-upload"></i> ${file.name}</span> <i class="fas fa-check"></i>`;
+             fileList.appendChild(div);
+        });
+    }
+});
