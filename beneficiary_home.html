@@ -61,7 +61,13 @@
 
             <!-- ===== طلبات الشراء الواردة ===== -->
             <div class="form-container" style="border-top: 4px solid #8CC240; margin-top:20px;">
-                <h3><i class="fas fa-bell"></i> طلبات الشراء الواردة</h3>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h3><i class="fas fa-bell"></i> طلبات الشراء الواردة</h3>
+                    <button class="secondary" style="padding:5px 12px; font-size:0.85rem;"
+                        onclick="PendingPurchase.checkOnce(); if(typeof showToast==='function') showToast('جاري التحديث...','info');">
+                        <i class="fas fa-sync-alt"></i> تحديث
+                    </button>
+                </div>
                 <p style="color:#666; font-size:0.9rem; margin-bottom:15px;">عند قيام التاجر بإنشاء طلب شراء ستظهر
                     التفاصيل هنا لتأكيدها أو رفضها.</p>
 
@@ -145,7 +151,7 @@
         </footer>
     </main>
 
-    <script src="script.js?v=21"></script>
+    <script src="script.js?v=22"></script>
     <script>
         /* ===== Pending Purchase Requests (from merchant) ===== */
         const PendingPurchase = {
@@ -161,52 +167,44 @@
 
             checkOnce: () => {
                 const user = Auth.user;
-                if (!user) { console.log('[PendingPurchase] No user logged in'); return; }
-                const benefName = user.linkedEntity || user.name;
+                if (!user) return;
+                const benefName = (user.linkedEntity || user.name).trim();
 
-                // Find ALL cards belonging to this beneficiary
                 const cards = Storage.get('cards') || [];
-                let myCards = [];
-
-                // 1. By identity
-                if (/^\d+$/.test(user.username)) {
-                    const byId = cards.filter(c => c.identity === user.username);
-                    myCards.push(...byId);
-                }
-
-                // 2. By name
-                const byName = cards.filter(c => c.beneficiary === benefName);
-                myCards.push(...byName);
-
-                // 3. By partial name
-                const byPartial = cards.filter(c => c.beneficiary && c.beneficiary.includes(benefName));
-                myCards.push(...byPartial);
-
-                // Deduplicate cards by number
-                const uniqueCards = [...new Map(myCards.map(item => [item.number, item])).values()];
-                const myCardNumbers = uniqueCards.map(c => c.number);
-
                 const pending = Storage.get('pendingPurchases') || [];
 
-                // Check if request matches name OR matches ANY of the user's card numbers
-                const req = pending.find(p => p.status === 'pending' && Date.now() < p.expiresAt &&
+                // Find my primary card identity
+                const myIdentity = (user.username || '').trim();
+
+                // Get my card numbers
+                const myCardNumbers = cards
+                    .filter(c => c.beneficiary === benefName || c.identity === myIdentity)
+                    .map(c => c.number);
+
+                // Find matching pending request
+                const req = pending.find(p =>
+                    p.status === 'pending' &&
+                    Date.now() < p.expiresAt &&
                     (p.beneficiary === benefName || myCardNumbers.includes(p.cardNumber))
                 );
 
+                const noPendingEl = document.getElementById('noPendingState');
+                const pendingCardEl = document.getElementById('pendingPurchaseCard');
+
                 if (req) {
                     PendingPurchase.currentRequest = req;
-                    document.getElementById('noPendingState').style.display = 'none';
-                    document.getElementById('pendingPurchaseCard').style.display = 'block';
-                    document.getElementById('pendingMerchant').innerText = req.merchant || 'تاجر';
-                    document.getElementById('pendingCode').innerText = req.code;
-                    document.getElementById('pendingAmount').innerText = Number(req.amount).toFixed(2);
+                    if (noPendingEl) noPendingEl.style.display = 'none';
+                    if (pendingCardEl) {
+                        pendingCardEl.style.display = 'block';
+                        document.getElementById('pendingMerchant').innerText = req.merchant || 'تاجر';
+                        document.getElementById('pendingCode').innerText = req.code;
+                        document.getElementById('pendingAmount').innerText = Number(req.amount).toFixed(2);
+                    }
                     PendingPurchase.startTimer(req.expiresAt);
                 } else {
-                    if (PendingPurchase.currentRequest) {
-                        PendingPurchase.currentRequest = null;
-                        document.getElementById('noPendingState').style.display = '';
-                        document.getElementById('pendingPurchaseCard').style.display = 'none';
-                    }
+                    PendingPurchase.currentRequest = null;
+                    if (noPendingEl) noPendingEl.style.display = '';
+                    if (pendingCardEl) pendingCardEl.style.display = 'none';
                 }
             },
 
