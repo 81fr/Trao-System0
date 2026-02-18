@@ -1022,6 +1022,7 @@ function loadMerchantsTable() {
             <div class="card-menu-btn" onclick="toggleCardMenu(this)">
                 <i class="fas fa-ellipsis-v"></i>
                 <div class="card-menu-dropdown" style="display:none;">
+                    <button onclick="location.href='merchant_view.html?id=${m.id}'"><i class="fas fa-eye"></i> عرض التفاصيل</button>
                     <button onclick="Actions.editMerchant(${m.id})"><i class="fas fa-edit"></i> تعديل</button>
                     <button onclick="Actions.deleteMerchant(${m.id})" style="color:red"><i class="fas fa-trash"></i> حذف</button>
                 </div>
@@ -1029,24 +1030,21 @@ function loadMerchantsTable() {
             
             <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:16px;">
                 <img src="${m.logo || 'assets/logo.png'}" style="width:50px; height:50px; border-radius:8px; object-fit:contain; border:1px solid #eee;">
-                <div>
-                   ${badge}
-                </div>
+                <div>${badge}</div>
             </div>
             
-            <h3>${m.name} ${verifiedBadge}</h3>
+            <h3 style="cursor:pointer" onclick="location.href='merchant_view.html?id=${m.id}'">${m.name} ${verifiedBadge}</h3>
             <p style="color:#777; font-size:0.9rem; margin-bottom:16px;">${m.category || 'عام'}</p>
             
             <div class="merchant-contact">
                 <div class="contact-row"><i class="fas fa-map-marker-alt"></i> <span>${m.location || 'الرياض'}</span></div>
-                <div class="contact-row"><i class="fas fa-user-tie"></i> <span>${m.contactPerson || '-'}</span></div>
                 <div class="contact-row"><i class="fas fa-id-card"></i> <span>${m.crNumber || 'لا يوجد سجل'}</span></div>
                 <div class="contact-row"><i class="fas fa-paperclip"></i> <span>${attachCount} مرفقات</span></div>
             </div>
             
             <div style="margin-top:20px; text-align:center;">
-                <button class="secondary" style="width:100%" onclick="alert('عرض سجل العمليات')">
-                    <i class="fas fa-history"></i> سجل العمليات (${m.transactions || 0})
+                <button class="secondary" style="width:100%" onclick="location.href='merchant_view.html?id=${m.id}'">
+                    عرض الملف الكامل
                 </button>
             </div>
         `;
@@ -2393,5 +2391,60 @@ Object.assign(Actions, {
              div.innerHTML = `<span><i class="fas fa-file-upload"></i> ${file.name}</span> <i class="fas fa-check"></i>`;
              fileList.appendChild(div);
         });
+    }
+});
+
+/* ===========================
+   MERCHANT PROFILE LOAD
+=========================== */
+Object.assign(Actions, {
+    loadMerchantProfile: (id) => {
+        const merchants = Storage.get('merchants') || [];
+        const m = merchants.find(x => x.id == id); // loose check string/number
+        if (!m) return alert('المتجر غير موجود');
+        
+        // Header
+        document.getElementById('viewName').innerText = m.name;
+        document.getElementById('viewCategory').innerText = m.category || '-';
+        
+        const isActive = (m.status === 'نشط' || m.status === 'Active');
+        const badge = isActive ? 
+            '<span class="badge-gold" style="background:#e6fffa; color:#00A59B; border-color:#b2f5ea; padding:5px 15px; border-radius:20px;">نشط</span>' : 
+            '<span class="badge-gold" style="background:#fff5f5; color:#c53030; border-color:#feb2b2; padding:5px 15px; border-radius:20px;">غير نشط</span>';
+        
+        let badgesHtml = badge;
+        if(m.crNumber && m.vatNumber) {
+            badgesHtml += ' <span style="color:#28a745; font-weight:bold; margin-right:10px;"><i class="fas fa-check-circle"></i> موثق</span>';
+        }
+        document.getElementById('viewBadges').innerHTML = badgesHtml;
+        
+        // Contact
+        document.getElementById('viewContact').innerText = m.contactPerson || '-';
+        document.getElementById('viewPhone').innerText = m.phone || '-';
+        document.getElementById('viewEmail').innerText = m.email || '-';
+        document.getElementById('viewLocation').innerText = m.location || '-';
+
+        // Reg
+        document.getElementById('viewCR').innerText = m.crNumber || '-';
+        document.getElementById('viewVAT').innerText = m.vatNumber || '-';
+        document.getElementById('viewBank').innerText = m.bankName || '-';
+        document.getElementById('viewIBAN').innerText = m.iban || '-';
+
+        // Attachments
+        const attachList = document.getElementById('viewAttachmentsList');
+        if(m.attachments && m.attachments.length > 0) {
+            attachList.innerHTML = '';
+            m.attachments.forEach(f => {
+                const div = document.createElement('div');
+                div.className = 'attachment-item';
+                div.innerHTML = `
+                    <span><i class="fas fa-file-alt" style="color:#00A59B; margin-left:10px;"></i> ${f.name}</span>
+                    <button class="secondary" onclick="alert('تحميل الملف... (محاكاة)')" style="padding:5px 10px; font-size:0.8rem;">تحميل</button>
+                `;
+                attachList.appendChild(div);
+            });
+        } else {
+            attachList.innerHTML = '<p style="color:#777; text-align:center;">لا توجد مرفقات</p>';
+        }
     }
 });
