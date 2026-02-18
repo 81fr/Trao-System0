@@ -1386,8 +1386,8 @@ const Orders = {
 
     load: () => {
         try {
-            const tbody = document.getElementById('ordersTableBody');
-            if (!tbody) return; // Not on orders page
+            const grid = document.getElementById('ordersGrid');
+            if (!grid) return; // Not on orders page
 
             // Ensure data exists
             let orders = Storage.get('supply_orders');
@@ -1396,66 +1396,91 @@ const Orders = {
                 Storage.set('supply_orders', []);
             }
 
-            // Render table
-            if (orders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#777">لا توجد أوامر توريد حالياً</td></tr>';
-            } else {
-                tbody.innerHTML = orders.map(o => {
-                    if (!o) return ''; // Skip nulls
-                    let actions = '';
-                    let statusBadge = '';
-
-                    // Status Badge
-                    if (o.status === 'Completed') statusBadge = '<span class="status-badge status-active">منفذ</span>';
-                    else if (o.status === 'Pending') statusBadge = '<span class="status-badge" style="background:#ffc107; color:#000">قيد الانتظار</span>';
-                    else if (o.status === 'Withdrawn') statusBadge = '<span class="status-badge" style="background:#6c757d; color:#fff">مسحوب</span>';
-                    else if (o.status === 'Rejected') statusBadge = `<span class="status-badge" style="background:#dc3545; color:#fff" title="${o.rejectionReason || 'لا يوجد سبب'}">مرفوض</span>`;
-                    else if (o.status === 'Cancelled') statusBadge = '<span class="status-badge" style="background:#000; color:#fff">ملغي نهائياً</span>';
-                    else if (o.status === 'Accepted') statusBadge = '<span class="status-badge" style="background:#17a2b8; color:#fff">مقبول</span>';
-                    else statusBadge = `<span class="status-badge">${o.status}</span>`;
-
-                    // Actions
-                    if (o.status === 'Pending') {
-                        actions += `<button onclick="Orders.withdraw('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#ff9800; color:white; border:none; margin-inline-end:5px;">سحب</button>`;
-                        actions += `<button onclick="Orders.execute('${o.id}')" style="padding:5px 10px; font-size:0.8rem; margin-inline-end:5px;">تنفيذ</button>`;
-                    }
-                    if (o.status === 'Accepted') {
-                        actions += `<button onclick="Orders.execute('${o.id}')" style="padding:5px 10px; font-size:0.8rem; margin-inline-end:5px;">تنفيذ</button>`;
-                        actions += `<button onclick="Orders.withdraw('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#ff9800; color:white; border:none; margin-inline-end:5px;">سحب</button>`;
-                    }
-                    if (o.status === 'Rejected') {
-                        actions += `<button onclick="Orders.reopen('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#17a2b8; color:white; border:none; margin-inline-end:5px;">إعادة فتح</button>`;
-                        actions += `<button onclick="Orders.cancelFinal('${o.id}')" style="padding:5px 10px; font-size:0.8rem; background-color:#343a40; color:white; border:none; margin-inline-end:5px;">إلغاء</button>`;
-                    }
-
-                    actions += `<button class="secondary" onclick="Orders.printInvoice('${o.id}')" style="padding:5px 10px; font-size:0.8rem; margin-inline-end:5px;"><i class="fas fa-print"></i></button>`;
-
-                    if (['Pending', 'Withdrawn', 'Cancelled'].includes(o.status) || !o.status) {
-                        actions += `<button class="secondary" onclick="Orders.delete('${o.id}')" style="padding:5px 10px; font-size:0.8rem; color:red; border-color:red; margin-inline-end:5px;"><i class="fas fa-trash"></i></button>`;
-                    }
-
-                    return `
-                    <tr>
-                        <td>#${o.id}</td>
-                        <td>${o.item} ${o.status === 'Rejected' ? ('<br><small style="color:red">' + (o.rejectionReason || '') + '</small>') : ''}</td>
-                        <td style="font-weight:600;color:#00A59B">${o.partner || "—"}</td>
-                        <td>${Number(o.cost || 0).toLocaleString('ar-SA')} ريال</td>
-                        <td>${o.date}</td>
-                        <td>${statusBadge}</td>
-                        <td>${actions}</td>
-                    </tr>`;
-                }).join('');
-            }
-
             // Populate merchants dropdown
-            Orders.populateMerchants();
+            if (Orders.populateMerchants) Orders.populateMerchants();
+
+            // Render grid
+            grid.innerHTML = '';
+            if (orders.length === 0) {
+                grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#777; background:#fff; border-radius:16px; border:1px dashed #ccc;">لا توجد أوامر توريد حالياً. قم بإنشاء أول طلب!</div>';
+            } else {
+                // Sort by ID desc (newest first)
+                orders.slice().reverse().forEach(o => {
+                    if (!o) return;
+
+                    let statusRole = 'status-badge';
+                    let statusText = o.status;
+                    let statusColorStyle = '';
+
+                    if (o.status === 'Completed') { statusText = 'منفذ'; statusRole += ' status-active'; }
+                    else if (o.status === 'Pending') { statusText = 'قيد الانتظار'; statusColorStyle = 'background:#fff8e1; color:#f57f17; border-color:#ffecb3;'; }
+                    else if (o.status === 'Withdrawn') { statusText = 'مسحوب'; statusColorStyle = 'background:#f1f2f6; color:#6c757d; border-color:#dbe2e8;'; }
+                    else if (o.status === 'Rejected') { statusText = 'مرفوض'; statusRole += ' status-inactive'; }
+                    else if (o.status === 'Cancelled') { statusText = 'ملغي'; statusColorStyle = 'background:#000; color:#fff;'; }
+                    else if (o.status === 'Accepted') { statusText = 'مقبول'; statusColorStyle = 'background:#e3f2fd; color:#0d47a1; border-color:#bbdefb;'; }
+
+                    const card = document.createElement('div');
+                    card.className = 'merchant-card'; // Reuse merchant card style
+                    card.innerHTML = `
+                        <div class="card-menu-btn" onclick="toggleCardMenu(this)">
+                            <i class="fas fa-ellipsis-v"></i>
+                            <div class="card-menu-dropdown" style="display:none;">
+                                ${Orders.getActionsHTML(o)}
+                            </div>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px;">
+                            <span style="font-family:monospace; font-size:0.9rem; color:#888; background:#f8f9fa; padding:2px 8px; border-radius:4px;">#${o.id}</span>
+                            <span class="${statusRole}" style="${statusColorStyle}">${statusText}</span>
+                        </div>
+
+                        <h3 style="margin-bottom:6px; font-size:1.1rem; color:var(--brand-ink);">${o.item}</h3>
+                        <p style="color:var(--brand-teal); font-weight:600; font-size:0.95rem; margin-bottom:16px;">
+                            <i class="fas fa-store" style="margin-left:5px; opacity:0.7;"></i> ${o.partner}
+                        </p>
+
+                        <div style="background:#f8f9fa; padding:12px; border-radius:10px; margin-bottom:16px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                                <span style="color:#777; font-size:0.85rem;">القيمة:</span>
+                                <span style="font-weight:bold; font-size:1.1rem;">${Number(o.cost).toLocaleString('ar-SA')} <small>ريال</small></span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between;">
+                                <span style="color:#777; font-size:0.85rem;">التاريخ:</span>
+                                <span style="font-size:0.9rem;">${o.date}</span>
+                            </div>
+                            ${o.status === 'Rejected' ? `<div style="margin-top:8px; padding-top:8px; border-top:1px dashed #ddd; color:red; font-size:0.85rem;">سبب الرفض: ${o.rejectionReason}</div>` : ''}
+                        </div>
+                     `;
+                    grid.appendChild(card);
+                });
+            }
 
         } catch (e) {
             console.error('Orders.load error:', e);
-            const tbody = document.getElementById('ordersTableBody');
-            if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="color:red;text-align:center">حدث خطأ في تحميل البيانات: ${e.message}</td></tr>`;
+            document.getElementById('ordersGrid').innerHTML = `<div style="color:red;text-align:center">حدث خطأ: ${e.message}</div>`;
         }
     },
+
+    getActionsHTML: (o) => {
+        let html = '';
+        if (o.status === 'Pending') {
+            html += `<button onclick="Orders.withdraw('${o.id}')"><i class="fas fa-hand-paper" style="color:#ff9800"></i> سحب</button>`;
+            html += `<button onclick="Orders.execute('${o.id}')"><i class="fas fa-check" style="color:green"></i> تنفيذ</button>`;
+        } else if (o.status === 'Accepted') {
+            html += `<button onclick="Orders.execute('${o.id}')"><i class="fas fa-check" style="color:green"></i> تنفيذ</button>`;
+            html += `<button onclick="Orders.withdraw('${o.id}')"><i class="fas fa-hand-paper" style="color:#ff9800"></i> سحب</button>`;
+        } else if (o.status === 'Rejected') {
+            html += `<button onclick="Orders.reopen('${o.id}')"><i class="fas fa-redo"></i> إعادة فتح</button>`;
+            html += `<button onclick="Orders.cancelFinal('${o.id}')" style="color:red"><i class="fas fa-ban"></i> إلغاء نهائي</button>`;
+        }
+
+        // Common actions
+        html += `<button onclick="Orders.printInvoice('${o.id}')"><i class="fas fa-print"></i> طباعة</button>`;
+        html += `<button onclick="Orders.delete('${o.id}')" style="color:red"><i class="fas fa-trash"></i> حذف</button>`;
+
+        return html;
+    },
+
 
     currentWithdrawId: null,
 
@@ -1630,7 +1655,7 @@ const Orders = {
             Orders.load();
         }
     }
-};;
+};
 
 /* ===========================
    ONLOAD CONTROLLER
@@ -1647,6 +1672,10 @@ window.onload = () => {
         if (typeof loadCardsTable === 'function') loadCardsTable();
         if (typeof loadWalletsTable === 'function') loadWalletsTable();
         if (typeof loadMerchantsTable === 'function') loadMerchantsTable();
+
+        // Orders
+        if (typeof Orders !== 'undefined' && typeof Orders.load === 'function') Orders.load();
+
         if (typeof loadUsersTable === 'function') {
             loadUsersTable();
             const roleSelect = document.getElementById('newUserRole');
@@ -2452,8 +2481,8 @@ Object.assign(Actions, {
 
 function loadTables() {
     console.log('Calling loadTables wrapper');
-    if(typeof loadWalletsTable === 'function') loadWalletsTable();
-    if(typeof loadMerchantsTable === 'function') loadMerchantsTable();
-    if(typeof loadCardsTable === 'function') loadCardsTable();
-    if(typeof loadUsersTable === 'function') loadUsersTable();
+    if (typeof loadWalletsTable === 'function') loadWalletsTable();
+    if (typeof loadMerchantsTable === 'function') loadMerchantsTable();
+    if (typeof loadCardsTable === 'function') loadCardsTable();
+    if (typeof loadUsersTable === 'function') loadUsersTable();
 }
