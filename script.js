@@ -1463,11 +1463,12 @@ const POS = {
         const request = {
             id: Date.now(),
             cardNumber: POS.currentCard.number,
-            beneficiaryName: POS.currentCard.beneficiary,
+            beneficiary: POS.currentCard.beneficiary,
             amount: POS.total,
             merchant: 'نقطة بيع احترافية',
             code: code,
-            status: 'confirmed', // Auto-confirming for simulation in POS
+            status: 'pending',
+            expiresAt: Date.now() + (5 * 60 * 1000), // 5 minutes
             timestamp: new Date().toISOString()
         };
 
