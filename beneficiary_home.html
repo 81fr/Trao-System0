@@ -3,9 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-
     <title>بوابة المستفيد - تراوف</title>
-
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
@@ -17,7 +15,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="assets/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
 </head>
 
 <body>
@@ -29,7 +26,6 @@
             <li><a href="support.html"><i class="fas fa-headset"></i> الدعم الفني</a></li>
             <li><a href="#" onclick="Auth.logout()"><i class="fas fa-sign-out-alt"></i> تسجيل خروج</a></li>
         </ul>
-
     </nav>
 
     <main class="main-content">
@@ -128,7 +124,6 @@
                 </button>
             </div>
         </div>
-        </div>
 
         <h3><i class="fas fa-history"></i> آخر العمليات</h3>
         <div class="table-container">
@@ -143,266 +138,241 @@
                 <tbody id="beneficiaryTransactionsTable"></tbody>
             </table>
         </div>
-        </div>
-        timerInterval: null,
 
-        startPolling: () => {
-        PendingPurchase.checkOnce();
-        if (PendingPurchase.pollInterval) clearInterval(PendingPurchase.pollInterval);
-        PendingPurchase.pollInterval = setInterval(() => PendingPurchase.checkOnce(), 3000);
-        },
+        <footer class="main-footer">
+            <p>صنع في تراؤف</p>
+            <img src="assets/logo.png" alt="TRAOF Logo">
+        </footer>
+    </main>
 
-        checkOnce: () => {
-        const user = Auth.user;
-        if (!user) { console.log('[PendingPurchase] No user logged in'); return; }
-        const benefName = user.linkedEntity || user.name;
+    <script src="script.js?v=21"></script>
+    <script>
+        /* ===== Pending Purchase Requests (from merchant) ===== */
+        const PendingPurchase = {
+            pollInterval: null,
+            currentRequest: null,
+            timerInterval: null,
 
-        // Find ALL cards belonging to this beneficiary
-        const cards = Storage.get('cards') || [];
-        let myCards = [];
+            startPolling: () => {
+                PendingPurchase.checkOnce();
+                if (PendingPurchase.pollInterval) clearInterval(PendingPurchase.pollInterval);
+                PendingPurchase.pollInterval = setInterval(() => PendingPurchase.checkOnce(), 3000);
+            },
 
-        // 1. By identity
-        if (/^\d+$/.test(user.username)) {
-        const byId = cards.filter(c => c.identity === user.username);
-        myCards.push(...byId);
-        }
+            checkOnce: () => {
+                const user = Auth.user;
+                if (!user) { console.log('[PendingPurchase] No user logged in'); return; }
+                const benefName = user.linkedEntity || user.name;
 
-        // 2. By name
-        const byName = cards.filter(c => c.beneficiary === benefName);
-        myCards.push(...byName);
+                // Find ALL cards belonging to this beneficiary
+                const cards = Storage.get('cards') || [];
+                let myCards = [];
 
-        // 3. By partial name
-        const byPartial = cards.filter(c => c.beneficiary && c.beneficiary.includes(benefName));
-        myCards.push(...byPartial);
+                // 1. By identity
+                if (/^\d+$/.test(user.username)) {
+                    const byId = cards.filter(c => c.identity === user.username);
+                    myCards.push(...byId);
+                }
 
-        // Deduplicate cards by number
-        const uniqueCards = [...new Map(myCards.map(item => [item.number, item])).values()];
-        const myCardNumbers = uniqueCards.map(c => c.number);
+                // 2. By name
+                const byName = cards.filter(c => c.beneficiary === benefName);
+                myCards.push(...byName);
 
-        const pending = Storage.get('pendingPurchases') || [];
-        console.log('[PendingPurchase] Checking:', { benefName, myCardNumbers, pendingCount: pending.length, pending:
-        pending.map(p => ({ code: p.code, status: p.status, beneficiary: p.beneficiary, cardNumber: p.cardNumber,
-        expired: Date.now() > p.expiresAt })) });
+                // 3. By partial name
+                const byPartial = cards.filter(c => c.beneficiary && c.beneficiary.includes(benefName));
+                myCards.push(...byPartial);
 
-        // Check if request matches name OR matches ANY of the user's card numbers
-        const req = pending.find(p => p.status === 'pending' && Date.now() < p.expiresAt && (p.beneficiary===benefName
-            || myCardNumbers.includes(p.cardNumber)) ); if (req) { console.log('[PendingPurchase] ✅ Found matching
-            request:', req.code, req.amount); PendingPurchase.currentRequest=req;
-            document.getElementById('noPendingState').style.display='none' ;
-            document.getElementById('pendingPurchaseCard').style.display='block' ;
-            document.getElementById('pendingMerchant').innerText=req.merchant || 'تاجر' ;
-            document.getElementById('pendingCode').innerText=req.code;
-            document.getElementById('pendingAmount').innerText=Number(req.amount).toFixed(2);
-            PendingPurchase.startTimer(req.expiresAt); } else { console.log('[PendingPurchase] ❌ No matching pending
-            request found'); if (PendingPurchase.currentRequest) { // Was showing, now gone (expired/processed)
-            PendingPurchase.currentRequest=null; } document.getElementById('noPendingState').style.display='' ;
-            document.getElementById('pendingPurchaseCard').style.display='none' ; } }, startTimer: (expiresAt)=> {
-            if (PendingPurchase.timerInterval) clearInterval(PendingPurchase.timerInterval);
-            const timerEl = document.getElementById('pendingTimer');
-            PendingPurchase.timerInterval = setInterval(() => {
-            const remaining = expiresAt - Date.now();
-            if (remaining <= 0) { clearInterval(PendingPurchase.timerInterval); timerEl.innerText='انتهى!' ;
-                timerEl.style.color='#c0392b' ; PendingPurchase.checkOnce(); return; } const mins=Math.floor(remaining /
-                60000); const secs=Math.floor((remaining % 60000) / 1000); timerEl.innerText=mins + ':' +
-                String(secs).padStart(2, '0' ); }, 1000); }, manualCheck: ()=> {
+                // Deduplicate cards by number
+                const uniqueCards = [...new Map(myCards.map(item => [item.number, item])).values()];
+                const myCardNumbers = uniqueCards.map(c => c.number);
+
+                const pending = Storage.get('pendingPurchases') || [];
+
+                // Check if request matches name OR matches ANY of the user's card numbers
+                const req = pending.find(p => p.status === 'pending' && Date.now() < p.expiresAt &&
+                    (p.beneficiary === benefName || myCardNumbers.includes(p.cardNumber))
+                );
+
+                if (req) {
+                    PendingPurchase.currentRequest = req;
+                    document.getElementById('noPendingState').style.display = 'none';
+                    document.getElementById('pendingPurchaseCard').style.display = 'block';
+                    document.getElementById('pendingMerchant').innerText = req.merchant || 'تاجر';
+                    document.getElementById('pendingCode').innerText = req.code;
+                    document.getElementById('pendingAmount').innerText = Number(req.amount).toFixed(2);
+                    PendingPurchase.startTimer(req.expiresAt);
+                } else {
+                    if (PendingPurchase.currentRequest) {
+                        PendingPurchase.currentRequest = null;
+                        document.getElementById('noPendingState').style.display = '';
+                        document.getElementById('pendingPurchaseCard').style.display = 'none';
+                    }
+                }
+            },
+
+            startTimer: (expiresAt) => {
+                if (PendingPurchase.timerInterval) clearInterval(PendingPurchase.timerInterval);
+                const timerEl = document.getElementById('pendingTimer');
+                PendingPurchase.timerInterval = setInterval(() => {
+                    const remaining = expiresAt - Date.now();
+                    if (remaining <= 0) {
+                        clearInterval(PendingPurchase.timerInterval);
+                        timerEl.innerText = 'انتهى!';
+                        timerEl.style.color = '#c0392b';
+                        PendingPurchase.checkOnce();
+                        return;
+                    }
+                    const mins = Math.floor(remaining / 60000);
+                    const secs = Math.floor((remaining % 60000) / 1000);
+                    timerEl.innerText = mins + ':' + String(secs).padStart(2, '0');
+                }, 1000);
+            },
+
+            manualCheck: () => {
                 const codeInput = document.getElementById('manualCodeInput');
                 const code = codeInput.value.trim();
                 if (!code || code.length !== 6) return alert('الرجاء إدخال كود صحيح مكون من 6 أرقام');
 
                 const pending = Storage.get('pendingPurchases') || [];
-                // Check against ALL cards logic again to be safe
                 const user = Auth.user;
                 const benefName = user.linkedEntity || user.name;
                 const cards = Storage.get('cards') || [];
 
-                // Find all my card numbers
                 let myCards = [];
                 if (/^\d+$/.test(user.username)) myCards.push(...cards.filter(c => c.identity === user.username));
                 myCards.push(...cards.filter(c => c.beneficiary === benefName));
                 myCards.push(...cards.filter(c => c.beneficiary && c.beneficiary.includes(benefName)));
                 const myCardNumbers = [...new Set(myCards.map(c => c.number))];
 
-                // Find the request by CODE + (Card OR Name match)
                 const req = pending.find(p => p.code === code && p.status === 'pending' &&
-                (p.beneficiary === benefName || myCardNumbers.includes(p.cardNumber))
+                    (p.beneficiary === benefName || myCardNumbers.includes(p.cardNumber))
                 );
 
                 if (req) {
-                console.log('[ManualCheck] Found:', req);
-                PendingPurchase.currentRequest = req;
-                document.getElementById('noPendingState').style.display = 'none';
-                document.getElementById('pendingPurchaseCard').style.display = 'block';
-                document.getElementById('pendingMerchant').innerText = req.merchant || 'تاجر';
-                document.getElementById('pendingCode').innerText = req.code;
-                document.getElementById('pendingAmount').innerText = Number(req.amount).toFixed(2);
-                PendingPurchase.startTimer(req.expiresAt);
-                alert('✅ تم العثور على الطلب! يمكنك الآن تأكيده.');
-                codeInput.value = '';
+                    PendingPurchase.currentRequest = req;
+                    document.getElementById('noPendingState').style.display = 'none';
+                    document.getElementById('pendingPurchaseCard').style.display = 'block';
+                    document.getElementById('pendingMerchant').innerText = req.merchant || 'تاجر';
+                    document.getElementById('pendingCode').innerText = req.code;
+                    document.getElementById('pendingAmount').innerText = Number(req.amount).toFixed(2);
+                    PendingPurchase.startTimer(req.expiresAt);
+                    alert('✅ تم العثور على الطلب! يمكنك الآن تأكيده.');
+                    codeInput.value = '';
                 } else {
-                // Debug info on failure
-                console.log('User:', user.name, user.linkedEntity);
-                console.log('My Cards:', myCardNumbers);
-                console.log('All Pending:', pending);
-                alert('❌ لم يتم العثور على طلب بهذا الكود.\n\nتأكد من:\n1. أن الكود صحيح (6 أرقام)\n2. أن الطلب لم تنته
-                صلاحيته\n3. أن البطاقة الممسوحة تخصك');
+                    alert('❌ لم يتم العثور على طلب بهذا الكود.');
                 }
-                },
+            },
 
-                showDebugInfo: () => {
+            showDebugInfo: () => {
                 const user = Auth.user;
                 const cards = Storage.get('cards') || [];
                 const pending = Storage.get('pendingPurchases') || [];
-
                 const benefName = user.linkedEntity || user.name;
-                const myCards = cards.filter(c => c.beneficiary && (c.beneficiary === benefName ||
-                c.beneficiary.includes(benefName)));
+                const myCards = cards.filter(c => c.beneficiary && (c.beneficiary === benefName || c.beneficiary.includes(benefName)));
 
                 const msg = `
-                🔍 معلومات التشخيص:
-
-                👤 المستخدم: ${user.name} (${user.username})
-                💳 عدد البطاقات المرتبطة بك: ${myCards.length}
-                🔢 أرقام بطاقاتي: ${myCards.map(c => c.number).join(', ')}
-
-                📨 عدد طلبات الشراء المعلقة (الكل): ${pending.length}
-                📝 أكواد الطلبات المعلقة: ${pending.map(p => p.code).join(', ')}
-
-                إذا كان الكود يظهر هنا ولكن لا يقبله النظام، فهناك مشكلة في ربط البطاقة.
-                `;
+🔍 معلومات التشخيص:
+👤 المستخدم: ${user.name} (${user.username})
+💳 عدد البطاقات: ${myCards.length}
+🔢 أرقام بطاقاتي: ${myCards.map(c => c.number).join(', ')}
+📨 طلبات الشراء (الكل): ${pending.length}
+📝 الأكواد المتوفرة: ${pending.map(p => p.code).join(', ')}
+`;
                 alert(msg);
-                console.log(msg);
-                },
+            },
 
-                confirm: () => {
+            confirm: () => {
                 const req = PendingPurchase.currentRequest;
                 if (!req) return alert('لا يوجد طلب شراء للتأكيد');
-
-                // Only verify balance is sufficient (don't deduct yet - POS will do that)
                 const cards = Storage.get('cards') || [];
                 const card = cards.find(c => c.number === req.cardNumber);
                 if (!card) return alert('لم يتم العثور على البطاقة');
-                if (Number(card.balance) < req.amount) return alert('رصيد البطاقة غير كافي'); // Update status to
-                    confirmed (balance deduction happens at POS) const pending=Storage.get('pendingPurchases') || [];
-                    const p=pending.find(x=> x.code === req.code);
-                    if (p) p.status = 'confirmed';
-                    Storage.set('pendingPurchases', pending);
+                if (Number(card.balance) < req.amount) return alert('رصيد البطاقة غير كافي');
 
-                    PendingPurchase.currentRequest = null;
-                    document.getElementById('pendingPurchaseCard').style.display = 'none';
-                    document.getElementById('noPendingState').style.display = '';
+                const pending = Storage.get('pendingPurchases') || [];
+                const p = pending.find(x => x.code === req.code);
+                if (p) p.status = 'confirmed';
+                Storage.set('pendingPurchases', pending);
 
-                    alert('✅ تم تأكيد طلب الشراء!\nالمبلغ: ' + req.amount.toFixed(2) + ' ريال\nسيتم خصم المبلغ عند إتمام
-                    العملية في نقطة البيع.');
-                    if (typeof showToast === 'function') showToast('تم تأكيد طلب الشراء!', 'success');
-                    },
+                PendingPurchase.currentRequest = null;
+                document.getElementById('pendingPurchaseCard').style.display = 'none';
+                document.getElementById('noPendingState').style.display = '';
 
-                    reject: () => {
-                    const req = PendingPurchase.currentRequest;
-                    if (!req) return;
+                alert('✅ تم تأكيد طلب الشراء!');
+                if (typeof showToast === 'function') showToast('تم تأكيد طلب الشراء!', 'success');
+            },
 
-                    const pending = Storage.get('pendingPurchases') || [];
-                    const p = pending.find(x => x.code === req.code);
-                    if (p) p.status = 'rejected';
-                    Storage.set('pendingPurchases', pending);
+            reject: () => {
+                const req = PendingPurchase.currentRequest;
+                if (!req) return;
+                const pending = Storage.get('pendingPurchases') || [];
+                const p = pending.find(x => x.code === req.code);
+                if (p) p.status = 'rejected';
+                Storage.set('pendingPurchases', pending);
+                PendingPurchase.currentRequest = null;
+                document.getElementById('pendingPurchaseCard').style.display = 'none';
+                document.getElementById('noPendingState').style.display = '';
+                alert('تم رفض طلب الشراء');
+            }
+        };
 
-                    PendingPurchase.currentRequest = null;
-                    document.getElementById('pendingPurchaseCard').style.display = 'none';
-                    document.getElementById('noPendingState').style.display = '';
+        function initBeneficiary() {
+            const user = Auth.user;
+            if (!user || user.role !== 'beneficiary') return;
 
-                    alert('تم رفض طلب الشراء');
-                    }
-                    };
+            const welcome = document.getElementById('welcomeName');
+            if (welcome) welcome.innerText = `مرحباً، ${user.name}`;
 
-                    function initBeneficiary() {
-                    const user = Auth.user;
-                    if (!user || user.role !== 'beneficiary') return;
+            const cards = Storage.get('cards') || [];
+            const benefName = user.linkedEntity || user.name;
 
-                    const welcome = document.getElementById('welcomeName');
-                    if (welcome) welcome.innerText = `مرحباً، ${user.name}`;
+            let myCard = null;
+            if (/^\d+$/.test(user.username)) {
+                myCard = cards.find(c => c.identity === user.username && (c.status === 'نشط' || c.status === 'Active'));
+            }
+            if (!myCard) {
+                myCard = cards.find(c => c.beneficiary === benefName && (c.status === 'نشط' || c.status === 'Active'));
+            }
+            if (!myCard) {
+                myCard = cards.find(c => c.beneficiary && c.beneficiary.includes(benefName) && (c.status === 'نشط' || c.status === 'Active'));
+            }
 
-                    const cards = Storage.get('cards') || [];
-                    const benefName = user.linkedEntity || user.name;
+            const cardSection = document.getElementById('cardDetailsSection');
+            const noCard = document.getElementById('noCardState');
 
-                    // Robust matching:
-                    // 1. Match by identity (if username looks like identity)
-                    let myCard = null;
-                    if (/^\d+$/.test(user.username)) {
-                    myCard = cards.find(c => c.identity === user.username && (c.status === 'نشط' || c.status ===
-                    'Active'));
-                    }
+            if (myCard) {
+                document.getElementById('cardNumberDisplay').innerText = myCard.number;
+                document.getElementById('cardBalanceDisplay').innerText = Number(myCard.balance || 0).toFixed(2);
 
-                    // 2. Match by exact beneficiary name
-                    if (!myCard) {
-                    myCard = cards.find(c => c.beneficiary === benefName && (c.status === 'نشط' || c.status ===
-                    'Active'));
-                    }
+                const transactions = Storage.get('transactions') || [];
+                const myTrans = transactions.filter(t => t.card === myCard.number);
+                const tbody = document.getElementById('beneficiaryTransactionsTable');
 
-                    // 3. Match by partial name
-                    if (!myCard) {
-                    myCard = cards.find(c => c.beneficiary && c.beneficiary.includes(benefName) && (c.status === 'نشط'
-                    || c.status === 'Active'));
-                    }
-
-                    const cardSection = document.getElementById('cardDetailsSection');
-                    const noCard = document.getElementById('noCardState');
-
-                    if (myCard) {
-                    document.getElementById('cardNumberDisplay').innerText = myCard.number;
-                    document.getElementById('cardBalanceDisplay').innerText = Number(myCard.balance || 0).toFixed(2);
-
-                    const transactions = Storage.get('transactions') || [];
-                    // Match transactions by card number OR beneficiary name
-                    const myTrans = transactions.filter(t => t.card === myCard.number);
-
-                    const tbody = document.getElementById('beneficiaryTransactionsTable');
-
-                    if (tbody) {
+                if (tbody) {
                     if (myTrans.length === 0) {
-                    tbody.innerHTML = '<tr>
-                        <td colspan="3" style="text-align:center">لا توجد عمليات سابقة</td>
-                    </tr>';
+                        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">لا توجد عمليات سابقة</td></tr>';
                     } else {
-                    tbody.innerHTML = myTrans.map(t => `
-                    <tr>
-                        <td>${t.date}</td>
-                        <td>${t.merchant}</td>
-                        <td style="color:red; font-weight:bold">-${Number(t.amount || 0).toFixed(2)} ريال</td>
-                    </tr>
-                    `).join('');
+                        tbody.innerHTML = myTrans.map(t => `
+                            <tr>
+                                <td>${t.date}</td>
+                                <td>${t.merchant}</td>
+                                <td style="color:red; font-weight:bold">-${Number(t.amount || 0).toFixed(2)} ريال</td>
+                            </tr>
+                        `).join('');
                     }
-                    }
-                    if (cardSection) cardSection.style.display = '';
-                    if (noCard) noCard.style.display = 'none';
-                    // Render QR code with card number
-                    renderBeneficiaryQR('qrBox', myCard.number);
-                    } else {
-                    if (cardSection) cardSection.style.display = 'none';
-                    if (noCard) noCard.style.display = 'block';
-                    }
+                }
+                if (cardSection) cardSection.style.display = '';
+                if (noCard) noCard.style.display = 'none';
+                renderBeneficiaryQR('qrBox', myCard.number);
+            } else {
+                if (cardSection) cardSection.style.display = 'none';
+                if (noCard) noCard.style.display = 'block';
+            }
+            PendingPurchase.startPolling();
+        }
 
-                    // Start polling for incoming purchase requests from merchants
-                    PendingPurchase.startPolling();
-
-                    // DEBUG: Dump state to help troubleshooting
-                    console.log('--- DEBUG STATE ---');
-                    console.log('User:', Auth.user);
-                    console.log('All Cards:', Storage.get('cards'));
-                    console.log('All Pending:', Storage.get('pendingPurchases'));
-                    console.log('-------------------');
-                    }
-                    </script>
-
-                    <script>
-                        // PWA Service Worker Register
-                        if ('serviceWorker' in navigator) {
-                            window.addEventListener('load', () => {
-                                navigator.serviceWorker.register('./service-worker.js')
-                                    .then(reg => console.log('SW registered!', reg))
-                                    .catch(err => console.log('SW failed!', err));
-                            });
-                        }
-                    </script>
-
+        document.addEventListener('DOMContentLoaded', initBeneficiary);
+    </script>
 </body>
 
 </html>
