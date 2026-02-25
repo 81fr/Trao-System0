@@ -604,6 +604,37 @@ body.layout-top .main-content {
   background: #c0392b;
 }
 
+.toast.info {
+  background: #2563eb;
+}
+
+/* ===== Input Error State ===== */
+.input-error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-6px);
+  }
+
+  50% {
+    transform: translateX(6px);
+  }
+
+  75% {
+    transform: translateX(-4px);
+  }
+}
+
 /* ===== Pager ===== */
 .pager {
   display: flex;

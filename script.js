@@ -611,11 +611,11 @@ const Settings = {
     populateDropdowns: () => {
         const walletSelect = document.getElementById('cardWalletInput');
         if (walletSelect) {
-            const cats = Storage.get('categories') || [];
-            walletSelect.innerHTML = '';
-            cats.forEach(c => {
+            const wallets = Storage.get('wallets') || [];
+            walletSelect.innerHTML = '<option value="">اختر محفظة...</option>';
+            wallets.forEach(w => {
                 const opt = document.createElement('option');
-                opt.value = c; opt.innerText = c;
+                opt.value = w.name; opt.innerText = w.name;
                 walletSelect.appendChild(opt);
             });
         }
@@ -672,7 +672,18 @@ const Actions = {
         const beneficiary = document.getElementById('cardBeneficiaryInput').value;
         const status = document.getElementById('cardStatusInput').value;
 
-        if (!number || !wallet || isNaN(balance)) return alert('يرجى ملء جميع الحقول بشكل صحيح');
+        // Validation with visual feedback
+        let hasError = false;
+        if (!number) { markFieldError('cardNumInput'); hasError = true; }
+        if (!wallet) { markFieldError('cardWalletInput'); hasError = true; }
+        if (isNaN(balance) || balance < 0) { markFieldError('cardBalanceInput'); hasError = true; }
+        if (!beneficiary) { markFieldError('cardBeneficiaryInput'); hasError = true; }
+        if (hasError) return showToast('يرجى ملء جميع الحقول بشكل صحيح', 'error');
+
+        // Get beneficiary identity
+        const bens = Storage.get('beneficiaries') || [];
+        const ben = bens.find(b => b.name === beneficiary);
+        const identity = ben ? ben.identity : '';
 
         let cards = Storage.get('cards') || [];
 
@@ -680,17 +691,17 @@ const Actions = {
             // Edit Mode
             const index = cards.findIndex(c => c.id == id);
             if (index !== -1) {
-                cards[index] = { ...cards[index], number, wallet, balance, status, beneficiary: beneficiary || 'غير محدد' };
+                cards[index] = { ...cards[index], number, wallet, balance, status, beneficiary: beneficiary || 'غير محدد', identity };
                 Storage.set('cards', cards);
-                alert('تم تحديث البطاقة بنجاح');
+                showToast('تم تحديث البطاقة بنجاح', 'success');
             }
         } else {
             // Create Mode
-            if (cards.some(c => c.number === number)) return alert('رقم البطاقة موجود بالفعل');
+            if (cards.some(c => c.number === number)) return showToast('رقم البطاقة موجود بالفعل', 'error');
             Storage.add('cards', {
-                id: Date.now(), number, wallet, balance, status: status || 'نشط', beneficiary: beneficiary || 'غير محدد'
+                id: Date.now(), number, wallet, balance, status: status || 'نشط', beneficiary: beneficiary || 'غير محدد', identity
             });
-            alert('تم إصدار البطاقة بنجاح!');
+            showToast('تم إصدار البطاقة بنجاح!', 'success');
         }
 
         Actions.cancelCardEdit();
@@ -738,11 +749,39 @@ const Actions = {
     },
 
     addWallet: () => {
-        const name = document.getElementById('walletNameInput').value;
+        const editId = document.getElementById('editingWalletId')?.value;
+        const name = document.getElementById('walletNameInput').value.trim();
         const funds = parseFloat(document.getElementById('walletFundsInput').value);
-        if (!name || isNaN(funds)) return alert('يرجى ملء جميع الحقول');
-        Storage.add('wallets', { id: Date.now(), name, funds, merchants: 'غير محدد', status: 'نشط' });
-        alert('تم إنشاء المحفظة بنجاح!');
+        const category = document.getElementById('walletCategoryInput')?.value || 'عام';
+        const target = parseFloat(document.getElementById('walletTargetInput')?.value) || 50000;
+        const color = document.getElementById('walletColorInput')?.value || '#00A59B';
+        const icon = document.getElementById('walletIconInput')?.value || 'fas fa-wallet';
+
+        // Validation with visual feedback
+        let hasError = false;
+        if (!name) { markFieldError('walletNameInput'); hasError = true; }
+        if (isNaN(funds) || funds < 0) { markFieldError('walletFundsInput'); hasError = true; }
+        if (hasError) return showToast('يرجى ملء جميع الحقول المطلوبة', 'error');
+
+        let wallets = Storage.get('wallets') || [];
+
+        if (editId) {
+            // Edit Mode
+            const index = wallets.findIndex(w => w.id == editId);
+            if (index !== -1) {
+                wallets[index] = { ...wallets[index], name, funds, category, target, color, icon };
+                Storage.set('wallets', wallets);
+                showToast('تم تحديث المحفظة بنجاح', 'success');
+            }
+        } else {
+            // Create Mode
+            Storage.add('wallets', {
+                id: Date.now(), name, funds, collected: 0, target, category, color, icon, merchants: 'غير محدد', status: 'نشط'
+            });
+            showToast('تم إنشاء المحفظة بنجاح!', 'success');
+        }
+
+        Actions.cancelWalletEdit();
         location.reload();
     },
 
@@ -761,7 +800,7 @@ const Actions = {
         const bank = document.getElementById('merchantBankInput').value;
         const iban = document.getElementById('merchantIBANInput').value;
 
-        if (!name) return alert('يرجى إدخال اسم المتجر');
+        if (!name) { markFieldError('merchantNameInput'); return showToast('يرجى إدخال اسم المتجر', 'error'); }
 
         let merchants = Storage.get('merchants') || [];
 
@@ -791,7 +830,7 @@ const Actions = {
                 }
 
                 Storage.set('merchants', merchants);
-                alert('تم تعديل بيانات المتجر');
+                showToast('تم تعديل بيانات المتجر', 'success');
                 Actions.cancelMerchantEdit();
             }
         } else {
@@ -813,7 +852,7 @@ const Actions = {
                 status: 'نشط'
             });
             Storage.set('merchants', merchants);
-            alert('تم إضافة المتجر بنجاح');
+            showToast('تم إضافة المتجر بنجاح', 'success');
             Actions.cancelMerchantEdit();
         }
         loadMerchantsTable();
@@ -827,8 +866,12 @@ const Actions = {
         const role = document.getElementById('newUserRole').value;
         const linkedEntity = document.getElementById('linkedEntitySelect').value;
 
-        if (!username || !name || !password) return alert('يرجى تعبئة الحقول الأساسية');
-        if ((role === 'merchant' || role === 'beneficiary') && !linkedEntity) return alert('يرجى اختيار الجهة المرتبطة بهذا الحساب');
+        let hasError = false;
+        if (!username) { markFieldError('newUsername'); hasError = true; }
+        if (!name) { markFieldError('newName'); hasError = true; }
+        if (!password) { markFieldError('newPassword'); hasError = true; }
+        if (hasError) return showToast('يرجى تعبئة الحقول الأساسية', 'error');
+        if ((role === 'merchant' || role === 'beneficiary') && !linkedEntity) return showToast('يرجى اختيار الجهة المرتبطة بهذا الحساب', 'error');
 
         let users = Storage.get('users') || [];
 
@@ -838,14 +881,14 @@ const Actions = {
             if (index !== -1) {
                 users[index] = { ...users[index], name, username, password, role, linkedEntity };
                 Storage.set('users', users);
-                alert('تم تحديث بيانات المستخدم بنجاح');
+                showToast('تم تحديث بيانات المستخدم بنجاح', 'success');
             }
         } else {
             // Create Mode
-            if (users.some(u => u.username === username)) return alert('اسم المستخدم مسجل مسبقاً');
+            if (users.some(u => u.username === username)) return showToast('اسم المستخدم مسجل مسبقاً', 'error');
             const newUser = { id: Date.now(), name, username, password, role, linkedEntity: linkedEntity || null };
             Storage.add('users', newUser);
-            alert('تم إنشاء المستخدم بنجاح');
+            showToast('تم إنشاء المستخدم بنجاح', 'success');
         }
 
         Actions.cancelEdit(); // Reset form
@@ -906,9 +949,194 @@ const Actions = {
         document.getElementById('cardNumInput').value = num;
     },
 
-    exportReport: () => alert('جارِ تحميل التقرير بصيغة PDF...')
+    exportReport: () => showToast('جارِ تحميل التقرير بصيغة PDF...', 'info'),
+
+    // ===== WALLET MANAGEMENT =====
+    editWallet: (id) => {
+        const wallets = Storage.get('wallets') || [];
+        const w = wallets.find(x => x.id === id);
+        if (!w) return;
+
+        document.getElementById('editingWalletId').value = w.id;
+        document.getElementById('walletNameInput').value = w.name || '';
+        document.getElementById('walletFundsInput').value = w.funds || 0;
+        if (document.getElementById('walletCategoryInput')) document.getElementById('walletCategoryInput').value = w.category || 'عام';
+        if (document.getElementById('walletTargetInput')) document.getElementById('walletTargetInput').value = w.target || 50000;
+        if (document.getElementById('walletColorInput')) document.getElementById('walletColorInput').value = w.color || '#00A59B';
+        if (document.getElementById('walletIconInput')) document.getElementById('walletIconInput').value = w.icon || 'fas fa-wallet';
+
+        const formTitle = document.getElementById('formTitle');
+        if (formTitle) formTitle.textContent = 'تعديل المحفظة';
+        const saveBtn = document.getElementById('saveWalletBtn');
+        if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
+        const cancelBtn = document.getElementById('cancelWalletEditBtn');
+        if (cancelBtn) cancelBtn.style.display = 'inline-block';
+        window.scrollTo(0, 0);
+    },
+
+    deleteWallet: (id) => {
+        if (!confirm('هل أنت متأكد من حذف هذه المحفظة؟')) return;
+        let wallets = Storage.get('wallets') || [];
+        wallets = wallets.filter(w => w.id !== id);
+        Storage.set('wallets', wallets);
+        showToast('تم حذف المحفظة', 'success');
+        location.reload();
+    },
+
+    cancelWalletEdit: () => {
+        const editId = document.getElementById('editingWalletId');
+        if (editId) editId.value = '';
+        ['walletNameInput', 'walletFundsInput', 'walletTargetInput'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        const colorInput = document.getElementById('walletColorInput');
+        if (colorInput) colorInput.value = '#00A59B';
+        const iconInput = document.getElementById('walletIconInput');
+        if (iconInput) iconInput.value = 'fas fa-wallet';
+        const catInput = document.getElementById('walletCategoryInput');
+        if (catInput) catInput.value = 'عام';
+
+        const formTitle = document.getElementById('formTitle');
+        if (formTitle) formTitle.textContent = 'إنشاء محفظة جديدة';
+        const saveBtn = document.getElementById('saveWalletBtn');
+        if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-plus"></i> إنشاء المحفظة';
+        const cancelBtn = document.getElementById('cancelWalletEditBtn');
+        if (cancelBtn) cancelBtn.style.display = 'none';
+    },
+
+    // ===== MERCHANT MANAGEMENT =====
+    editMerchant: (id) => {
+        const merchants = Storage.get('merchants') || [];
+        const m = merchants.find(x => x.id === id);
+        if (!m) return;
+
+        document.getElementById('editingMerchantId').value = m.id;
+        document.getElementById('merchantNameInput').value = m.name || '';
+        if (document.getElementById('merchantCatInput')) document.getElementById('merchantCatInput').value = m.category || '';
+        if (document.getElementById('merchantContactInput')) document.getElementById('merchantContactInput').value = m.contactPerson || '';
+        if (document.getElementById('merchantPhoneInput')) document.getElementById('merchantPhoneInput').value = m.phone || '';
+        if (document.getElementById('merchantEmailInput')) document.getElementById('merchantEmailInput').value = m.email || '';
+        if (document.getElementById('merchantLocationInput')) document.getElementById('merchantLocationInput').value = m.location || '';
+        if (document.getElementById('merchantCRInput')) document.getElementById('merchantCRInput').value = m.crNumber || '';
+        if (document.getElementById('merchantVATInput')) document.getElementById('merchantVATInput').value = m.vatNumber || '';
+        if (document.getElementById('merchantBankInput')) document.getElementById('merchantBankInput').value = m.bankName || '';
+        if (document.getElementById('merchantIBANInput')) document.getElementById('merchantIBANInput').value = m.iban || '';
+
+        const formTitle = document.getElementById('merchantFormTitle');
+        if (formTitle) formTitle.textContent = 'تعديل بيانات المتجر';
+        const saveBtn = document.getElementById('saveMerchantBtn');
+        if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
+        const cancelBtn = document.getElementById('cancelMerchantEditBtn');
+        if (cancelBtn) cancelBtn.style.display = 'inline-block';
+        window.scrollTo(0, 0);
+    },
+
+    deleteMerchant: (id) => {
+        if (!confirm('هل أنت متأكد من حذف هذا المتجر؟')) return;
+        let merchants = Storage.get('merchants') || [];
+        merchants = merchants.filter(m => m.id !== id);
+        Storage.set('merchants', merchants);
+        showToast('تم حذف المتجر', 'success');
+        location.reload();
+    },
+
+    cancelMerchantEdit: () => {
+        const editId = document.getElementById('editingMerchantId');
+        if (editId) editId.value = '';
+        ['merchantNameInput', 'merchantCatInput', 'merchantContactInput', 'merchantPhoneInput',
+            'merchantEmailInput', 'merchantLocationInput', 'merchantCRInput', 'merchantVATInput',
+            'merchantBankInput', 'merchantIBANInput'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+        const fileList = document.getElementById('fileList');
+        if (fileList) fileList.innerHTML = '';
+        window.tempMerchantFiles = [];
+
+        const formTitle = document.getElementById('merchantFormTitle');
+        if (formTitle) formTitle.textContent = 'إضافة متجر جديد';
+        const saveBtn = document.getElementById('saveMerchantBtn');
+        if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-plus"></i> حفظ المتجر';
+        const cancelBtn = document.getElementById('cancelMerchantEditBtn');
+        if (cancelBtn) cancelBtn.style.display = 'none';
+    },
+
+    // ===== FILE UPLOAD HANDLER =====
+    handleFileUpload: (input) => {
+        if (!input.files || input.files.length === 0) return;
+        window.tempMerchantFiles = window.tempMerchantFiles || [];
+        const fileListDiv = document.getElementById('fileList');
+
+        Array.from(input.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                window.tempMerchantFiles.push({
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    data: e.target.result
+                });
+                if (fileListDiv) {
+                    fileListDiv.innerHTML += `<div style="display:flex; align-items:center; gap:8px; padding:6px 10px; background:#f0fdf4; border-radius:6px;">
+                        <i class="fas fa-file" style="color:#8cc240"></i>
+                        <span style="flex:1; font-size:0.85rem;">${file.name}</span>
+                        <small style="color:#888">${(file.size / 1024).toFixed(1)} KB</small>
+                    </div>`;
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+        showToast(`تم إرفاق ${input.files.length} ملف`, 'success');
+    }
 };
 
+/* ===========================
+   UTILITY FUNCTIONS
+=========================== */
+function toggleCardMenu(el) {
+    const dropdown = el.querySelector('.card-menu-dropdown');
+    if (!dropdown) return;
+    // Close all other open menus
+    document.querySelectorAll('.card-menu-dropdown').forEach(d => {
+        if (d !== dropdown) d.style.display = 'none';
+    });
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+// Close menus when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.card-menu-btn')) {
+        document.querySelectorAll('.card-menu-dropdown').forEach(d => d.style.display = 'none');
+    }
+});
+
+function markFieldError(fieldId) {
+    const el = document.getElementById(fieldId);
+    if (!el) return;
+    el.classList.add('input-error');
+    el.addEventListener('focus', () => el.classList.remove('input-error'), { once: true });
+    el.addEventListener('input', () => el.classList.remove('input-error'), { once: true });
+}
+
+function hideFormsByRole() {
+    if (!Auth.user) return;
+    const role = Auth.user.role;
+    if (role === 'admin') return; // Admin sees everything
+
+    // Hide all form containers for non-admin users on admin-only pages
+    document.querySelectorAll('.form-container').forEach(form => {
+        form.style.display = 'none';
+    });
+
+    // Hide action buttons (edit/delete) for non-admin on admin-only content
+    if (role === 'beneficiary') {
+        document.querySelectorAll('.delete-btn, button.secondary').forEach(btn => {
+            if (btn.closest('.form-container')) return;
+            btn.style.display = 'none';
+        });
+    }
+}
 /* ===========================
    TABLE LOADERS & DASHBOARD
 =========================== */
@@ -1907,6 +2135,8 @@ window.onload = () => {
         Settings.applyLayout(); // Apply saved layout preference
         Settings.load?.();
         Auth.checkSession();
+        if (typeof hideFormsByRole === 'function') hideFormsByRole();
+        if (typeof Actions.populateDropdowns === 'function') Actions.populateDropdowns();
 
         if (typeof loadDashboard === 'function') loadDashboard();
         if (typeof loadCardsTable === 'function') loadCardsTable();
@@ -2377,281 +2607,10 @@ window.Support = Support;
 })();
 
 /* ===========================
-   CRUD EXTENSIONS
+   CRUD EXTENSIONS - Functions now defined in main Actions object above
+   Only loadMerchantProfile extension remains here
 =========================== */
-Object.assign(Actions, {
-    addWallet: () => {
-        const idInput = document.getElementById('editingWalletId');
-        const name = document.getElementById('walletNameInput').value;
-        const funds = document.getElementById('walletFundsInput').value;
-        const target = document.getElementById('walletTargetInput').value;
-        const category = document.getElementById('walletCategoryInput').value;
-        const color = document.getElementById('walletColorInput').value;
-        const icon = document.getElementById('walletIconInput').value;
-
-        if (!name) return alert('يرجى إدخال اسم المحفظة');
-
-        let wallets = Storage.get('wallets') || [];
-
-        if (idInput && idInput.value) {
-            // Edit Mode
-            const id = parseInt(idInput.value);
-            const idx = wallets.findIndex(w => w.id === id);
-            if (idx !== -1) {
-                wallets[idx].name = name;
-                if (funds) wallets[idx].funds = Number(funds);
-                if (target) wallets[idx].target = Number(target);
-                wallets[idx].category = category;
-                wallets[idx].color = color;
-                wallets[idx].icon = icon;
-                Storage.set('wallets', wallets);
-                alert('تم تعديل المحفظة بنجاح');
-                Actions.cancelWalletEdit();
-            }
-        } else {
-            // Add Mode
-            const newId = Date.now();
-            wallets.push({
-                id: newId,
-                name,
-                funds: Number(funds || 0),
-                collected: 0,
-                target: Number(target || 50000),
-                category: category || 'عام',
-                color: color || '#00A59B',
-                icon: icon || 'fas fa-wallet',
-                merchants: '',
-                status: 'نشط'
-            });
-            Storage.set('wallets', wallets);
-            alert('تم إضافة المحفظة بنجاح');
-            // Clear inputs
-            document.getElementById('walletNameInput').value = '';
-            document.getElementById('walletFundsInput').value = '';
-        }
-        loadWalletsTable();
-    },
-
-    editWallet: (id) => {
-        const wallets = Storage.get('wallets') || [];
-        const w = wallets.find(x => x.id === id);
-        if (!w) return;
-
-        document.getElementById('editingWalletId').value = w.id;
-        document.getElementById('walletNameInput').value = w.name;
-        document.getElementById('walletFundsInput').value = w.funds;
-        if (document.getElementById('walletTargetInput')) document.getElementById('walletTargetInput').value = w.target || '';
-        if (document.getElementById('walletCategoryInput')) document.getElementById('walletCategoryInput').value = w.category || 'عام';
-        if (document.getElementById('walletColorInput')) document.getElementById('walletColorInput').value = w.color || '#00A59B';
-        if (document.getElementById('walletIconInput')) document.getElementById('walletIconInput').value = w.icon || 'fas fa-wallet';
-
-        document.getElementById('formTitle').innerText = 'تعديل المحفظة';
-        document.getElementById('saveWalletBtn').innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
-        document.getElementById('cancelWalletEditBtn').style.display = 'inline-block';
-
-        // Scroll to form
-        document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
-    },
-
-    cancelWalletEdit: () => {
-        document.getElementById('editingWalletId').value = '';
-        document.getElementById('walletNameInput').value = '';
-        document.getElementById('walletFundsInput').value = '';
-        document.getElementById('walletTargetInput').value = '';
-        document.getElementById('formTitle').innerText = 'إنشاء محفظة جديدة';
-        document.getElementById('saveWalletBtn').innerHTML = '<i class="fas fa-plus"></i> إنشاء المحفظة';
-        document.getElementById('cancelWalletEditBtn').style.display = 'none';
-    },
-
-    deleteWallet: (id) => {
-        if (!confirm('هل أنت متأكد من حذف هذه المحفظة؟')) return;
-        let wallets = Storage.get('wallets') || [];
-        wallets = wallets.filter(w => w.id !== id);
-        Storage.set('wallets', wallets);
-        loadWalletsTable();
-    },
-
-    addMerchant: () => {
-        const idInput = document.getElementById('editingMerchantId');
-        const name = document.getElementById('merchantNameInput').value;
-        const cat = document.getElementById('merchantCatInput').value;
-        const contact = document.getElementById('merchantContactInput').value;
-        const phone = document.getElementById('merchantPhoneInput').value;
-        const email = document.getElementById('merchantEmailInput').value;
-        const loc = document.getElementById('merchantLocationInput').value;
-
-        if (!name) return alert('يرجى إدخال اسم المتجر');
-
-        let merchants = Storage.get('merchants') || [];
-
-        if (idInput && idInput.value) {
-            // Edit
-            const id = parseInt(idInput.value);
-            const idx = merchants.findIndex(m => m.id === id);
-            if (idx !== -1) {
-                merchants[idx].name = name;
-                if (cat) merchants[idx].category = cat;
-                if (contact) merchants[idx].contactPerson = contact;
-                if (phone) merchants[idx].phone = phone;
-                if (email) merchants[idx].email = email;
-                if (loc) merchants[idx].location = loc;
-                Storage.set('merchants', merchants);
-                alert('تم تعديل بيانات المتجر');
-                Actions.cancelMerchantEdit();
-            }
-        } else {
-            // Add
-            merchants.push({
-                id: Date.now(),
-                name,
-                category: cat || 'عام',
-                contactPerson: contact,
-                phone,
-                email,
-                location: loc,
-                transactions: 0,
-                status: 'نشط'
-            });
-            Storage.set('merchants', merchants);
-            alert('تم إضافة المتجر بنجاح');
-            Actions.cancelMerchantEdit(); // Clear form
-        }
-        loadMerchantsTable();
-    },
-
-    editMerchant: (id) => {
-        const merchants = Storage.get('merchants') || [];
-        const m = merchants.find(x => x.id === id);
-        if (!m) return;
-
-        document.getElementById('editingMerchantId').value = m.id;
-        document.getElementById('merchantNameInput').value = m.name;
-        document.getElementById('merchantCatInput').value = m.category;
-        document.getElementById('merchantContactInput').value = m.contactPerson || '';
-        document.getElementById('merchantPhoneInput').value = m.phone || '';
-        document.getElementById('merchantEmailInput').value = m.email || '';
-        document.getElementById('merchantLocationInput').value = m.location || '';
-
-        document.getElementById('merchantFormTitle').innerText = 'تعديل بيانات المتجر';
-        document.getElementById('saveMerchantBtn').innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
-        document.getElementById('cancelMerchantEditBtn').style.display = 'inline-block';
-
-        document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
-    },
-
-    cancelMerchantEdit: () => {
-        document.getElementById('editingMerchantId').value = '';
-        document.getElementById('merchantNameInput').value = '';
-        document.getElementById('merchantCatInput').value = '';
-        document.getElementById('merchantContactInput').value = '';
-        document.getElementById('merchantPhoneInput').value = '';
-        document.getElementById('merchantEmailInput').value = '';
-        document.getElementById('merchantLocationInput').value = '';
-
-        document.getElementById('merchantCRInput').value = '';
-        document.getElementById('merchantVATInput').value = '';
-        document.getElementById('merchantBankInput').value = '';
-        document.getElementById('merchantIBANInput').value = '';
-
-        document.getElementById('fileList').innerHTML = '';
-        window.tempMerchantFiles = [];
-
-        document.getElementById('merchantFormTitle').innerText = 'إضافة متجر جديد';
-        document.getElementById('saveMerchantBtn').innerHTML = '<i class="fas fa-plus"></i> إضافة متجر';
-        document.getElementById('cancelMerchantEditBtn').style.display = 'none';
-    },
-
-    deleteMerchant: (id) => {
-        if (!confirm('هل أنت متأكد من حذف هذا المتجر؟')) return;
-        let merchants = Storage.get('merchants') || [];
-        merchants = merchants.filter(m => m.id !== id);
-        Storage.set('merchants', merchants);
-        loadMerchantsTable();
-    }
-});
-
-// Helper for card menu
-window.toggleCardMenu = function (el) {
-    const dropdown = el.querySelector('.card-menu-dropdown');
-    const wasVisible = dropdown.style.display === 'block';
-    // Close all others
-    document.querySelectorAll('.card-menu-dropdown').forEach(d => d.style.display = 'none');
-
-    if (!wasVisible) {
-        dropdown.style.display = 'block';
-    }
-    // Simple click-away listener could be added
-};
-
-(function () {
-    const style = document.createElement('style');
-    style.innerHTML = `
-        .card-menu-btn {
-            position: absolute;
-            top: 15px;
-            left: 15px; /* RTL means left */
-            cursor: pointer;
-            color: #ccc;
-            padding: 5px;
-            z-index: 10;
-        }
-        .card-menu-btn:hover { color: #333; }
-        .card-menu-dropdown {
-            position: absolute;
-            top: 25px;
-            left: 0;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            width: 120px;
-            z-index: 20;
-            overflow: hidden;
-        }
-        .card-menu-dropdown button {
-            display: block;
-            width: 100%;
-            text-align: right;
-            padding: 8px 12px;
-            background: white;
-            border: none;
-            cursor: pointer;
-            font-size: 0.85rem;
-            color: #333;
-        }
-        .card-menu-dropdown button:hover {
-            background: #f8f9fa;
-        }
-        .card-menu-dropdown button i { margin-left: 5px; width: 16px; text-align: center; }
-    `;
-    document.head.appendChild(style);
-})();
-
-/* ===========================
-   FILE UPLOAD HELPER
-=========================== */
-window.tempMerchantFiles = [];
-Object.assign(Actions, {
-    handleFileUpload: (input) => {
-        const fileList = document.getElementById('fileList');
-        // Don't clear, append
-        Array.from(input.files).forEach(file => {
-            // Simulate "upload"
-            const fileObj = {
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                date: new Date().toISOString()
-            };
-            window.tempMerchantFiles.push(fileObj);
-
-            const div = document.createElement('div');
-            div.style.cssText = 'background:#e3f2fd; padding:5px 10px; border-radius:4px; font-size:0.9rem; display:flex; justify-content:space-between; align-items:center; color: #0d47a1;';
-            div.innerHTML = `<span><i class="fas fa-file-upload"></i> ${file.name}</span> <i class="fas fa-check"></i>`;
-            fileList.appendChild(div);
-        });
-    }
-});
+window.tempMerchantFiles = window.tempMerchantFiles || [];
 
 /* ===========================
    MERCHANT PROFILE LOAD
@@ -2660,7 +2619,7 @@ Object.assign(Actions, {
     loadMerchantProfile: (id) => {
         const merchants = Storage.get('merchants') || [];
         const m = merchants.find(x => x.id == id); // loose check string/number
-        if (!m) return alert('المتجر غير موجود');
+        if (!m) return showToast('المتجر غير موجود', 'error');
 
         // Header
         document.getElementById('viewName').innerText = m.name;
