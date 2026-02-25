@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    
+
     <title>فحص النظام الشامل - تراوف</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <style>
@@ -293,16 +293,20 @@
         function addLog(msg, type = 'ok') {
             log.push({ msg, type });
             const box = document.getElementById('logBox');
-            box.innerHTML = log.map(l => `<div class="${l.type}">${l.type === 'ok' ? '✅' : l.type === 'err' ? '❌' : '⚠️'} ${l.msg}</div>`).join('');
-            box.scrollTop = box.scrollHeight;
+            if (box) {
+                box.innerHTML = log.map(l => `<div class="${l.type}">${l.type === 'ok' ? '✅' : l.type === 'err' ? '❌' : '⚠️'} ${l.msg}</div>`).join('');
+                box.scrollTop = box.scrollHeight;
+            }
         }
 
         function addTest(containerId, name, passed, detail = '') {
             const div = document.getElementById(containerId);
-            div.innerHTML += `<div class="test-row">
-            <div class="test-name">${name}${detail ? '<div class="details">' + detail + '</div>' : ''}</div>
-            <div class="test-status ${passed === true ? 'pass' : passed === false ? 'fail' : 'warn'}">${passed === true ? '✅ ناجح' : passed === false ? '❌ فاشل' : '⚠️ تحذير'}</div>
-        </div>`;
+            if (div) {
+                div.innerHTML += `<div class="test-row">
+                <div class="test-name">${name}${detail ? '<div class="details">' + detail + '</div>' : ''}</div>
+                <div class="test-status ${passed === true ? 'pass' : passed === false ? 'fail' : 'warn'}">${passed === true ? '✅ ناجح' : passed === false ? '❌ فاشل' : '⚠️ تحذير'}</div>
+            </div>`;
+            }
         }
 
         function clearAndReload() {
@@ -313,7 +317,7 @@
         }
 
         function createTestOrders() {
-            addLog('بدء إنشاء أوامر توريد تجريبية...', 'ok');
+            addLog('بدء إنشاء أوامر توريد تجريبي...', 'ok');
 
             // Ensure merchants exist
             let merchants = Storage.get('merchants');
@@ -361,8 +365,6 @@
 
             Storage.set('supply_orders', testOrders);
             addLog(`تم إنشاء ${testOrders.length} أمر توريد تجريبي`, 'ok');
-
-            // Verify
             const saved = Storage.get('supply_orders');
             if (saved && saved.length === testOrders.length) {
                 addLog('✅ تم التحقق: جميع الأوامر محفوظة بنجاح', 'ok');
@@ -528,10 +530,13 @@
         }
 
         // Auto-run on load
-        window.onload = () => {
+        window.addEventListener('load', () => {
+            if (window.System && typeof System.init === 'function') {
+                System.init();
+            }
             renderOrdersTable();
             runAllTests();
-        };
+        });
     </script>
 
     <script>

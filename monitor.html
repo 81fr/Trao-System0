@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    
+
     <title>فحص النظام - تراوف</title>
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
@@ -440,7 +440,12 @@
             }
         };
 
-        window.onload = TestFlow.init;
+        window.addEventListener('load', () => {
+            if (window.System && typeof System.init === 'function') {
+                System.init();
+            }
+            TestFlow.init();
+        });
     </script>
 
     <script>

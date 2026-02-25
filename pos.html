@@ -179,7 +179,10 @@
     <script src="script.js?v=22"></script>
     <script>
         // Initialize POS UI
-        document.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('load', () => {
+            if (window.System && typeof System.init === 'function') {
+                System.init();
+            }
             if (typeof POS !== 'undefined' && POS.init) {
                 POS.init();
             }

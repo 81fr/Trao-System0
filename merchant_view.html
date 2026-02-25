@@ -201,17 +201,18 @@
     <script>
         // Use addEventListener to avoid overriding script.js's window.onload
         window.addEventListener('load', function () {
-            // Ensure data is initialized
-            if (typeof initData === 'function') initData();
-            if (Auth) Auth.checkSession();
+            // Unified system initialization (handles data migration, session, etc.)
+            if (window.System && typeof System.init === 'function') {
+                System.init();
+            }
 
-            // Parse ID from URL
+            // Parse ID from URL and load profile
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
-            if (id && window.Actions && Actions.loadMerchantProfile) {
+            if (id && typeof Actions !== 'undefined' && Actions.loadMerchantProfile) {
                 Actions.loadMerchantProfile(id);
-            } else {
-                document.querySelector('.main-content').innerHTML += '<p style="color:red; text-align:center;">لم يتم العثور على المتجر</p>';
+            } else if (!id) {
+                document.querySelector('.main-content').innerHTML += '<p style="color:red; text-align:center; padding:20px;">يرجى تحديد متجر صالح</p>';
             }
         });
 

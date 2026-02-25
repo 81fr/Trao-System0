@@ -5,16 +5,29 @@ const Storage = {
     get: (key) => {
         try {
             const raw = localStorage.getItem(key);
-            return raw ? JSON.parse(raw) : (key === 'customLabels' ? null : []);
-        } catch {
+            if (!raw) return (key === 'customLabels' ? null : []);
+            return JSON.parse(raw);
+        } catch (e) {
+            console.error(`Storage GET error for key ${key}:`, e);
             return (key === 'customLabels' ? null : []);
         }
     },
-    set: (key, value) => localStorage.setItem(key, JSON.stringify(value)),
+    set: (key, value) => {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {
+            console.error(`Storage SET error for key ${key}:`, e);
+            if (typeof showToast === 'function') showToast('فشل في حفظ البيانات - قد تكون الذاكرة ممتلئة', 'error');
+        }
+    },
     add: (key, item) => {
-        const data = Array.isArray(Storage.get(key)) ? Storage.get(key) : [];
-        data.push(item);
-        Storage.set(key, data);
+        try {
+            const data = Array.isArray(Storage.get(key)) ? Storage.get(key) : [];
+            data.push(item);
+            Storage.set(key, data);
+        } catch (e) {
+            console.error(`Storage ADD error for key ${key}:`, e);
+        }
     }
 };
 
@@ -1181,6 +1194,10 @@ function loadUsersTable() {
     if (!tbody) return;
     const users = Storage.get('users') || [];
     tbody.innerHTML = '';
+    if (users.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:var(--muted)"><i class="fas fa-users-cog" style="font-size:2rem; opacity:0.3; margin-bottom:10px; display:block;"></i>لا يوجد مستخدمون. قائمة المستخدمين فارغة.</td></tr>';
+        return;
+    }
     users.forEach(u => {
         let roleBadge = '';
         if (u.role === 'admin') roleBadge = '<span class="status-badge status-active">مدير</span>';
@@ -1207,6 +1224,10 @@ function loadCardsTable() {
     const tbody = document.getElementById('cardsTableBody');
     if (!tbody) return;
     tbody.innerHTML = '';
+    if (cards.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--muted)"><i class="fas fa-credit-card" style="font-size:2rem; opacity:0.3; margin-bottom:10px; display:block;"></i>لا توجد بطاقات مصدرة حتى الآن</td></tr>';
+        return;
+    }
     cards.forEach(card => {
         const status = card.status || 'نشط';
         const statusClass = (status === 'نشط' || status === 'Active') ? 'status-active' : 'status-inactive';
@@ -1230,6 +1251,10 @@ function loadWalletsTable() {
     const container = document.getElementById('walletsGrid');
     if (!container) return;
     container.innerHTML = '';
+    if (wallets.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:50px; color:var(--muted);"><i class="fas fa-wallet" style="font-size:3rem; opacity:0.3; margin-bottom:15px; display:block;"></i>لا توجد محافظ حالياً. انقر على "إنشاء محفظة" للبدء.</div>';
+        return;
+    }
 
     wallets.forEach(w => {
         const collected = (w.collected !== undefined) ? Number(w.collected) : 0;
@@ -1281,6 +1306,10 @@ function loadMerchantsTable() {
     const container = document.getElementById('merchantsGrid');
     if (!container) return;
     container.innerHTML = '';
+    if (merchants.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:50px; color:var(--muted);"><i class="fas fa-store" style="font-size:3rem; opacity:0.3; margin-bottom:15px; display:block;"></i>لا توجد متاجر حالياً. انقر على "إضافة متجر" للبدء.</div>';
+        return;
+    }
 
     merchants.forEach(m => {
         const isActive = (m.status === 'نشط' || m.status === 'Active');
@@ -2153,61 +2182,75 @@ const Orders = {
 window.Orders = Orders;
 
 /* ===========================
+   SYSTEM INITIALIZATION
+=========================== */
+const System = {
+    init: () => {
+        try {
+            console.log('TRAOF System: Initializing...');
+            initData();
+            migrateData();
+
+            // Layout & Preferences
+            if (typeof Settings !== 'undefined') {
+                if (typeof Settings.applyLayout === 'function') Settings.applyLayout();
+                if (typeof Settings.load === 'function') Settings.load();
+            }
+
+            // Authentication & UI Role Patching
+            if (typeof Auth !== 'undefined') Auth.checkSession();
+            if (typeof hideFormsByRole === 'function') hideFormsByRole();
+            if (typeof Actions !== 'undefined' && typeof Actions.populateDropdowns === 'function') Actions.populateDropdowns();
+
+            // Dynamic Data Loaders (If functions exist on current page)
+            if (typeof loadDashboard === 'function') loadDashboard();
+            if (typeof loadCardsTable === 'function') loadCardsTable();
+            if (typeof loadWalletsTable === 'function') loadWalletsTable();
+            if (typeof loadMerchantsTable === 'function') loadMerchantsTable();
+            if (typeof Orders !== 'undefined' && typeof Orders.load === 'function') Orders.load();
+
+            // Users Table & Role Listener
+            if (typeof loadUsersTable === 'function') {
+                loadUsersTable();
+                const roleSelect = document.getElementById('newUserRole');
+                if (roleSelect) {
+                    roleSelect.addEventListener('change', (e) => {
+                        const entitySelect = document.getElementById('linkedEntitySelect');
+                        if (entitySelect) {
+                            if (e.target.value === 'merchant') Settings.populateDropdown('merchants', entitySelect);
+                            else if (e.target.value === 'beneficiary') Settings.populateDropdown('beneficiaries', entitySelect);
+                            else entitySelect.innerHTML = '<option value="">-- غير مرتبط --</option>';
+                        }
+                    });
+                }
+            }
+
+            // Secondary Loaders
+            if (typeof fillTransactionsTableIfAny === 'function') {
+                if (fillTransactionsTableIfAny()) {
+                    if (typeof buildReportsChart === 'function') buildReportsChart();
+                }
+            }
+            if (typeof buildDashboardChart === 'function') buildDashboardChart();
+            if (typeof initBeneficiary === 'function') initBeneficiary();
+
+            // Support System
+            if (typeof Support !== 'undefined' && typeof Support.init === 'function') Support.init();
+
+            console.log('TRAOF System: Ready.');
+        } catch (e) {
+            console.error('TRAOF System: Initialization Failed!', e);
+            if (typeof showToast === 'function') showToast('حدث خطأ أثناء تحميل النظام', 'error');
+        }
+    }
+};
+window.System = System;
+
+/* ===========================
    ONLOAD CONTROLLER
 =========================== */
 window.onload = () => {
-    try {
-        initData();
-        migrateData(); // Patch old data with identity fields
-        Settings.applyLayout(); // Apply saved layout preference
-        Settings.load?.();
-        Auth.checkSession();
-        if (typeof hideFormsByRole === 'function') hideFormsByRole();
-        if (typeof Actions.populateDropdowns === 'function') Actions.populateDropdowns();
-
-        if (typeof loadDashboard === 'function') loadDashboard();
-        if (typeof loadCardsTable === 'function') loadCardsTable();
-        if (typeof loadWalletsTable === 'function') loadWalletsTable();
-        if (typeof loadMerchantsTable === 'function') loadMerchantsTable();
-
-        // Orders
-        if (typeof Orders !== 'undefined' && typeof Orders.load === 'function') Orders.load();
-
-        if (typeof loadUsersTable === 'function') {
-            loadUsersTable();
-            const roleSelect = document.getElementById('newUserRole');
-            if (roleSelect) {
-                roleSelect.addEventListener('change', (e) => {
-                    const entitySelect = document.getElementById('linkedEntitySelect');
-                    if (entitySelect) {
-                        if (e.target.value === 'merchant') Settings.populateDropdown('merchants', entitySelect);
-                        else if (e.target.value === 'beneficiary') Settings.populateDropdown('beneficiaries', entitySelect);
-                        else entitySelect.innerHTML = '<option value="">-- غير مرتبط --</option>';
-                    }
-                });
-            }
-        }
-
-        // Fill reports table and build reports chart
-        if (fillTransactionsTableIfAny()) {
-            if (typeof buildReportsChart === 'function') buildReportsChart();
-        }
-
-        // Build dashboard chart
-        if (typeof buildDashboardChart === 'function') buildDashboardChart();
-
-        // صفحة المستفيد (لو دالتها معرفة)
-        if (typeof initBeneficiary === 'function') initBeneficiary();
-
-        // نظام الدعم الفني
-        Support.init();
-
-        // أوامر التوريد
-        if (typeof Orders !== 'undefined') Orders.load();
-
-    } catch (e) {
-        console.error('Initialization Error:', e);
-    }
+    System.init();
 };
 
 /* ===========================
@@ -2588,11 +2631,7 @@ function injectDummyData() {
 =========================== */
 
 
-// Expose globals
-window.Storage = Storage;
-window.Auth = Auth;
-window.Orders = Orders;
-window.Support = Support;
+// Global exports handled at the EOF
 
 /* ===========================
    DATA MIGRATION (v2)
@@ -2645,8 +2684,13 @@ window.tempMerchantFiles = window.tempMerchantFiles || [];
 Object.assign(Actions, {
     loadMerchantProfile: (id) => {
         const merchants = Storage.get('merchants') || [];
+        console.log('loadMerchantProfile called with id:', id, 'merchants count:', merchants.length);
         const m = merchants.find(x => x.id == id); // loose check string/number
-        if (!m) return showToast('المتجر غير موجود', 'error');
+        if (!m) {
+            console.warn('loadMerchantProfile: merchant not found for id:', id);
+            return typeof showToast === 'function' ? showToast('المتجر غير موجود', 'error') : alert('المتجر غير موجود');
+        }
+        console.log('loadMerchantProfile: found merchant:', m.name);
 
         // Header
         document.getElementById('viewName').innerText = m.name;
@@ -2702,3 +2746,14 @@ function loadTables() {
     if (typeof loadCardsTable === 'function') loadCardsTable();
     if (typeof loadUsersTable === 'function') loadUsersTable();
 }
+
+// Ensure all major modules are accessible globally across all pages
+window.Storage = Storage;
+if (typeof Actions !== 'undefined') window.Actions = Actions;
+if (typeof Auth !== 'undefined') window.Auth = Auth;
+if (typeof Settings !== 'undefined') window.Settings = Settings;
+if (typeof POS !== 'undefined') window.POS = POS;
+if (typeof Orders !== 'undefined') window.Orders = Orders;
+if (typeof Support !== 'undefined') window.Support = Support;
+if (typeof System !== 'undefined') window.System = System;
+
