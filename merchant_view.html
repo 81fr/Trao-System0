@@ -199,10 +199,13 @@
     </main>
     <script src="script.js"></script>
     <script>
-        // Local script to load profile
-        window.onload = function () {
+        // Use addEventListener to avoid overriding script.js's window.onload
+        window.addEventListener('load', function () {
+            // Ensure data is initialized
+            if (typeof initData === 'function') initData();
             if (Auth) Auth.checkSession();
-            // Parse ID
+
+            // Parse ID from URL
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
             if (id && window.Actions && Actions.loadMerchantProfile) {
@@ -210,7 +213,7 @@
             } else {
                 document.querySelector('.main-content').innerHTML += '<p style="color:red; text-align:center;">لم يتم العثور على المتجر</p>';
             }
-        };
+        });
 
         function openEditModal() {
             // Redirect to merchants list with edit flag? 
