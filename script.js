@@ -229,20 +229,20 @@ function initData() {
     }
     if (localStorage.getItem('merchants') === null) {
         Storage.set('merchants', [
-            { id: 101, name: 'أسواق العثيم', category: 'مواد غذائية', transactions: 245, status: 'نشط' },
-            { id: 102, name: 'بندة', category: 'مواد غذائية', transactions: 198, status: 'نشط' },
-            { id: 103, name: 'الدانوب', category: 'مواد غذائية', transactions: 145, status: 'نشط' },
-            { id: 104, name: 'التميمي', category: 'مواد غذائية', transactions: 88, status: 'نشط' },
-            { id: 201, name: 'سنتربوينت', category: 'ملابس', transactions: 176, status: 'نشط' },
-            { id: 202, name: 'إكسترا', category: 'إلكترونيات', transactions: 82, status: 'نشط' },
-            { id: 301, name: 'صيدلية النهدي', category: 'أدوية', transactions: 310, status: 'نشط' },
-            { id: 302, name: 'مكتبة جرير', category: 'مستلزمات مدرسية', transactions: 67, status: 'نشط' },
-            { id: 303, name: 'المنيع', category: 'إلكترونيات', transactions: 43, status: 'نشط' },
-            { id: 304, name: 'ماكس', category: 'ملابس', transactions: 95, status: 'نشط' },
-            { id: 305, name: 'صيدلية الدواء', category: 'أدوية', transactions: 120, status: 'نشط' },
-            { id: 306, name: 'ايكيا', category: 'أثاث', transactions: 35, status: 'نشط' },
-            { id: 307, name: 'ساكو', category: 'أدوات منزلية', transactions: 52, status: 'نشط' },
-            { id: 308, name: 'هوم سنتر', category: 'أثاث', transactions: 28, status: 'نشط' }
+            { id: 101, name: 'أسواق العثيم', category: 'مواد غذائية', transactions: 245, status: 'نشط', contactPerson: 'فهد العثيم', phone: '0501234567', email: 'info@othaim.sa', location: 'الرياض - العليا', crNumber: '1010123456', vatNumber: '310123456789012', bankName: 'البنك الأهلي', iban: 'SA0380000000608010167519' },
+            { id: 102, name: 'بندة', category: 'مواد غذائية', transactions: 198, status: 'نشط', contactPerson: 'سعد المحمدي', phone: '0509876543', email: 'info@panda.sa', location: 'جدة - الحمراء', crNumber: '4030234567', vatNumber: '310234567890123', bankName: 'مصرف الراجحي', iban: 'SA4420000000068427859940' },
+            { id: 103, name: 'الدانوب', category: 'مواد غذائية', transactions: 145, status: 'نشط', contactPerson: 'ياسر الدوسري', phone: '0551234567', email: 'info@danube.sa', location: 'الرياض - النخيل', crNumber: '1010345678', vatNumber: '310345678901234', bankName: 'بنك الجزيرة', iban: 'SA5860100000022957651000' },
+            { id: 104, name: 'التميمي', category: 'مواد غذائية', transactions: 88, status: 'نشط', contactPerson: 'عمر التميمي', phone: '0561234567', email: 'info@tamimi.sa', location: 'الرياض - الربيع' },
+            { id: 201, name: 'سنتربوينت', category: 'ملابس', transactions: 176, status: 'نشط', contactPerson: 'منصور الحربي', phone: '0541234567', email: 'info@centerpoint.sa', location: 'الرياض - البوليفارد' },
+            { id: 202, name: 'إكسترا', category: 'إلكترونيات', transactions: 82, status: 'نشط', contactPerson: 'طلال العنزي', phone: '0571234567', email: 'info@extra.sa', location: 'الرياض - المروج' },
+            { id: 301, name: 'صيدلية النهدي', category: 'أدوية', transactions: 310, status: 'نشط', contactPerson: 'سلمان النهدي', phone: '0581234567', email: 'info@nahdi.sa', location: 'جدة - البلد', crNumber: '4030456789', vatNumber: '310456789012345', bankName: 'مصرف الإنماء', iban: 'SA0595000068201234567000' },
+            { id: 302, name: 'مكتبة جرير', category: 'مستلزمات مدرسية', transactions: 67, status: 'نشط', contactPerson: 'عادل السعيد', phone: '0521234567', email: 'info@jarir.sa', location: 'الدمام - الشاطئ' },
+            { id: 303, name: 'المنيع', category: 'إلكترونيات', transactions: 43, status: 'نشط', contactPerson: 'نايف المنيع', phone: '0531234567', email: 'info@almanea.sa', location: 'الرياض - السلام' },
+            { id: 304, name: 'ماكس', category: 'ملابس', transactions: 95, status: 'نشط', contactPerson: 'وليد الرشيدي', phone: '0591234567', email: 'info@max.sa', location: 'جدة - النزهة' },
+            { id: 305, name: 'صيدلية الدواء', category: 'أدوية', transactions: 120, status: 'نشط', contactPerson: 'إبراهيم الشهري', phone: '0511234567', email: 'info@aldawaa.sa', location: 'الرياض - النسيم' },
+            { id: 306, name: 'ايكيا', category: 'أثاث', transactions: 35, status: 'نشط', contactPerson: 'حمد القحطاني', phone: '0542345678', email: 'info@ikea.sa', location: 'الرياض - طريق الملك فهد' },
+            { id: 307, name: 'ساكو', category: 'أدوات منزلية', transactions: 52, status: 'نشط', contactPerson: 'بدر العتيبي', phone: '0552345678', email: 'info@saco.sa', location: 'الرياض - العقيق' },
+            { id: 308, name: 'هوم سنتر', category: 'أثاث', transactions: 28, status: 'نشط', contactPerson: 'خالد البلوي', phone: '0562345678', email: 'info@homecenter.sa', location: 'جدة - التحلية' }
         ]);
     }
     if (localStorage.getItem('transactions') === null) {
@@ -376,6 +376,33 @@ function migrateData() {
         });
         Storage.set('users', users);
     }
+
+    // Migrate merchants: patch old merchants missing contact/regulatory fields
+    const merchants = Storage.get('merchants') || [];
+    let merchantsChanged = false;
+    const seedContacts = {
+        101: { contactPerson: 'فهد العثيم', phone: '0501234567', email: 'info@othaim.sa', location: 'الرياض - العليا', crNumber: '1010123456', vatNumber: '310123456789012', bankName: 'البنك الأهلي', iban: 'SA0380000000608010167519' },
+        102: { contactPerson: 'سعد المحمدي', phone: '0509876543', email: 'info@panda.sa', location: 'جدة - الحمراء', crNumber: '4030234567', vatNumber: '310234567890123', bankName: 'مصرف الراجحي', iban: 'SA4420000000068427859940' },
+        103: { contactPerson: 'ياسر الدوسري', phone: '0551234567', email: 'info@danube.sa', location: 'الرياض - النخيل', crNumber: '1010345678', vatNumber: '310345678901234', bankName: 'بنك الجزيرة', iban: 'SA5860100000022957651000' },
+        104: { contactPerson: 'عمر التميمي', phone: '0561234567', email: 'info@tamimi.sa', location: 'الرياض - الربيع' },
+        201: { contactPerson: 'منصور الحربي', phone: '0541234567', email: 'info@centerpoint.sa', location: 'الرياض - البوليفارد' },
+        202: { contactPerson: 'طلال العنزي', phone: '0571234567', email: 'info@extra.sa', location: 'الرياض - المروج' },
+        301: { contactPerson: 'سلمان النهدي', phone: '0581234567', email: 'info@nahdi.sa', location: 'جدة - البلد', crNumber: '4030456789', vatNumber: '310456789012345', bankName: 'مصرف الإنماء', iban: 'SA0595000068201234567000' },
+        302: { contactPerson: 'عادل السعيد', phone: '0521234567', email: 'info@jarir.sa', location: 'الدمام - الشاطئ' },
+        303: { contactPerson: 'نايف المنيع', phone: '0531234567', email: 'info@almanea.sa', location: 'الرياض - السلام' },
+        304: { contactPerson: 'وليد الرشيدي', phone: '0591234567', email: 'info@max.sa', location: 'جدة - النزهة' },
+        305: { contactPerson: 'إبراهيم الشهري', phone: '0511234567', email: 'info@aldawaa.sa', location: 'الرياض - النسيم' },
+        306: { contactPerson: 'حمد القحطاني', phone: '0542345678', email: 'info@ikea.sa', location: 'الرياض - طريق الملك فهد' },
+        307: { contactPerson: 'بدر العتيبي', phone: '0552345678', email: 'info@saco.sa', location: 'الرياض - العقيق' },
+        308: { contactPerson: 'خالد البلوي', phone: '0562345678', email: 'info@homecenter.sa', location: 'جدة - التحلية' }
+    };
+    merchants.forEach(m => {
+        if (!m.contactPerson && seedContacts[m.id]) {
+            Object.assign(m, seedContacts[m.id]);
+            merchantsChanged = true;
+        }
+    });
+    if (merchantsChanged) Storage.set('merchants', merchants);
 }
 
 /* ===========================
