@@ -483,6 +483,136 @@
                 min-height: 100vh;
             }
         }
+
+        /* Forgot Password Modal */
+        .forgot-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .forgot-modal-overlay.show {
+            display: flex;
+        }
+
+        .forgot-modal {
+            background: white;
+            border-radius: 24px;
+            padding: 36px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: fmIn 0.3s ease;
+        }
+
+        @keyframes fmIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .forgot-modal h3 {
+            margin: 0 0 8px;
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+
+        .forgot-modal p {
+            color: #8c97a8;
+            font-size: 0.9rem;
+            margin: 0 0 24px;
+        }
+
+        .forgot-modal .fm-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e6ecf2;
+            border-radius: 12px;
+            font-family: 'Tajawal';
+            font-size: 1rem;
+            text-align: center;
+            outline: none;
+            transition: all 0.25s;
+        }
+
+        .forgot-modal .fm-input:focus {
+            border-color: #00A59B;
+            box-shadow: 0 0 0 4px rgba(0, 165, 155, 0.1);
+        }
+
+        .forgot-modal .fm-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #00A59B, #8CC240);
+            color: #fff;
+            font-weight: 700;
+            font-family: 'Tajawal';
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 6px 20px rgba(0, 165, 155, 0.3);
+        }
+
+        .forgot-modal .fm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 165, 155, 0.4);
+        }
+
+        .forgot-modal .fm-close {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 6px;
+            box-shadow: none;
+        }
+
+        .forgot-modal .fm-close:hover {
+            color: #333;
+        }
+
+        .forgot-modal .fm-result {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 14px;
+            display: none;
+        }
+
+        .forgot-modal .fm-result.success {
+            display: block;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+        }
+
+        .forgot-modal .fm-result.error {
+            display: block;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
     </style>
 </head>
 
@@ -561,7 +691,7 @@
 
             <!-- Forgot / Back -->
             <div class="forgot-row">
-                <a href="#" class="forgot-link">نسيت كلمة المرور؟</a>
+                <a href="#" class="forgot-link" onclick="showForgotModal(); return false;">نسيت كلمة المرور؟</a>
                 <a href="landing.html" class="forgot-link"><i class="fas fa-home"></i> الصفحة الرئيسية</a>
             </div>
 
@@ -570,6 +700,22 @@
                 <i class="fas fa-info-circle"></i>
                 <span>كلمة المرور التجريبية: <code>123</code> — أدوار: admin / merchant / رقم الهوية للمستفيد</span>
             </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="forgot-modal-overlay" id="forgotOverlay" onclick="if(event.target===this)closeForgotModal()">
+        <div class="forgot-modal">
+            <button class="fm-close" onclick="closeForgotModal()"><i class="fas fa-times"></i></button>
+            <div
+                style="width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#00A59B,#8CC240);display:grid;place-items:center;margin:0 auto 16px;">
+                <i class="fas fa-key" style="color:#fff;font-size:1.4rem;"></i></div>
+            <h3>استعادة كلمة المرور</h3>
+            <p>أدخل اسم المستخدم أو رقم الهوية وسنعرض لك كلمة المرور</p>
+            <input type="text" class="fm-input" id="forgotUsername" placeholder="اسم المستخدم أو رقم الهوية">
+            <button class="fm-btn" onclick="handleForgotPassword()"><i class="fas fa-search"></i> استرجاع كلمة
+                المرور</button>
+            <div class="fm-result" id="forgotResult"></div>
         </div>
     </div>
 
@@ -610,6 +756,62 @@
                 btn.classList.remove('loading');
             }, 600);
         }
+
+        // Forgot Password
+        function showForgotModal() {
+            document.getElementById('forgotOverlay').classList.add('show');
+            document.getElementById('forgotUsername').value = '';
+            document.getElementById('forgotResult').className = 'fm-result';
+            document.getElementById('forgotResult').innerHTML = '';
+            setTimeout(() => document.getElementById('forgotUsername').focus(), 200);
+        }
+        function closeForgotModal() {
+            document.getElementById('forgotOverlay').classList.remove('show');
+        }
+        function handleForgotPassword() {
+            const username = document.getElementById('forgotUsername').value.trim();
+            const resultEl = document.getElementById('forgotResult');
+            if (!username) {
+                resultEl.className = 'fm-result error';
+                resultEl.innerHTML = '<i class="fas fa-exclamation-circle" style="color:#ef4444;"></i> الرجاء إدخال اسم المستخدم أو رقم الهوية';
+                return;
+            }
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.username === username || u.name === username);
+            if (user) {
+                const pass = user.password || '123';
+                resultEl.className = 'fm-result success';
+                resultEl.innerHTML = `
+                    <p style="margin:0 0 8px; color:#059669; font-weight:700;"><i class="fas fa-check-circle"></i> تم العثور على الحساب</p>
+                    <p style="margin:0; font-size:0.9rem; color:#3E4559;">👤 الاسم: <strong>${user.name}</strong></p>
+                    <p style="margin:4px 0 0; font-size:0.9rem; color:#3E4559;">🔑 كلمة المرور: <code style="background:#e7f7f6; padding:4px 12px; border-radius:8px; font-size:1.1rem; font-weight:800; color:#00A59B;">${pass}</code></p>
+                `;
+            } else {
+                // Check default accounts
+                const defaults = [
+                    { username: 'admin', password: '123', name: 'المدير' },
+                    { username: 'merchant', password: '123', name: 'التاجر' }
+                ];
+                const def = defaults.find(d => d.username === username);
+                if (def) {
+                    resultEl.className = 'fm-result success';
+                    resultEl.innerHTML = `
+                        <p style="margin:0 0 8px; color:#059669; font-weight:700;"><i class="fas fa-check-circle"></i> حساب افتراضي</p>
+                        <p style="margin:0; font-size:0.9rem; color:#3E4559;">👤 الاسم: <strong>${def.name}</strong></p>
+                        <p style="margin:4px 0 0; font-size:0.9rem; color:#3E4559;">🔑 كلمة المرور: <code style="background:#e7f7f6; padding:4px 12px; border-radius:8px; font-size:1.1rem; font-weight:800; color:#00A59B;">${def.password}</code></p>
+                    `;
+                } else {
+                    resultEl.className = 'fm-result error';
+                    resultEl.innerHTML = '<p style="margin:0; color:#dc2626;"><i class="fas fa-times-circle"></i> لم يتم العثور على حساب بهذا الاسم</p><p style="margin:8px 0 0; font-size:0.85rem; color:#8c97a8;">تأكد من اسم المستخدم وحاول مرة أخرى</p>';
+                }
+            }
+        }
+        // Enter key in forgot modal
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('forgotUsername').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') handleForgotPassword();
+            });
+        });
     </script>
 
     <script>
