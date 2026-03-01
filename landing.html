@@ -3,76 +3,13 @@
 
 <head>
     <meta charset="UTF-8" />
-    
-    <title>تراوف | نظام البطاقات والمحافظ</title>
-    <link rel="stylesheet" href="style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تراوف | نظام البطاقات والمحافظ الخيرية</title>
+    <meta name="description"
+        content="نظام تراوف لإدارة البطاقات والمحافظ الخيرية — نقطة بيع، إدارة مستفيدين، تقارير تفاعلية، بوابة تاجر ومستفيد.">
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css" />
-    <style>
-        .hero {
-            min-height: 100vh;
-            display: grid;
-            place-items: center;
-            background: linear-gradient(135deg, rgba(0, 165, 155, .08), rgba(140, 194, 64, .08));
-            padding: 26px;
-        }
-
-        .hero-card {
-            max-width: 820px;
-            width: 100%;
-            background: #fff;
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-            padding: 26px;
-            text-align: center;
-        }
-
-        .hero-card h1 {
-            margin: 10px 0 6px;
-            font-size: 2rem;
-            color: var(--brand-ink);
-        }
-
-        .hero-card p {
-            color: #627089;
-            line-height: 1.9;
-        }
-
-        .cta {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 14px;
-        }
-
-        .cta a {
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-weight: bold;
-            transition: .2s;
-        }
-
-        .cta a.primary {
-            background: var(--brand-green);
-            color: #fff;
-        }
-
-        .cta a.secondary {
-            background: #f0f4f8;
-            color: var(--brand-ink);
-            border: 1px solid var(--border);
-        }
-
-        .cta a:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap"
+        rel="stylesheet">
 
     <!-- PWA / Mobile App Meta Tags -->
     <link rel="manifest" href="manifest.json">
@@ -80,29 +17,1118 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="assets/logo.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
+    <style>
+        :root {
+            --brand-green: #8CC240;
+            --brand-teal: #00A59B;
+            --brand-ink: #3E4559;
+            --brand-white: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Tajawal", system-ui, sans-serif;
+            color: var(--brand-ink);
+            background: #fff;
+            overflow-x: hidden;
+        }
+
+        /* ===== TOP NAV ===== */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 40px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
+        }
+
+        .top-nav.scrolled {
+            padding: 10px 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .nav-logo img {
+            height: 40px;
+        }
+
+        .nav-logo span {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--brand-ink);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            padding: 10px 22px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-family: "Tajawal";
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.25s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+        }
+
+        .nav-btn.outline {
+            background: transparent;
+            color: var(--brand-ink);
+            border: 2px solid #e6ecf2;
+        }
+
+        .nav-btn.outline:hover {
+            border-color: var(--brand-teal);
+            color: var(--brand-teal);
+        }
+
+        .nav-btn.solid {
+            background: linear-gradient(135deg, var(--brand-teal), var(--brand-green));
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 165, 155, 0.3);
+        }
+
+        .nav-btn.solid:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 165, 155, 0.4);
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 40px 80px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(160deg, #f0faf9 0%, #f7fdf4 40%, #fff 100%);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -200px;
+            right: -200px;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 165, 155, 0.08) 0%, transparent 70%);
+            animation: float 12s ease-in-out infinite;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -150px;
+            left: -150px;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(140, 194, 64, 0.06) 0%, transparent 70%);
+            animation: float 10s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(20px, -30px) scale(1.05);
+            }
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            z-index: 1;
+        }
+
+        .hero-text {
+            animation: slideInRight 0.8s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 165, 155, 0.08);
+            color: var(--brand-teal);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 165, 155, 0.15);
+        }
+
+        .hero-badge i {
+            font-size: 0.75rem;
+        }
+
+        .hero-text h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1.3;
+            margin-bottom: 20px;
+            color: var(--brand-ink);
+        }
+
+        .hero-text h1 span {
+            background: linear-gradient(135deg, var(--brand-teal), var(--brand-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-text p {
+            font-size: 1.15rem;
+            color: #627089;
+            line-height: 1.9;
+            margin-bottom: 30px;
+            max-width: 500px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .btn-hero {
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-family: "Tajawal";
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .btn-hero.primary {
+            background: linear-gradient(135deg, var(--brand-teal), var(--brand-green));
+            color: #fff;
+            box-shadow: 0 6px 25px rgba(0, 165, 155, 0.35);
+        }
+
+        .btn-hero.primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 35px rgba(0, 165, 155, 0.45);
+        }
+
+        .btn-hero.ghost {
+            background: #fff;
+            color: var(--brand-ink);
+            border: 2px solid #e6ecf2;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-hero.ghost:hover {
+            border-color: var(--brand-teal);
+            color: var(--brand-teal);
+            transform: translateY(-2px);
+        }
+
+        .hero-visual {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: slideInLeft 0.8s ease 0.2s both;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .hero-card-mockup {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .mockup-main {
+            background: #fff;
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .mockup-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .mockup-avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--brand-teal), var(--brand-green));
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-size: 1.2rem;
+        }
+
+        .mockup-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .mockup-role {
+            font-size: 0.8rem;
+            color: #8c97a8;
+        }
+
+        .mockup-card {
+            background: linear-gradient(135deg, var(--brand-teal), #008f87);
+            border-radius: 16px;
+            padding: 22px;
+            color: #fff;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mockup-card::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            left: -30px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .mockup-card .mc-label {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+
+        .mockup-card .mc-num {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            margin-bottom: 14px;
+        }
+
+        .mockup-card .mc-balance {
+            background: rgba(255, 255, 255, 0.15);
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .mockup-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+
+        .ms-item {
+            text-align: center;
+            padding: 14px 8px;
+            background: #f8fbfa;
+            border-radius: 12px;
+        }
+
+        .ms-item i {
+            color: var(--brand-teal);
+            margin-bottom: 6px;
+            font-size: 1.1rem;
+            display: block;
+        }
+
+        .ms-item .ms-val {
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--brand-ink);
+        }
+
+        .ms-item .ms-lbl {
+            font-size: 0.7rem;
+            color: #8c97a8;
+        }
+
+        .float-badge {
+            position: absolute;
+            background: #fff;
+            border-radius: 14px;
+            padding: 12px 18px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            animation: badgeFloat 4s ease-in-out infinite;
+            z-index: 2;
+        }
+
+        .float-badge.fb-1 {
+            top: 20px;
+            left: -30px;
+        }
+
+        .float-badge.fb-2 {
+            bottom: 40px;
+            right: -20px;
+            animation-delay: 2s;
+        }
+
+        .float-badge i {
+            font-size: 1.1rem;
+        }
+
+        @keyframes badgeFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        /* ===== TRUSTED BY ===== */
+        .trusted {
+            padding: 40px;
+            text-align: center;
+            background: #f9fafb;
+        }
+
+        .trusted p {
+            color: #8c97a8;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .trusted-logos {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            align-items: center;
+            flex-wrap: wrap;
+            opacity: 0.4;
+        }
+
+        .trusted-logos span {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #3E4559;
+        }
+
+        /* ===== FEATURES ===== */
+        .features {
+            padding: 100px 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 165, 155, 0.08);
+            color: var(--brand-teal);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+
+        .section-header h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            color: #627089;
+            font-size: 1.05rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: #fff;
+            border: 1px solid #f0f2f5;
+            border-radius: 20px;
+            padding: 30px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--brand-teal), var(--brand-green));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+            border-color: transparent;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            font-size: 1.3rem;
+            color: #fff;
+            margin-bottom: 18px;
+        }
+
+        .feature-icon.fi-teal {
+            background: linear-gradient(135deg, var(--brand-teal), #008f87);
+        }
+
+        .feature-icon.fi-green {
+            background: linear-gradient(135deg, var(--brand-green), #6fa830);
+        }
+
+        .feature-icon.fi-ink {
+            background: linear-gradient(135deg, var(--brand-ink), #2c3240);
+        }
+
+        .feature-icon.fi-orange {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .feature-icon.fi-purple {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+
+        .feature-icon.fi-red {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .feature-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            color: #627089;
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        /* ===== HOW IT WORKS ===== */
+        .how-works {
+            padding: 100px 40px;
+            background: linear-gradient(160deg, #f0faf9 0%, #f7fdf4 50%, #fff 100%);
+        }
+
+        .how-content {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            margin-top: 50px;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            right: 12.5%;
+            width: 75%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--brand-teal), var(--brand-green));
+            opacity: 0.2;
+            z-index: 0;
+        }
+
+        .step {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-num {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--brand-teal), var(--brand-green));
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.3rem;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 18px;
+            box-shadow: 0 6px 20px rgba(0, 165, 155, 0.3);
+        }
+
+        .step h3 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .step p {
+            color: #627089;
+            font-size: 0.85rem;
+            line-height: 1.7;
+        }
+
+        /* ===== STATS ===== */
+        .stats-section {
+            padding: 80px 40px;
+            background: linear-gradient(135deg, var(--brand-ink) 0%, #2c3240 100%);
+            color: #fff;
+        }
+
+        .stats-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 40px;
+            text-align: center;
+        }
+
+        .stat-block .stat-num {
+            font-size: 2.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--brand-teal), var(--brand-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .stat-block .stat-label {
+            font-size: 0.95rem;
+            opacity: 0.7;
+        }
+
+        /* ===== CTA ===== */
+        .cta-section {
+            padding: 100px 40px;
+            text-align: center;
+        }
+
+        .cta-box {
+            max-width: 700px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, var(--brand-teal), var(--brand-green));
+            border-radius: 28px;
+            padding: 60px 40px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-box::before {
+            content: '';
+            position: absolute;
+            top: -80px;
+            left: -80px;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .cta-box::after {
+            content: '';
+            position: absolute;
+            bottom: -60px;
+            right: -60px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .cta-box h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-box p {
+            opacity: 0.9;
+            margin-bottom: 30px;
+            font-size: 1.05rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-cta {
+            padding: 14px 36px;
+            background: #fff;
+            color: var(--brand-teal);
+            border-radius: 12px;
+            font-weight: 700;
+            font-family: "Tajawal";
+            font-size: 1.05rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ===== FOOTER ===== */
+        .landing-footer {
+            padding: 40px;
+            text-align: center;
+            border-top: 1px solid #f0f2f5;
+            color: #8c97a8;
+            font-size: 0.85rem;
+        }
+
+        .landing-footer img {
+            height: 50px;
+            margin-bottom: 10px;
+            display: block;
+            margin: 0 auto 10px;
+        }
+
+        /* ===== SCROLL ANIMATIONS ===== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 40px;
+            }
+
+            .hero-text p {
+                margin: 0 auto 30px;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .steps {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .steps::before {
+                display: none;
+            }
+
+            .stats-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .top-nav {
+                padding: 12px 20px;
+            }
+
+            .hero {
+                padding: 100px 20px 60px;
+            }
+
+            .hero-text h1 {
+                font-size: 2rem;
+            }
+
+            .features {
+                padding: 60px 20px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .how-works {
+                padding: 60px 20px;
+            }
+
+            .steps {
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+
+            .stats-section {
+                padding: 50px 20px;
+            }
+
+            .stats-content {
+                grid-template-columns: 1fr 1fr;
+                gap: 24px;
+            }
+
+            .cta-section {
+                padding: 60px 20px;
+            }
+
+            .cta-box {
+                padding: 40px 24px;
+            }
+
+            .float-badge {
+                display: none;
+            }
+
+            .section-header h2 {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
 </head>
 
 <body>
+
+    <!-- Top Navigation -->
+    <nav class="top-nav" id="topNav">
+        <a href="#" class="nav-logo">
+            <img src="assets/logo.png" alt="تراوف">
+            <span>تراوف</span>
+        </a>
+        <div class="nav-actions">
+            <a href="reports.html" class="nav-btn outline"><i class="fas fa-chart-bar"></i> التقارير</a>
+            <a href="login.html" class="nav-btn solid"><i class="fas fa-sign-in-alt"></i> دخول</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
     <section class="hero">
-        <div class="hero-card">
-            <img src="assets/logo.png" alt="TRAOF Logo" style="max-height:100px; margin-bottom:20px;">
-            <h1>تراوف</h1>
-            <p>
-                نظام خيري لإدارة البطاقات والمحافظ والمستفيدين والمتاجر مع نقطة بيع وتقارير تفاعلية.
-                هوية هادئة بالأخضر والأزرق، وتجربة استخدام بسيطة وسلسة.
-            </p>
-            <div class="cta">
-                <a href="login.html" class="primary"><i class="fas fa-sign-in-alt"></i> دخول للنظام</a>
-                <a href="reports.html" class="secondary"><i class="fas fa-chart-bar"></i> التقارير</a>
-                <a href="pos.html" class="secondary"><i class="fas fa-cash-register"></i> نقطة البيع</a>
+        <div class="hero-content">
+            <div class="hero-text">
+                <div class="hero-badge"><i class="fas fa-shield-alt"></i> نظام خيري متكامل وآمن</div>
+                <h1>إدارة <span>البطاقات والمحافظ</span> الخيرية بذكاء</h1>
+                <p>
+                    نظام تراوف يوفر لك حلاً شاملاً لإدارة المستفيدين والبطاقات والمحافظ ونقاط البيع مع تقارير تفاعلية
+                    ولوحة تحكم متقدمة — كل ذلك بواجهة عربية سهلة وآمنة.
+                </p>
+                <div class="hero-buttons">
+                    <a href="login.html" class="btn-hero primary">
+                        <i class="fas fa-rocket"></i> ابدأ الآن
+                    </a>
+                    <a href="#features" class="btn-hero ghost">
+                        <i class="fas fa-play-circle"></i> اكتشف المزايا
+                    </a>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <div class="hero-card-mockup">
+                    <div class="float-badge fb-1" style="color: var(--brand-green);">
+                        <i class="fas fa-check-circle"></i> عملية ناجحة
+                    </div>
+                    <div class="float-badge fb-2" style="color: var(--brand-teal);">
+                        <i class="fas fa-shield-alt"></i> آمن 100%
+                    </div>
+                    <div class="mockup-main">
+                        <div class="mockup-header">
+                            <div class="mockup-avatar"><i class="fas fa-user"></i></div>
+                            <div>
+                                <div class="mockup-name">أحمد محمد العلي</div>
+                                <div class="mockup-role">مستفيد — بطاقة نشطة</div>
+                            </div>
+                        </div>
+                        <div class="mockup-card">
+                            <div class="mc-label">رقم البطاقة</div>
+                            <div class="mc-num">4521 8834</div>
+                            <div class="mc-balance">💰 الرصيد: 2,450.00 ريال</div>
+                        </div>
+                        <div class="mockup-stats">
+                            <div class="ms-item"><i class="fas fa-receipt"></i>
+                                <div class="ms-val">24</div>
+                                <div class="ms-lbl">عملية</div>
+                            </div>
+                            <div class="ms-item"><i class="fas fa-store"></i>
+                                <div class="ms-val">5</div>
+                                <div class="ms-lbl">متجر</div>
+                            </div>
+                            <div class="ms-item"><i class="fas fa-calendar"></i>
+                                <div class="ms-val">3</div>
+                                <div class="ms-lbl">أشهر</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
+    <!-- Features Section -->
+    <section class="features reveal" id="features">
+        <div class="section-header">
+            <div class="section-badge"><i class="fas fa-star"></i> المزايا الرئيسية</div>
+            <h2>كل ما تحتاجه في نظام واحد</h2>
+            <p>نظام متكامل يغطي جميع احتياجات الجمعيات الخيرية من إدارة المستفيدين إلى التقارير التفاعلية</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card reveal">
+                <div class="feature-icon fi-teal"><i class="fas fa-credit-card"></i></div>
+                <h3>إدارة البطاقات</h3>
+                <p>إصدار بطاقات للمستفيدين مع QR كود، تتبع الأرصدة والحالات بسهولة تامة.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon fi-green"><i class="fas fa-wallet"></i></div>
+                <h3>المحافظ المالية</h3>
+                <p>إدارة محافظ متعددة (غذائية، طبية، تعليمية) مع تتبع دقيق للأرصدة والصرف.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon fi-ink"><i class="fas fa-cash-register"></i></div>
+                <h3>نقطة البيع POS</h3>
+                <p>واجهة POS احترافية مع سلة مشتريات، ضريبة تلقائية، وتأكيد ثنائي آمن.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon fi-orange"><i class="fas fa-store"></i></div>
+                <h3>بوابة التاجر</h3>
+                <p>ماسح QR، إنشاء طلبات شراء، متابعة أوامر التوريد في لوحة مخصصة.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon fi-purple"><i class="fas fa-chart-line"></i></div>
+                <h3>تقارير تفاعلية</h3>
+                <p>رسوم بيانية متقدمة، فلاتر ذكية، تصدير PDF و Excel مع تحليلات شاملة.</p>
+            </div>
+            <div class="feature-card reveal">
+                <div class="feature-icon fi-red"><i class="fas fa-users"></i></div>
+                <h3>إدارة المستخدمين</h3>
+                <p>ثلاثة أدوار (مدير، تاجر، مستفيد) مع صلاحيات مرنة وبوابات مخصصة.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it Works -->
+    <section class="how-works reveal">
+        <div class="how-content">
+            <div class="section-header">
+                <div class="section-badge"><i class="fas fa-cogs"></i> كيف يعمل</div>
+                <h2>أربع خطوات بسيطة</h2>
+                <p>ابدأ باستخدام النظام في دقائق معدودة</p>
+            </div>
+            <div class="steps">
+                <div class="step reveal">
+                    <div class="step-num">1</div>
+                    <h3>تسجيل المستفيدين</h3>
+                    <p>أضف بيانات المستفيدين وأصدر بطاقاتهم الرقمية مع QR كود فريد.</p>
+                </div>
+                <div class="step reveal">
+                    <div class="step-num">2</div>
+                    <h3>شحن المحافظ</h3>
+                    <p>أنشئ محافظ (غذائية، طبية...) واشحن أرصدة البطاقات عبر لوحة التحكم.</p>
+                </div>
+                <div class="step reveal">
+                    <div class="step-num">3</div>
+                    <h3>الشراء من المتاجر</h3>
+                    <p>المستفيد يبرز QR عند التاجر، يتم خصم المبلغ تلقائياً بعد التأكيد.</p>
+                </div>
+                <div class="step reveal">
+                    <div class="step-num">4</div>
+                    <h3>متابعة التقارير</h3>
+                    <p>راقب كل العمليات بتقارير تفاعلية ورسوم بيانية لحظية.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats-section reveal">
+        <div class="stats-content">
+            <div class="stat-block">
+                <span class="stat-num" data-target="1500">0</span>
+                <span class="stat-label">مستفيد مسجل</span>
+            </div>
+            <div class="stat-block">
+                <span class="stat-num" data-target="320">0</span>
+                <span class="stat-label">متجر شريك</span>
+            </div>
+            <div class="stat-block">
+                <span class="stat-num" data-target="15000">0</span>
+                <span class="stat-label">عملية منجزة</span>
+            </div>
+            <div class="stat-block">
+                <span class="stat-num" data-target="99">0</span>
+                <span class="stat-label">% وقت التشغيل</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section reveal">
+        <div class="cta-box">
+            <h2>جاهز للبدء مع تراوف؟</h2>
+            <p>انضم الآن وابدأ بإدارة مستفيديك ومحافظك بطريقة احترافية وآمنة.</p>
+            <a href="login.html" class="btn-cta">
+                <i class="fas fa-arrow-left"></i> ادخل النظام الآن
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+        <img src="assets/logo.png" alt="تراوف">
+        <p>صنع بـ ❤️ في تراؤف — نظام البطاقات والمحافظ الخيرية</p>
+    </footer>
+
     <script>
-        // PWA Service Worker Register
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            document.getElementById('topNav').classList.toggle('scrolled', window.scrollY > 50);
+        });
+
+        // Scroll reveal
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.15 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // Counter animation
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (!e.isIntersecting) return;
+                const el = e.target;
+                const target = +el.dataset.target;
+                let current = 0;
+                const step = Math.max(1, Math.ceil(target / 60));
+                const timer = setInterval(() => {
+                    current += step;
+                    if (current >= target) { current = target; clearInterval(timer); }
+                    el.textContent = current.toLocaleString('ar-SA');
+                }, 20);
+                counterObserver.unobserve(el);
+            });
+        }, { threshold: 0.5 });
+        document.querySelectorAll('.stat-num[data-target]').forEach(el => counterObserver.observe(el));
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                const target = document.querySelector(a.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+
+    <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./service-worker.js')
@@ -111,7 +1137,6 @@
             });
         }
     </script>
-
 </body>
 
 </html>
