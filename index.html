@@ -13,9 +13,9 @@
     <style>
         /* ===== Dashboard Premium Styles ===== */
         .dash-hero {
-            background: linear-gradient(135deg, #3E4559 0%, #00A59B 50%, #8CC240 100%);
-            border-radius: 18px;
-            padding: 32px 36px;
+            background: linear-gradient(135deg, #1a1d27 0%, #00A59B 50%, #8CC240 100%);
+            border-radius: 22px;
+            padding: 36px 40px;
             color: white;
             display: flex;
             justify-content: space-between;
@@ -23,18 +23,15 @@
             margin-bottom: 28px;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 12px 40px rgba(0, 165, 155, 0.2);
         }
 
         .dash-hero::before {
             content: '';
             position: absolute;
-            top: -40%;
-            left: -10%;
-            width: 300px;
-            height: 300px;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 50%;
-            animation: float 8s ease-in-out infinite;
+            inset: 0;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
         .dash-hero::after {
@@ -42,8 +39,8 @@
             position: absolute;
             bottom: -50%;
             right: 5%;
-            width: 200px;
-            height: 200px;
+            width: 250px;
+            height: 250px;
             background: rgba(255, 255, 255, 0.04);
             border-radius: 50%;
             animation: float 6s ease-in-out infinite reverse;
@@ -66,9 +63,10 @@
         }
 
         .dash-hero h2 {
-            font-size: 1.6rem;
-            font-weight: 700;
+            font-size: 1.65rem;
+            font-weight: 800;
             margin: 0 0 6px;
+            letter-spacing: -0.3px;
         }
 
         .dash-hero p {
@@ -80,7 +78,12 @@
         .dash-hero .hero-date {
             opacity: 0.7;
             font-size: 0.8rem;
-            margin-top: 6px;
+            margin-top: 8px;
+            background: rgba(255, 255, 255, 0.12);
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 8px;
+            backdrop-filter: blur(4px);
         }
 
         .dash-hero img {
@@ -100,55 +103,99 @@
 
         .stat-widget {
             background: white;
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border-radius: 18px;
+            padding: 22px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             display: flex;
             align-items: center;
-            gap: 14px;
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            gap: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: default;
-            border-right: 4px solid transparent;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-widget::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 4px;
+            height: 100%;
+            border-radius: 0 18px 18px 0;
         }
 
         .stat-widget:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            transform: translateY(-6px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+            border-color: transparent;
         }
 
-        .stat-widget.bdr-teal {
-            border-right-color: #00A59B;
+        .stat-widget.bdr-teal::before {
+            background: linear-gradient(180deg, #00A59B, #00847b);
         }
 
-        .stat-widget.bdr-green {
-            border-right-color: #8CC240;
+        .stat-widget.bdr-teal:hover {
+            box-shadow: 0 12px 40px rgba(0, 165, 155, 0.15);
         }
 
-        .stat-widget.bdr-ink {
-            border-right-color: #3E4559;
+        .stat-widget.bdr-green::before {
+            background: linear-gradient(180deg, #8CC240, #6fa830);
         }
 
-        .stat-widget.bdr-orange {
-            border-right-color: #f59e0b;
+        .stat-widget.bdr-green:hover {
+            box-shadow: 0 12px 40px rgba(140, 194, 64, 0.15);
         }
 
-        .stat-widget.bdr-purple {
-            border-right-color: #8b5cf6;
+        .stat-widget.bdr-ink::before {
+            background: linear-gradient(180deg, #3E4559, #2c3240);
         }
 
-        .stat-widget.bdr-red {
-            border-right-color: #ef4444;
+        .stat-widget.bdr-orange::before {
+            background: linear-gradient(180deg, #f59e0b, #d97706);
+        }
+
+        .stat-widget.bdr-orange:hover {
+            box-shadow: 0 12px 40px rgba(245, 158, 11, 0.15);
+        }
+
+        .stat-widget.bdr-purple::before {
+            background: linear-gradient(180deg, #8b5cf6, #7c3aed);
+        }
+
+        .stat-widget.bdr-purple:hover {
+            box-shadow: 0 12px 40px rgba(139, 92, 246, 0.15);
+        }
+
+        .stat-widget.bdr-red::before {
+            background: linear-gradient(180deg, #ef4444, #dc2626);
+        }
+
+        .stat-widget.bdr-red:hover {
+            box-shadow: 0 12px 40px rgba(239, 68, 68, 0.15);
         }
 
         .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 14px;
+            width: 52px;
+            height: 52px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             flex-shrink: 0;
+            position: relative;
+        }
+
+        .stat-icon::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 20px;
+            background: inherit;
+            opacity: 0.12;
+            z-index: -1;
         }
 
         .stat-icon.green {
@@ -185,13 +232,14 @@
             margin: 0;
             font-size: 0.75rem;
             color: #8c97a8;
-            font-weight: 400;
+            font-weight: 500;
+            letter-spacing: 0.3px;
         }
 
         .stat-info .stat-value {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: #3E4559;
+            font-size: 1.65rem;
+            font-weight: 900;
+            color: var(--text-primary, #3E4559);
             line-height: 1.2;
         }
 
@@ -201,6 +249,7 @@
             display: flex;
             align-items: center;
             gap: 4px;
+            font-weight: 500;
         }
 
         /* Charts Section */
@@ -220,18 +269,25 @@
 
         .chart-box {
             background: white;
-            border-radius: 16px;
-            padding: 22px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            transition: all 0.3s;
+        }
+
+        .chart-box:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
         }
 
         .chart-box h3 {
             margin: 0 0 14px;
             font-size: 0.95rem;
-            color: #3E4559;
+            color: var(--text-primary, #3E4559);
             display: flex;
             align-items: center;
             gap: 8px;
+            font-weight: 700;
         }
 
         .chart-box h3 i {
@@ -482,21 +538,44 @@
     <!-- Sidebar -->
     <nav class="sidebar">
         <div class="sidebar-header">
-            <img src="assets/logo.png" alt="TRAOF Logo" style="max-height:56px;">
+            <img src="assets/logo.png" alt="TRAOF Logo" style="max-height:50px;">
         </div>
+        <div class="sidebar-profile">
+            <div class="sidebar-profile-avatar" id="sidebarAvatar">م</div>
+            <div class="sidebar-profile-name" id="sidebarName">المشرف</div>
+            <div class="sidebar-profile-role"><i class="fas fa-shield-alt"></i> مدير النظام</div>
+        </div>
+        <div class="nav-section-label">القائمة الرئيسية</div>
         <ul class="nav-links">
-            <li><a href="index.html" class="active"><i class="fas fa-home"></i> لوحة التحكم</a></li>
-            <li><a href="cards.html"><i class="fas fa-credit-card"></i> البطاقات</a></li>
-            <li><a href="wallets.html"><i class="fas fa-wallet"></i> المحافظ</a></li>
-            <li><a href="merchants.html"><i class="fas fa-store"></i> المتاجر</a></li>
-            <li><a href="orders.html"><i class="fas fa-file-invoice-dollar"></i> أوامر التوريد</a></li>
-            <li><a href="pos.html"><i class="fas fa-cash-register"></i> نقطة البيع</a></li>
-            <li><a href="reports.html"><i class="fas fa-chart-bar"></i> التقارير</a></li>
-            <li><a href="users.html"><i class="fas fa-users-cog"></i> المستخدمين</a></li>
-            <li><a href="settings.html"><i class="fas fa-cog"></i> الإعدادات</a></li>
-            <li><a href="monitor.html"><i class="fas fa-stethoscope"></i> فحص النظام</a></li>
-            <li><a href="support.html"><i class="fas fa-headset"></i> الدعم الفني</a></li>
+            <li><a href="index.html" class="active"><span class="nav-icon-box"><i class="fas fa-home"></i></span> لوحة
+                    التحكم</a></li>
+            <li><a href="cards.html"><span class="nav-icon-box"><i class="fas fa-credit-card"></i></span> البطاقات</a>
+            </li>
+            <li><a href="wallets.html"><span class="nav-icon-box"><i class="fas fa-wallet"></i></span> المحافظ</a></li>
+            <li><a href="merchants.html"><span class="nav-icon-box"><i class="fas fa-store"></i></span> المتاجر</a></li>
+            <li><a href="orders.html"><span class="nav-icon-box"><i class="fas fa-file-invoice-dollar"></i></span> أوامر
+                    التوريد</a></li>
+            <li><a href="pos.html"><span class="nav-icon-box"><i class="fas fa-cash-register"></i></span> نقطة البيع</a>
+            </li>
+            <li><a href="reports.html"><span class="nav-icon-box"><i class="fas fa-chart-bar"></i></span> التقارير</a>
+            </li>
         </ul>
+        <div class="nav-section-label">الإدارة</div>
+        <ul class="nav-links" style="flex:0;">
+            <li><a href="users.html"><span class="nav-icon-box"><i class="fas fa-users-cog"></i></span> المستخدمين</a>
+            </li>
+            <li><a href="settings.html"><span class="nav-icon-box"><i class="fas fa-cog"></i></span> الإعدادات</a></li>
+            <li><a href="monitor.html"><span class="nav-icon-box"><i class="fas fa-stethoscope"></i></span> فحص
+                    النظام</a></li>
+            <li><a href="support.html"><span class="nav-icon-box"><i class="fas fa-headset"></i></span> الدعم الفني</a>
+            </li>
+        </ul>
+        <div class="sidebar-bottom">
+            <button class="sidebar-logout"
+                onclick="if(typeof logout==='function')logout();else{localStorage.clear();location.href='login.html';}">
+                <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+            </button>
+        </div>
     </nav>
 
     <!-- Main Content -->
