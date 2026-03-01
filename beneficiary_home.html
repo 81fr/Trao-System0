@@ -45,18 +45,73 @@
         <!-- بطاقة فعّالة -->
         <div id="cardDetailsSection">
             <div class="card-preview">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="opacity:.8">رقم البطاقة</span>
+                <div
+                    style="display:flex; justify-content:space-between; align-items:center; position:relative; z-index:1;">
+                    <span style="opacity:.7; font-size:0.85rem;">رقم البطاقة</span>
                     <span id="cardStatusBadge"
-                        style="background:rgba(0,0,0,.2); padding:5px 10px; border-radius:5px; font-size:.8rem;">نشط</span>
+                        style="background:rgba(255,255,255,.15); padding:5px 14px; border-radius:8px; font-size:.78rem; backdrop-filter:blur(4px);">نشط</span>
                 </div>
-                <h2 id="cardNumberDisplay">0000 0000</h2>
-                <div class="balance-display">
+                <h2 id="cardNumberDisplay" style="position:relative; z-index:1; letter-spacing:3px;">0000 0000</h2>
+                <div class="balance-display" style="position:relative; z-index:1;">
                     الرصيد المتاح: <strong id="cardBalanceDisplay">0.00</strong> ريال
                 </div>
                 <br>
-                <div id="qrBox" class="qr-placeholder"></div>
-                <p style="font-size:.9rem; opacity:.9">أبرز هذا الكود عند البائع لإتمام الشراء</p>
+                <div id="qrBox" class="qr-placeholder" style="position:relative; z-index:1;"></div>
+                <p style="font-size:.85rem; opacity:.8; position:relative; z-index:1;">أبرز هذا الكود عند البائع لإتمام
+                    الشراء</p>
+            </div>
+
+            <!-- ===== عمليات البطاقة (مثل منافذ) ===== -->
+            <div class="card-ops-section">
+                <h3><i class="fas fa-th-large"></i> العمليات على البطاقة</h3>
+                <div class="card-ops-grid">
+                    <div class="card-op-item" onclick="CardOps.showQR()">
+                        <div class="card-op-icon op-teal"><i class="fas fa-qrcode"></i></div>
+                        <span class="card-op-label">الشراء بواسطة<br>QR Code</span>
+                    </div>
+                    <div class="card-op-item" onclick="CardOps.showBarcode()">
+                        <div class="card-op-icon op-blue"><i class="fas fa-barcode"></i></div>
+                        <span class="card-op-label">الشراء بواسطة<br>Barcode</span>
+                    </div>
+                    <div class="card-op-item" onclick="CardOps.showCardNumber()">
+                        <div class="card-op-icon op-purple"><i class="fas fa-credit-card"></i></div>
+                        <span class="card-op-label">الشراء بواسطة<br>رقم البطاقة</span>
+                    </div>
+                    <div class="card-op-item" onclick="CardOps.copyNumber()">
+                        <div class="card-op-icon op-cyan"><i class="fas fa-copy"></i></div>
+                        <span class="card-op-label">نسخ رقم<br>البطاقة</span>
+                    </div>
+                    <div class="card-op-item" onclick="CardOps.changePassword()">
+                        <div class="card-op-icon op-green"><i class="fas fa-key"></i></div>
+                        <span class="card-op-label">تغيير كلمة<br>مرور البطاقة</span>
+                    </div>
+                    <div class="card-op-item" onclick="CardOps.renameCard()">
+                        <div class="card-op-icon op-orange"><i class="fas fa-edit"></i></div>
+                        <span class="card-op-label">إعادة تسمية<br>البطاقة</span>
+                    </div>
+                    <div class="card-op-item" onclick="CardOps.setLocation()">
+                        <div class="card-op-icon op-ink"><i class="fas fa-map-marker-alt"></i></div>
+                        <span class="card-op-label">تحديد موقع<br>المنزل</span>
+                    </div>
+                    <div class="card-op-item" onclick="CardOps.deleteCard()">
+                        <div class="card-op-icon op-red"><i class="fas fa-trash-alt"></i></div>
+                        <span class="card-op-label">حذف<br>البطاقة</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal عرض QR / Barcode -->
+            <div id="cardOpsModal"
+                style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999; backdrop-filter:blur(6px); display:none; justify-content:center; align-items:center;">
+                <div
+                    style="background:white; border-radius:24px; padding:32px; max-width:360px; width:90%; text-align:center; position:relative; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                    <button onclick="CardOps.closeModal()"
+                        style="position:absolute; top:12px; left:12px; background:none; box-shadow:none; color:#999; font-size:1.2rem; padding:8px;"><i
+                            class="fas fa-times"></i></button>
+                    <h3 id="modalTitle" style="margin:0 0 20px; color:#3E4559;"></h3>
+                    <div id="modalContent" style="min-height:200px; display:grid; place-items:center;"></div>
+                    <p id="modalSubtext" style="color:#8c97a8; font-size:0.85rem; margin-top:16px;"></p>
+                </div>
             </div>
 
             <!-- ===== طلبات الشراء الواردة ===== -->
@@ -153,6 +208,155 @@
 
     <script src="script.js?v=22"></script>
     <script>
+        /* ===== Card Operations (Manafith Style) ===== */
+        const CardOps = {
+            getMyCard: () => {
+                const user = Auth.user;
+                if (!user) return null;
+                const cards = Storage.get('cards') || [];
+                const benefName = user.linkedEntity || user.name;
+                let card = null;
+                if (/^\d+$/.test(user.username)) card = cards.find(c => c.identity === user.username && (c.status === 'نشط' || c.status === 'Active'));
+                if (!card) card = cards.find(c => c.beneficiary === benefName && (c.status === 'نشط' || c.status === 'Active'));
+                if (!card) card = cards.find(c => c.beneficiary && c.beneficiary.includes(benefName) && (c.status === 'نشط' || c.status === 'Active'));
+                return card;
+            },
+
+            openModal: (title, content, subtext) => {
+                const m = document.getElementById('cardOpsModal');
+                document.getElementById('modalTitle').textContent = title;
+                document.getElementById('modalContent').innerHTML = content;
+                document.getElementById('modalSubtext').textContent = subtext || '';
+                m.style.display = 'flex';
+                m.onclick = (e) => { if (e.target === m) CardOps.closeModal(); };
+            },
+            closeModal: () => { document.getElementById('cardOpsModal').style.display = 'none'; },
+
+            showQR: () => {
+                const card = CardOps.getMyCard();
+                if (!card) return alert('لا توجد بطاقة نشطة');
+                const qrDiv = `<div id="modalQR" style="background:#fff; padding:16px; border-radius:12px;"></div>`;
+                CardOps.openModal('الشراء بواسطة QR Code', qrDiv, 'أبرز هذا الكود للبائع لإتمام عملية الشراء');
+                setTimeout(() => {
+                    const el = document.getElementById('modalQR');
+                    if (el && typeof QRCode !== 'undefined') new QRCode(el, { text: card.number, width: 220, height: 220, colorDark: '#1a1d27', colorLight: '#ffffff' });
+                }, 100);
+            },
+
+            showBarcode: () => {
+                const card = CardOps.getMyCard();
+                if (!card) return alert('لا توجد بطاقة نشطة');
+                const html = `<canvas id="barcodeCanvas" width="280" height="80" style="border-radius:8px;"></canvas>`;
+                CardOps.openModal('الشراء بواسطة Barcode', html, 'أبرز هذا الباركود للبائع');
+                setTimeout(() => {
+                    const c = document.getElementById('barcodeCanvas');
+                    if (!c) return;
+                    const ctx = c.getContext('2d');
+                    const num = card.number.replace(/\s/g, '');
+                    ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 280, 80);
+                    let x = 20;
+                    for (let i = 0; i < num.length; i++) {
+                        const charCode = num.charCodeAt(i);
+                        for (let b = 0; b < 4; b++) {
+                            ctx.fillStyle = (charCode + b) % 2 === 0 ? '#1a1d27' : '#fff';
+                            const w = ((charCode * (b + 1)) % 3) + 1;
+                            ctx.fillRect(x, 8, w, 50); x += w + 1;
+                        }
+                        x += 2;
+                    }
+                    ctx.fillStyle = '#3E4559'; ctx.font = '12px Tajawal'; ctx.textAlign = 'center';
+                    ctx.fillText(card.number, 140, 74);
+                }, 100);
+            },
+
+            showCardNumber: () => {
+                const card = CardOps.getMyCard();
+                if (!card) return alert('لا توجد بطاقة نشطة');
+                const html = `
+                    <div style="text-align:center;">
+                        <div style="background:linear-gradient(135deg,#1a1d27,#00A59B); color:#fff; padding:24px 32px; border-radius:16px; margin-bottom:12px;">
+                            <p style="opacity:.7; font-size:.8rem; margin:0 0 4px;">رقم البطاقة</p>
+                            <h2 style="margin:0; letter-spacing:4px; font-size:1.6rem;">${card.number}</h2>
+                        </div>
+                        <button onclick="CardOps.copyNumber()" style="padding:10px 24px; font-size:.88rem;">
+                            <i class="fas fa-copy"></i> نسخ الرقم
+                        </button>
+                    </div>`;
+                CardOps.openModal('الشراء بواسطة رقم البطاقة', html, 'أعط هذا الرقم للبائع لإتمام الشراء');
+            },
+
+            copyNumber: () => {
+                const card = CardOps.getMyCard();
+                if (!card) return;
+                navigator.clipboard.writeText(card.number).then(() => {
+                    if (typeof showToast === 'function') showToast('تم نسخ رقم البطاقة!', 'success');
+                    else alert('✅ تم نسخ الرقم: ' + card.number);
+                }).catch(() => {
+                    const t = document.createElement('textarea'); t.value = card.number; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t);
+                    alert('✅ تم نسخ الرقم: ' + card.number);
+                });
+            },
+
+            changePassword: () => {
+                const card = CardOps.getMyCard();
+                if (!card) return alert('لا توجد بطاقة نشطة');
+                const oldPass = prompt('أدخل كلمة المرور الحالية:');
+                if (oldPass === null) return;
+                const currentPass = card.password || card.pin || '1234';
+                if (oldPass !== currentPass) return alert('❌ كلمة المرور غير صحيحة');
+                const newPass = prompt('أدخل كلمة المرور الجديدة (4 أرقام):');
+                if (!newPass || newPass.length < 4) return alert('كلمة المرور يجب أن تكون 4 أرقام على الأقل');
+                const confirmPass = prompt('أعد إدخال كلمة المرور الجديدة:');
+                if (newPass !== confirmPass) return alert('❌ كلمتا المرور غير متطابقتين');
+                const cards = Storage.get('cards') || [];
+                const c = cards.find(x => x.number === card.number);
+                if (c) { c.password = newPass; c.pin = newPass; Storage.set('cards', cards); }
+                alert('✅ تم تغيير كلمة المرور بنجاح');
+                if (typeof showToast === 'function') showToast('تم تغيير كلمة المرور', 'success');
+            },
+
+            renameCard: () => {
+                const card = CardOps.getMyCard();
+                if (!card) return alert('لا توجد بطاقة نشطة');
+                const newName = prompt('أدخل الاسم الجديد للبطاقة:', card.label || card.beneficiary || '');
+                if (!newName || !newName.trim()) return;
+                const cards = Storage.get('cards') || [];
+                const c = cards.find(x => x.number === card.number);
+                if (c) { c.label = newName.trim(); Storage.set('cards', cards); }
+                alert('✅ تم تغيير اسم البطاقة إلى: ' + newName.trim());
+                if (typeof showToast === 'function') showToast('تم تغيير اسم البطاقة', 'success');
+            },
+
+            setLocation: () => {
+                if (!navigator.geolocation) return alert('المتصفح لا يدعم تحديد الموقع');
+                alert('جاري تحديد موقعك...');
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const card = CardOps.getMyCard();
+                        if (!card) return;
+                        const cards = Storage.get('cards') || [];
+                        const c = cards.find(x => x.number === card.number);
+                        if (c) { c.location = { lat: pos.coords.latitude, lng: pos.coords.longitude }; Storage.set('cards', cards); }
+                        alert(`✅ تم حفظ الموقع\nخط العرض: ${pos.coords.latitude.toFixed(6)}\nخط الطول: ${pos.coords.longitude.toFixed(6)}`);
+                        if (typeof showToast === 'function') showToast('تم تحديد الموقع بنجاح', 'success');
+                    },
+                    (err) => alert('❌ فشل تحديد الموقع: ' + err.message)
+                );
+            },
+
+            deleteCard: () => {
+                const card = CardOps.getMyCard();
+                if (!card) return alert('لا توجد بطاقة نشطة');
+                if (!confirm(`هل أنت متأكد من حذف البطاقة رقم ${card.number}؟\n\nلن تتمكن من استرجاعها!`)) return;
+                const confirmCode = prompt('للتأكيد، أدخل آخر 4 أرقام من رقم البطاقة:');
+                if (confirmCode !== card.number.slice(-4)) return alert('❌ رقم التأكيد غير صحيح');
+                const cards = Storage.get('cards') || [];
+                const idx = cards.findIndex(x => x.number === card.number);
+                if (idx !== -1) { cards.splice(idx, 1); Storage.set('cards', cards); }
+                alert('✅ تم حذف البطاقة');
+                location.reload();
+            }
+        };
         /* ===== Pending Purchase Requests (from merchant) ===== */
         const PendingPurchase = {
             pollInterval: null,

@@ -699,15 +699,161 @@ tbody tr:last-child td {
   color: #dc2626;
 }
 
+/* ===== Card Operations Grid (Manafith Style) ===== */
+.card-ops-section {
+  margin: 24px 0;
+}
+
+.card-ops-section h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--brand-ink, #3E4559);
+}
+
+.card-ops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+.card-op-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px;
+  border-radius: 16px;
+  background: var(--card, white);
+  border: 1.5px solid var(--border, #e8ecf0);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  color: inherit;
+}
+
+.card-op-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  border-color: var(--brand-teal);
+}
+
+.card-op-item:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.card-op-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+  position: relative;
+  transition: all 0.3s;
+}
+
+.card-op-icon::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 19px;
+  background: inherit;
+  opacity: 0.1;
+  z-index: -1;
+}
+
+.card-op-item:hover .card-op-icon {
+  transform: scale(1.08);
+}
+
+.card-op-icon.op-teal {
+  background: linear-gradient(135deg, #00A59B, #008f87);
+  color: #fff;
+}
+
+.card-op-icon.op-purple {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: #fff;
+}
+
+.card-op-icon.op-blue {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff;
+}
+
+.card-op-icon.op-green {
+  background: linear-gradient(135deg, #8CC240, #6fa830);
+  color: #fff;
+}
+
+.card-op-icon.op-orange {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+}
+
+.card-op-icon.op-red {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+}
+
+.card-op-icon.op-pink {
+  background: linear-gradient(135deg, #ec4899, #db2777);
+  color: #fff;
+}
+
+.card-op-icon.op-cyan {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  color: #fff;
+}
+
+.card-op-icon.op-ink {
+  background: linear-gradient(135deg, #3E4559, #2c3240);
+  color: #fff;
+}
+
+.card-op-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-secondary, #627089);
+  line-height: 1.4;
+}
+
+/* Card preview upgrade */
 /* ===== Beneficiary card preview ===== */
 .card-preview {
-  background: linear-gradient(135deg, var(--brand-teal), #00897b);
+  background: linear-gradient(135deg, #1a1d27 0%, var(--brand-teal) 60%, #0097a7 100%);
   color: white;
-  padding: 24px;
-  border-radius: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 6px 18px rgba(0, 165, 155, 0.26);
+  padding: 28px;
+  border-radius: 20px;
+  margin-bottom: 0;
+  box-shadow: 0 12px 40px rgba(0, 165, 155, 0.3);
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-preview::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+.card-preview::after {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 180px;
+  height: 180px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 50%;
 }
 
 .card-preview h2 {
