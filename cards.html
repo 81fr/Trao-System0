@@ -225,9 +225,13 @@
                     <!-- Operations -->
                     <h4 class="cd-section-title"><i class="fas fa-th-large"></i> العمليات على البطاقة</h4>
                     <div class="cd-ops-grid">
-                        <div class="cd-op-item" onclick="CardPage.addBalance()">
-                            <div class="cd-op-icon op-green"><i class="fas fa-plus-circle"></i></div>
-                            <span class="cd-op-label">إضافة<br>رصيد</span>
+                        <div class="cd-op-item" onclick="CardPage.openBalanceModal('deposit')">
+                            <div class="cd-op-icon op-green"><i class="fas fa-arrow-down"></i></div>
+                            <span class="cd-op-label">تغذية<br>البطاقة</span>
+                        </div>
+                        <div class="cd-op-item" onclick="CardPage.openBalanceModal('withdraw')">
+                            <div class="cd-op-icon op-red"><i class="fas fa-arrow-up"></i></div>
+                            <span class="cd-op-label">سحب<br>رصيد</span>
                         </div>
                         <div class="cd-op-item" onclick="CardPage.toggleStatus()">
                             <div class="cd-op-icon op-orange" id="cdToggleIcon"><i class="fas fa-ban"></i></div>
@@ -262,6 +266,43 @@
                     <!-- Transactions -->
                     <h4 class="cd-section-title"><i class="fas fa-history"></i> آخر العمليات</h4>
                     <div class="cd-transactions-list" id="cdTransactions"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== Balance Operation Modal ===== -->
+        <div class="card-detail-overlay" id="balanceModalOverlay" style="z-index: 1050;"
+            onclick="if(event.target===this)CardPage.closeBalanceModal()">
+            <div class="card-detail-modal" style="max-width:400px; padding:0;">
+                <div class="cd-modal-body" style="padding:24px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <h3 style="margin:0; font-size:1.1rem; display:flex; align-items:center; gap:8px; width:100%; border-bottom:1px solid #eee; padding-bottom:15px;"
+                            id="balanceModalTitle">
+                            <i class="fas fa-coins"></i> عملية رصيد
+                        </h3>
+                    </div>
+
+                    <input type="hidden" id="balanceOpType" value="deposit">
+
+                    <div class="form-group" style="text-align:right;">
+                        <label>المبلغ (ريال)</label>
+                        <input type="number" id="balanceOpAmount" placeholder="0.00" min="0.01" step="0.01"
+                            style="width:100%; padding:10px; border-radius:10px; border:1px solid #ccc;">
+                    </div>
+
+                    <div class="form-group" style="margin-top:15px; text-align:right;">
+                        <label>السبب / البيان</label>
+                        <input type="text" id="balanceOpReason" placeholder="مثال: تغذية نقدية..."
+                            style="width:100%; padding:10px; border-radius:10px; border:1px solid #ccc;">
+                    </div>
+
+                    <div style="display:flex; gap:10px; margin-top:25px;">
+                        <button class="primary" style="flex:1; border-radius:10px; padding:12px;"
+                            onclick="CardPage.submitBalanceOp()" id="balanceOpSubmitBtn">تأكيد</button>
+                        <button class="secondary"
+                            style="flex:1; border-radius:10px; padding:12px; background:#f1f5f9; color:#334155; border:none;"
+                            onclick="CardPage.closeBalanceModal()">إلغاء</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -456,20 +497,84 @@
                 this.currentCardId = null;
             },
 
-            addBalance() {
+            openBalanceModal(type) {
                 const card = this._getCard();
                 if (!card) return;
-                const amount = prompt('أدخل المبلغ المراد إضافته:');
-                if (!amount || isNaN(amount) || Number(amount) <= 0) return;
+
+                document.getElementById('balanceOpType').value = type;
+                document.getElementById('balanceOpAmount').value = '';
+                document.getElementById('balanceOpReason').value = '';
+
+                const title = document.getElementById('balanceModalTitle');
+                const btn = document.getElementById('balanceOpSubmitBtn');
+
+                if (type === 'deposit') {
+                    title.innerHTML = '<i class="fas fa-arrow-down" style="color:#10b981;"></i> تغذية البطاقة';
+                    btn.innerHTML = 'تأكيد التغذية';
+                    btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                } else {
+                    title.innerHTML = '<i class="fas fa-arrow-up" style="color:#ef4444;"></i> سحب رصيد';
+                    btn.innerHTML = 'تأكيد السحب';
+                    btn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                }
+
+                document.getElementById('balanceModalOverlay').classList.add('show');
+            },
+
+            closeBalanceModal() {
+                document.getElementById('balanceModalOverlay').classList.remove('show');
+            },
+
+            submitBalanceOp() {
+                const card = this._getCard();
+                if (!card) return;
+
+                const type = document.getElementById('balanceOpType').value;
+                const amount = parseFloat(document.getElementById('balanceOpAmount').value);
+                const reason = document.getElementById('balanceOpReason').value.trim();
+
+                if (!amount || isNaN(amount) || amount <= 0) {
+                    return showToast('يرجى إدخال مبلغ صحيح', 'error');
+                }
+                if (!reason) {
+                    return showToast('يرجى إدخال سبب العملية', 'error');
+                }
+
                 const cards = Storage.get('cards') || [];
                 const c = cards.find(x => x.id == card.id);
-                if (c) {
-                    c.balance = Number(c.balance || 0) + Number(amount);
-                    Storage.set('cards', cards);
-                    showToast('تم إضافة ' + Number(amount).toLocaleString('ar-SA') + ' ريال', 'success');
-                    this.refreshAll();
-                    this.showDetail(card.id);
+                if (!c) return;
+
+                if (type === 'withdraw' && amount > Number(c.balance)) {
+                    return showToast('الرصيد غير كافي للسحب', 'error');
                 }
+
+                // Update balance
+                if (type === 'deposit') {
+                    c.balance = Number(c.balance || 0) + amount;
+                } else {
+                    c.balance = Number(c.balance || 0) - amount;
+                }
+
+                // Record transaction
+                const transactions = Storage.get('transactions') || [];
+                transactions.push({
+                    id: Date.now(),
+                    date: new Date().toLocaleDateString('ar-SA') + ' ' + new Date().toLocaleTimeString('ar-SA'),
+                    amount: type === 'withdraw' ? -amount : amount,
+                    merchant: type === 'deposit' ? 'تغذية رصيد' : 'سحب رصيد',
+                    card: c.number,
+                    reason: reason,
+                    type: type
+                });
+
+                Storage.set('cards', cards);
+                Storage.set('transactions', transactions);
+
+                showToast(`تم ${type === 'deposit' ? 'تغذية' : 'سحب'} ${amount.toLocaleString('ar-SA')} ريال بنجاح`, 'success');
+
+                this.closeBalanceModal();
+                this.refreshAll();
+                this.showDetail(c.id);
             },
 
             toggleStatus() {
