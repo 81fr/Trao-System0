@@ -29,12 +29,17 @@
     </nav>
 
     <main class="main-content">
-        <header>
-            <h1><i class="fas fa-user-circle"></i> بوابة المستفيد</h1>
-            <div class="user-profile"><span id="welcomeName">مرحباً</span>
-                <div class="avatar">م</div>
+        <!-- الترحيب والرصيد -->
+        <div class="beneficiary-welcome">
+            <div class="beneficiary-welcome-text">
+                <h2 id="welcomeName">مرحباً</h2>
+                <p>بوابة المستفيد الإلكترونية</p>
             </div>
-        </header>
+            <div class="beneficiary-main-balance">
+                <small>الرصيد المتاح</small>
+                <div class="balance-amount"><span id="cardBalanceDisplay">0.00</span> ريال</div>
+            </div>
+        </div>
 
         <!-- لا توجد بطاقة -->
         <div id="noCardState" style="text-align:center; display:none;">
@@ -44,59 +49,90 @@
 
         <!-- بطاقة فعّالة -->
         <div id="cardDetailsSection">
-            <div class="card-preview">
-                <div
-                    style="display:flex; justify-content:space-between; align-items:center; position:relative; z-index:1;">
-                    <span style="opacity:.7; font-size:0.85rem;">رقم البطاقة</span>
-                    <span id="cardStatusBadge"
-                        style="background:rgba(255,255,255,.15); padding:5px 14px; border-radius:8px; font-size:.78rem; backdrop-filter:blur(4px);">نشط</span>
+            <!-- البطاقة البصرية الحقيقية -->
+            <div class="beneficiary-visual-card">
+                <div class="bvc-reflection"></div>
+                <div class="bvc-header">
+                    <img class="bvc-logo" src="assets/logo.png" alt="Traof Logo">
+                    <span id="cardStatusBadge" class="bvc-status active">نشط</span>
                 </div>
-                <h2 id="cardNumberDisplay" style="position:relative; z-index:1; letter-spacing:3px;">0000 0000</h2>
-                <div class="balance-display" style="position:relative; z-index:1;">
-                    الرصيد المتاح: <strong id="cardBalanceDisplay">0.00</strong> ريال
+                <div class="bvc-chip-row">
+                    <svg class="bvc-chip" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 75">
+                        <defs>
+                            <linearGradient id="chipGrad" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stop-color="#f5d76e" />
+                                <stop offset="100%" stop-color="#d4af37" />
+                            </linearGradient>
+                        </defs>
+                        <rect width="100" height="75" rx="12" fill="url(#chipGrad)" stroke="#c5a017" stroke-width="2" />
+                        <path d="M30 0v75M70 0v75M0 37.5h30M70 37.5h30M30 20c15 0 15 35 0 35M70 20c-15 0-15 35 0 35"
+                            fill="none" stroke="#c5a017" stroke-width="2" opacity="0.8" />
+                    </svg>
+                    <i class="fas fa-wifi bvc-contactless"></i>
                 </div>
-                <br>
-                <div id="qrBox" class="qr-placeholder" style="position:relative; z-index:1;"></div>
-                <p style="font-size:.85rem; opacity:.8; position:relative; z-index:1;">أبرز هذا الكود عند البائع لإتمام
-                    الشراء</p>
+                <div class="bvc-number" id="cardNumberDisplay" dir="ltr">0000 0000 0000 0000</div>
+                <div class="bvc-footer">
+                    <div class="bvc-name-box">
+                        <small>حامل البطاقة</small>
+                        <div class="bvc-name" id="cardHolderName">-</div>
+                    </div>
+                    <div class="bvc-expiry-box">
+                        <small>تاريخ الانتهاء</small>
+                        <div class="bvc-expiry" id="cardExpiryDisplay">12/30</div>
+                    </div>
+                </div>
             </div>
 
             <!-- ===== عمليات البطاقة (مثل منافذ) ===== -->
-            <div class="card-ops-section">
-                <h3><i class="fas fa-th-large"></i> العمليات على البطاقة</h3>
-                <div class="card-ops-grid">
-                    <div class="card-op-item" onclick="CardOps.showQR()">
-                        <div class="card-op-icon op-teal"><i class="fas fa-qrcode"></i></div>
-                        <span class="card-op-label">الشراء بواسطة<br>QR Code</span>
+            <!-- ===== عمليات البطاقة ===== -->
+            <div class="beneficiary-ops-grid">
+                <div class="beneficiary-op-btn" onclick="CardOps.showQR()">
+                    <div class="op-icon-wrapper" style="background: rgba(0, 165, 155, 0.1); color: var(--brand-teal);">
+                        <i class="fas fa-qrcode"></i>
                     </div>
-                    <div class="card-op-item" onclick="CardOps.showBarcode()">
-                        <div class="card-op-icon op-blue"><i class="fas fa-barcode"></i></div>
-                        <span class="card-op-label">الشراء بواسطة<br>Barcode</span>
+                    <span>الشراء بواسطة<br>QR Code</span>
+                </div>
+                <div class="beneficiary-op-btn" onclick="CardOps.showBarcode()">
+                    <div class="op-icon-wrapper" style="background: rgba(43, 138, 226, 0.1); color: #2b8ae2;">
+                        <i class="fas fa-barcode"></i>
                     </div>
-                    <div class="card-op-item" onclick="CardOps.showCardNumber()">
-                        <div class="card-op-icon op-purple"><i class="fas fa-credit-card"></i></div>
-                        <span class="card-op-label">الشراء بواسطة<br>رقم البطاقة</span>
+                    <span>الشراء بواسطة<br>Barcode</span>
+                </div>
+                <div class="beneficiary-op-btn" onclick="CardOps.showCardNumber()">
+                    <div class="op-icon-wrapper" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">
+                        <i class="fas fa-credit-card"></i>
                     </div>
-                    <div class="card-op-item" onclick="CardOps.copyNumber()">
-                        <div class="card-op-icon op-cyan"><i class="fas fa-copy"></i></div>
-                        <span class="card-op-label">نسخ رقم<br>البطاقة</span>
+                    <span>الشراء بواسطة<br>رقم البطاقة</span>
+                </div>
+                <div class="beneficiary-op-btn" onclick="CardOps.copyNumber()">
+                    <div class="op-icon-wrapper" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;">
+                        <i class="fas fa-copy"></i>
                     </div>
-                    <div class="card-op-item" onclick="CardOps.changePassword()">
-                        <div class="card-op-icon op-green"><i class="fas fa-key"></i></div>
-                        <span class="card-op-label">تغيير كلمة<br>مرور البطاقة</span>
+                    <span>نسخ رقم<br>البطاقة</span>
+                </div>
+                <div class="beneficiary-op-btn" onclick="CardOps.changePassword()">
+                    <div class="op-icon-wrapper" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                        <i class="fas fa-key"></i>
                     </div>
-                    <div class="card-op-item" onclick="CardOps.renameCard()">
-                        <div class="card-op-icon op-orange"><i class="fas fa-edit"></i></div>
-                        <span class="card-op-label">إعادة تسمية<br>البطاقة</span>
+                    <span>تغيير كلمة<br>مرور البطاقة</span>
+                </div>
+                <div class="beneficiary-op-btn" onclick="CardOps.renameCard()">
+                    <div class="op-icon-wrapper" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                        <i class="fas fa-edit"></i>
                     </div>
-                    <div class="card-op-item" onclick="CardOps.setLocation()">
-                        <div class="card-op-icon op-ink"><i class="fas fa-map-marker-alt"></i></div>
-                        <span class="card-op-label">تحديد موقع<br>المنزل</span>
+                    <span>إعادة تسمية<br>البطاقة</span>
+                </div>
+                <div class="beneficiary-op-btn" onclick="CardOps.setLocation()">
+                    <div class="op-icon-wrapper" style="background: rgba(30, 41, 59, 0.1); color: #1e293b;">
+                        <i class="fas fa-map-marker-alt"></i>
                     </div>
-                    <div class="card-op-item" onclick="CardOps.deleteCard()">
-                        <div class="card-op-icon op-red"><i class="fas fa-trash-alt"></i></div>
-                        <span class="card-op-label">حذف<br>البطاقة</span>
+                    <span>تحديد موقع<br>المنزل</span>
+                </div>
+                <div class="beneficiary-op-btn" onclick="CardOps.deleteCard()">
+                    <div class="op-icon-wrapper" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                        <i class="fas fa-trash-alt"></i>
                     </div>
+                    <span>إلغاء<br>البطاقة</span>
                 </div>
             </div>
 
@@ -131,33 +167,27 @@
                     لا توجد طلبات شراء حالياً
                 </div>
 
-                <div id="pendingPurchaseCard"
-                    style="display:none; background:linear-gradient(135deg, #fff9e6, #fff3cd); border:2px solid #f0ad4e; border-radius:16px; padding:24px; text-align:center;">
-                    <p style="margin:0 0 5px; color:#856404; font-size:0.9rem;"><i class="fas fa-store"></i> طلب شراء من
-                        التاجر</p>
-                    <h4 id="pendingMerchant" style="color:#856404; margin:5px 0;">-</h4>
+                <div id="pendingPurchaseCard" class="pending-popup-card" style="display:none; margin-bottom: 20px;">
+                    <i class="fas fa-store pp-icon"></i>
+                    <p style="margin:0 0 5px; color:#b45309; font-size:0.95rem;">طلب شراء جديد من</p>
+                    <h4 class="pp-merchant" id="pendingMerchant">-</h4>
 
-                    <div style="margin:15px 0;">
-                        <p style="color:#666; font-size:0.85rem; margin:0;">كود التحقق</p>
-                        <h1 id="pendingCode"
-                            style="font-size:2.5rem; letter-spacing:12px; color:var(--brand-ink); margin:5px 0; font-family:monospace;">
-                            ------</h1>
+                    <div class="pp-code" id="pendingCode">------</div>
+
+                    <div class="pp-details">
+                        <span><i class="fas fa-money-bill-wave" style="color:#10b981;"></i> المبلغ: <strong
+                                id="pendingAmount" style="color:#10b981;">0</strong> ريال</span>
+                        <span><i class="fas fa-clock" style="color:#ef4444;"></i> ينتهي خلال: <strong id="pendingTimer"
+                                style="color:#ef4444;">5:00</strong></span>
                     </div>
 
-                    <div style="display:flex; justify-content:center; gap:20px; flex-wrap:wrap; margin:15px 0;">
-                        <span><i class="fas fa-money-bill-wave" style="color:#8CC240;"></i> المبلغ: <strong
-                                id="pendingAmount" style="font-size:1.3rem; color:#8CC240;">0</strong> ريال</span>
-                        <span><i class="fas fa-clock" style="color:#e67e22;"></i> ينتهي خلال: <strong id="pendingTimer"
-                                style="color:#e67e22;">5:00</strong></span>
-                    </div>
-
-                    <div style="display:flex; gap:10px; justify-content:center; margin-top:15px;">
+                    <div style="display:flex; gap:12px; justify-content:center;">
                         <button onclick="PendingPurchase.confirm()"
-                            style="background:#28a745; padding:12px 30px; font-size:1.1rem;">
+                            style="flex:1; background:linear-gradient(135deg, #10b981, #059669); padding:14px; font-size:1.1rem; border-radius:14px; border:none; color:#fff; box-shadow:0 8px 16px rgba(16,185,129,.2);">
                             <i class="fas fa-check-circle"></i> تأكيد الشراء
                         </button>
                         <button onclick="PendingPurchase.reject()"
-                            style="background:#dc3545; padding:12px 30px; font-size:1.1rem;">
+                            style="flex:1; background:#fff; color:#ef4444; border:2px solid #ef4444; padding:12px; font-size:1.1rem; border-radius:14px;">
                             <i class="fas fa-times-circle"></i> رفض
                         </button>
                     </div>
@@ -543,29 +573,48 @@
             const noCard = document.getElementById('noCardState');
 
             if (myCard) {
-                document.getElementById('cardNumberDisplay').innerText = myCard.number;
-                document.getElementById('cardBalanceDisplay').innerText = Number(myCard.balance || 0).toFixed(2);
+                const displayNum = myCard.number.replace(/(\d{4})(?=\d)/g, '$1 ');
+                document.getElementById('cardNumberDisplay').innerText = displayNum;
+                document.getElementById('cardBalanceDisplay').innerText = Number(myCard.balance || 0).toLocaleString('ar-SA');
+
+                const cardHolderEl = document.getElementById('cardHolderName');
+                if (cardHolderEl) cardHolderEl.innerText = myCard.beneficiary || user.name;
+
+                const cardExpiryEl = document.getElementById('cardExpiryDisplay');
+                if (cardExpiryEl) cardExpiryEl.innerText = myCard.expiry || '12/30';
+
+                const cardStatusEl = document.getElementById('cardStatusBadge');
+                if (cardStatusEl) {
+                    const isActive = myCard.status === 'نشط' || myCard.status === 'Active';
+                    cardStatusEl.className = 'bvc-status ' + (isActive ? 'active' : 'frozen');
+                    cardStatusEl.innerText = isActive ? 'نشط' : 'موقوف';
+                }
 
                 const transactions = Storage.get('transactions') || [];
-                const myTrans = transactions.filter(t => t.card === myCard.number);
+                const myTrans = transactions.filter(t => t.card === myCard.number).slice(-15).reverse();
                 const tbody = document.getElementById('beneficiaryTransactionsTable');
 
                 if (tbody) {
                     if (myTrans.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">لا توجد عمليات سابقة</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px; color: #999;">لا توجد عمليات سابقة</td></tr>';
                     } else {
                         tbody.innerHTML = myTrans.map(t => `
                             <tr>
-                                <td>${t.date}</td>
-                                <td>${t.merchant}</td>
-                                <td style="color:red; font-weight:bold">-${Number(t.amount || 0).toFixed(2)} ريال</td>
+                                <td><span style="font-size:0.85rem; color:#666;">${t.date}</span></td>
+                                <td style="font-weight:600;">${t.merchant}</td>
+                                <td style="color:#ef4444; font-weight:bold; font-size:1.1rem;" dir="ltr">-${Number(t.amount || 0).toLocaleString('ar-SA')} <small style="font-size:0.75rem; color:#666;">ريال</small></td>
                             </tr>
                         `).join('');
                     }
                 }
                 if (cardSection) cardSection.style.display = '';
                 if (noCard) noCard.style.display = 'none';
-                renderBeneficiaryQR('qrBox', myCard.number);
+
+                // Ensure old inline QR generation doesn't crash if it expects it
+                if (typeof renderBeneficiaryQR === 'function' && document.getElementById('qrBox')) {
+                    renderBeneficiaryQR('qrBox', myCard.number);
+                    document.getElementById('qrBox').style.display = 'none';
+                }
             } else {
                 if (cardSection) cardSection.style.display = 'none';
                 if (noCard) noCard.style.display = 'block';
