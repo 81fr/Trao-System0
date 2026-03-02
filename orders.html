@@ -48,6 +48,11 @@
             <li><a href="support.html" ><span class="nav-icon-box"><i class="fas fa-headset"></i></span> الدعم الفني</a></li>
         </ul>
         <div class="sidebar-bottom">
+
+            <button id="darkModeToggleBtn" class="dark-toggle" onclick="toggleDarkMode()" style="width:100%; text-align:right; margin-bottom:10px; padding:12px 20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.05); color:inherit; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s; font-family:inherit; font-size:0.95rem;">
+                <i id="darkIcon" class="fas fa-moon"></i> المظهر الداكن
+            </button>
+        
             <button class="sidebar-logout" onclick="if(typeof logout==='function')logout();else{localStorage.clear();location.href='login.html';}">
                 <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
             </button>

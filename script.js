@@ -1291,38 +1291,39 @@ function loadWalletsTable() {
         const percent = Math.min(100, Math.round((collected / target) * 100));
 
         const card = document.createElement('div');
-        card.className = 'wallet-card';
+        card.className = 'wallet-vault-card'; // replace 'wallet-card'
         card.innerHTML = `
-            <div class="card-menu-btn" onclick="toggleCardMenu(this)">
+            <div class="vault-menu-btn" onclick="toggleCardMenu(this)">
                 <i class="fas fa-ellipsis-v"></i>
-                <div class="card-menu-dropdown" style="display:none;">
+                <div class="card-menu-dropdown vault-menu-dropdown" style="display:none; text-align:right;">
                     <button onclick="Actions.editWallet(${w.id})"><i class="fas fa-edit"></i> تعديل</button>
-                    <button onclick="Actions.deleteWallet(${w.id})" style="color:red"><i class="fas fa-trash"></i> حذف</button>
+                    <button onclick="Actions.deleteWallet(${w.id})" style="color:#fc8181"><i class="fas fa-trash"></i> حذف</button>
                 </div>
             </div>
             
-            <div class="card-icon" style="background:${w.color || '#00A59B'}">
-                <i class="${w.icon || 'fas fa-wallet'}"></i>
-            </div>
-            <span class="wallet-category">${w.category || 'عام'}</span>
-            <h3>${w.name}</h3>
-            <div style="font-size:1.8rem; font-weight:bold; color:#333; margin-bottom:10px;">
-                ${funds.toLocaleString('ar-SA')} <small style="font-size:1rem;color:#777">ريال</small>
+            <div class="vault-header">
+                <div class="vault-icon-box" style="background: linear-gradient(135deg, ${w.color || '#00A59B'}, rgba(0,0,0,0.3))">
+                    <i class="${w.icon || 'fas fa-wallet'}"></i>
+                </div>
+                <div class="vault-category">${w.category || 'عام'}</div>
             </div>
             
-            <div class="progress-container">
-                <div class="progress-labels">
-                    <span>المحقق: ${collected.toLocaleString('ar-SA')}</span>
-                    <span>الهدف: ${target.toLocaleString('ar-SA')}</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width:${percent}%; background:${w.color || '#00A59B'}"></div>
-                </div>
+            <h3 class="vault-title">${w.name}</h3>
+            <div class="vault-balance">
+                ${funds.toLocaleString('ar-SA')} <small>ريال</small>
             </div>
             
-            <div style="display:flex; gap:10px; margin-top:16px;">
-                 <button class="secondary" style="flex:1" onclick="alert('تفاصيل المحفظة قريباً')">التفاصيل</button>
-                 <button style="flex:1; background:${w.color || '#00A59B'}; color:white; border:none;" onclick="Actions.addWalletFunds(${w.id})">إيداع</button>
+            <div class="vault-progress-bg">
+                <div class="vault-progress-fill" style="width:${percent}%; background:${w.color || '#00A59B'}; color:${w.color || '#00A59B'}"></div>
+            </div>
+            <div class="vault-progress-stats">
+                <span>المحقق: ${collected.toLocaleString('ar-SA')}</span>
+                <span>الهدف: ${target.toLocaleString('ar-SA')}</span>
+            </div>
+            
+            <div class="vault-actions">
+                 <button class="vault-btn vault-btn-secondary" onclick="alert('تفاصيل المحفظة قريباً')"><i class="fas fa-chart-line"></i> التفاصيل</button>
+                 <button class="vault-btn vault-btn-primary" style="background: ${w.color || '#00A59B'}" onclick="Actions.addWalletFunds(${w.id})"><i class="fas fa-plus"></i> إيداع</button>
             </div>
         `;
         container.appendChild(card);
@@ -1856,22 +1857,58 @@ const POS = {
         if (!holder) return;
 
         holder.innerHTML = `
-            <div style="text-align:center; margin-bottom:15px;">
-                <img src="assets/logo.png" style="height:50px;">
-                <h4>إيصال عملية ناجحة</h4>
-            </div>
-            <div style="font-size:0.9rem; line-height:1.6;">
-                <strong>رقم العملية:</strong> #${tx.id}<br>
-                <strong>التاريخ:</strong> ${tx.date}<br>
-                <strong>المستفيد:</strong> ${card.beneficiary}<br>
-                <strong>البطاقة:</strong> ${tx.card}<br>
-                <hr style="border:none; border-top:1px dashed #ccc; margin:10px 0;">
-                <div style="margin-bottom:10px;">
-                    ${POS.cart.map(i => `<div>${i.name} × ${i.qty} <span style="float:left;">${(i.price * i.qty).toFixed(2)}</span></div>`).join('')}
+            <div class="thermal-receipt">
+                <div class="thermal-logo">Trao-f POS</div>
+                <div style="font-size:0.8rem; margin-bottom:15px; color:#555;">إيصال ضريبي مبسط</div>
+                
+                <div class="thermal-row">
+                    <span>التاريخ والوقت:</span>
+                    <span>${tx.date}</span>
                 </div>
-                <hr style="border:none; border-top:1px dashed #ccc; margin:10px 0;">
-                <div style="font-size:1.1rem; font-weight:800;">الإجمالي: <span style="float:left;">${tx.amount.toFixed(2)} ريال</span></div>
-                <div style="color:var(--muted); font-size:0.8rem; margin-top:10px;">الرصيد المتبقي: ${Number(card.balance).toFixed(2)} ريال</div>
+                <div class="thermal-row">
+                    <span>رقم العملية:</span>
+                    <span>#${tx.id}</span>
+                </div>
+                <div class="thermal-row">
+                    <span>البائع:</span>
+                    <span>${tx.merchant}</span>
+                </div>
+                <div class="thermal-row">
+                    <span>البطاقة:</span>
+                    <span dir="ltr">${tx.card.replace(/(\d{4})(?=\d)/g, '$1 ')}</span>
+                </div>
+                <div class="thermal-row" style="margin-bottom:15px;">
+                    <span>المستفيد:</span>
+                    <span>${card.beneficiary || 'غير محدد'}</span>
+                </div>
+
+                <div class="thermal-divider"></div>
+
+                <div class="thermal-title">المشتريات</div>
+                ${POS.cart.length > 0 ? POS.cart.map(i => `
+                    <div class="thermal-row">
+                        <span>${i.name} (x${i.qty})</span>
+                        <span>${(i.price * i.qty).toFixed(2)}</span>
+                    </div>
+                `).join('') : `
+                    <div class="thermal-row">
+                        <span>مشتريات عامة</span>
+                        <span>${tx.amount.toFixed(2)}</span>
+                    </div>
+                `}
+
+                <div class="thermal-total">
+                    <div class="thermal-row" style="margin-bottom:0; font-size:1.3rem;">
+                        <span>الإجمالي (شامل الضريبة):</span>
+                        <span>${tx.amount.toFixed(2)} ر.س</span>
+                    </div>
+                </div>
+
+                <div class="thermal-footer">
+                    <div>الرصيد المتبقي: ${Number(card.balance).toFixed(2)} ر.س</div>
+                    <div style="margin-top:10px;">شكراً لتسوقكم معنا!</div>
+                    <div style="font-family:monospace; margin-top:5px;">*** نسخة التاجر ***</div>
+                </div>
             </div>
         `;
         backdrop.classList.add('active');
@@ -2289,11 +2326,28 @@ const Support = {
 
     init: () => {
         if (!Auth.user) return;
-        const container = document.getElementById('ticketListContainer');
+        const container = document.getElementById('supportChatLayout');
         if (container) {
-            container.style.display = 'block';
+            container.style.display = 'flex';
             Support.loadTickets();
         }
+    },
+
+    showNewTicketForm: () => {
+        document.getElementById('chatActiveArea').style.display = 'none';
+        document.getElementById('chatEmptyState').style.display = 'none';
+        document.getElementById('newTicketArea').style.display = 'block';
+
+        // Clear active state on list
+        document.querySelectorAll('.chat-list-item').forEach(el => el.classList.remove('active'));
+        Support.currentTicketId = null;
+    },
+
+    hideNewTicketForm: () => {
+        document.getElementById('newTicketArea').style.display = 'none';
+        document.getElementById('chatEmptyState').style.display = 'flex';
+        document.getElementById('ticketTitle').value = '';
+        document.getElementById('ticketDesc').value = '';
     },
 
     submitTicket: () => {
@@ -2316,15 +2370,14 @@ const Support = {
         };
 
         Storage.add('tickets', ticket);
-        alert('تم إرسال تذكرتك بنجاح!');
-        document.getElementById('ticketTitle').value = '';
-        document.getElementById('ticketDesc').value = '';
+        Support.hideNewTicketForm();
         Support.loadTickets();
+        Support.openTicket(ticket.id); // Open immediately
     },
 
     loadTickets: () => {
-        const tbody = document.getElementById('ticketsTableBody');
-        if (!tbody) return;
+        const listContainer = document.getElementById('chatListContainer');
+        if (!listContainer) return;
 
         let tickets = Storage.get('tickets') || [];
 
@@ -2335,32 +2388,47 @@ const Support = {
         }
 
         if (tickets.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">لا توجد تذاكر</td></tr>';
+            listContainer.innerHTML = '<div style="padding:40px 20px; text-align:center; color:#a0aec0; font-size:0.9rem;">لا توجد محادثات سابقة</div>';
             return;
         }
 
-        tbody.innerHTML = tickets.map(t => {
+        // Sort by id descending (newest first)
+        tickets.sort((a, b) => b.id - a.id);
+
+        listContainer.innerHTML = tickets.map(t => {
+            const isActive = Support.currentTicketId === t.id ? 'active' : '';
+            // Get last message logic
+            let lastMessage = t.desc;
+            let lastDate = t.date;
+            if (t.replies && t.replies.length > 0) {
+                const lastRep = t.replies[t.replies.length - 1];
+                lastMessage = lastRep.text;
+                lastDate = lastRep.date;
+            }
+
+            // Format status badge inline
             const statusColors = {
-                'جديد': 'status-active',
-                'محدث': 'status-active',
-                'مسترجع': 'status-warning',
-                'مغلق': 'status-inactive'
+                'جديد': '#00A59B',
+                'محدث': '#00A59B',
+                'مسترجع': '#f59e0b',
+                'مغلق': '#a0aec0',
+                'قيد التنفيذ': '#3182ce',
+                'تم التنفيذ': '#38a169'
             };
-            const statusBadge = `<span class="status-badge ${statusColors[t.status] || ''}">${t.status}</span>`;
+            const sc = statusColors[t.status] || '#888';
 
             return `
-            <tr>
-                <td>#${t.id}</td>
-                <td>${t.sender} (${t.senderRole || 'مستخدم'})</td>
-                <td>${t.title}</td>
-                <td>${t.date}</td>
-                <td>${statusBadge}</td>
-                <td>
-                    <button class="secondary" onclick="Support.openTicket(${t.id})" style="padding:5px 10px; font-size:0.85rem;">
-                        <i class="fas fa-eye"></i> عرض التفاصيل
-                    </button>
-                </td>
-            </tr>
+            <div class="chat-list-item ${isActive}" onclick="Support.openTicket(${t.id})">
+                <div class="cli-header">
+                    <span class="cli-sender">${Auth.user.role === 'admin' ? t.sender : 'الدعم الفني'}</span>
+                    <span class="cli-date">${lastDate.split(' ')[0]}</span>
+                </div>
+                <div class="cli-title">${t.title}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.8rem; color:#8c97a8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:70%;">${lastMessage}</span>
+                    <span style="font-size:0.7rem; padding:2px 8px; border-radius:10px; background:${sc}22; color:${sc}; font-weight:700;">${t.status}</span>
+                </div>
+            </div>
         `}).join('');
     },
 
@@ -2371,129 +2439,118 @@ const Support = {
 
         Support.currentTicketId = id;
 
-        // Populate Modal
-        document.getElementById('modalTicketTitle').innerText = `تذكرة #${t.id}: ${t.title}`;
+        // Switch views
+        document.getElementById('newTicketArea').style.display = 'none';
+        document.getElementById('chatEmptyState').style.display = 'none';
+        document.getElementById('chatActiveArea').style.display = 'flex';
 
-        // Build History HTML
-        const historyContainer = document.getElementById('ticketHistory');
+        // Title and Status
+        document.getElementById('cwTitle').innerHTML = `#${t.id} - ${t.title}`;
+
+        const statusColors = {
+            'جديد': '#00A59B',
+            'محدث': '#00A59B',
+            'مسترجع': '#f59e0b',
+            'مغلق': '#a0aec0',
+            'قيد التنفيذ': '#3182ce',
+            'تم التنفيذ': '#38a169'
+        };
+        const sc = statusColors[t.status] || '#888';
+        document.getElementById('cwStatusContainer').innerHTML = `<span style="font-size:0.85rem; padding:4px 12px; border-radius:20px; background:${sc}22; color:${sc}; font-weight:700;">${t.status}</span>`;
+
+        // Build History HTML (Bubbles)
+        const messagesView = document.getElementById('chatMessagesView');
+
+        // Original sender is the user. If we are admin, user is "theirs", admin is "mine".
+        // If we are user, user is "mine", admin is "theirs".
+        const amIAdmin = Auth.user.role === 'admin';
+        const isOriginalMine = !amIAdmin && (t.senderUsername === (Auth.user.username || Auth.user.identity) || t.sender === Auth.user.name);
+
         let html = `
-            <div class="message-box original">
-                <div class="msg-header"><strong>${t.sender}</strong> <small>${t.date}</small></div>
-                <div class="msg-body">${t.desc}</div>
+            <div class="chat-bubble ${isOriginalMine ? 'mine' : 'theirs'}">
+                <span class="msg-sender">${t.sender}</span>
+                ${t.desc}
+                <span class="msg-meta">${t.date}</span>
             </div>
         `;
 
         if (t.replies && t.replies.length > 0) {
-            html += t.replies.map(r => `
-                <div class="message-box ${r.role === 'admin' ? 'admin-reply' : 'user-reply'}">
-                    <div class="msg-header"><strong>${r.sender}</strong> <small>${r.date}</small></div>
-                    <div class="msg-body">${r.text}</div>
+            html += t.replies.map(r => {
+                const isReplyMine = (amIAdmin && r.role === 'admin') || (!amIAdmin && r.role !== 'admin');
+                return `
+                <div class="chat-bubble ${isReplyMine ? 'mine' : 'theirs'}">
+                    <span class="msg-sender">${r.sender}</span>
+                    ${r.text}
+                    <span class="msg-meta">${r.date}</span>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
-        historyContainer.innerHTML = html;
-        historyContainer.scrollTop = historyContainer.scrollHeight;
-
-        // Configure Buttons based on Role & Status
-        const btnReturn = document.getElementById('btnReturn');
-        const btnClose = document.getElementById('btnCloseTicket');
-        const btnReply = document.getElementById('btnReply');
-        const replyText = document.getElementById('replyText');
-
-        // Create new buttons if they don't exist
-        let btnAccept = document.getElementById('btnAccept');
-        if (!btnAccept) {
-            btnAccept = document.createElement('button');
-            btnAccept.id = 'btnAccept';
-            btnAccept.style.backgroundColor = '#28a745'; // Green
-            btnAccept.innerHTML = '<i class="fas fa-check"></i> قبول التذكرة';
-            btnAccept.onclick = Support.acceptTicket;
-            btnAccept.style.marginLeft = '10px';
-            const actionDiv = document.getElementById('ticketActionArea').querySelector('div');
-            if (actionDiv) actionDiv.prepend(btnAccept);
-        }
-
-        let btnExecute = document.getElementById('btnExecute');
-        if (!btnExecute) {
-            btnExecute = document.createElement('button');
-            btnExecute.id = 'btnExecute';
-            btnExecute.style.backgroundColor = '#17a2b8'; // Blue
-            btnExecute.innerHTML = '<i class="fas fa-tools"></i> تنفيذ التذكرة';
-            btnExecute.onclick = Support.executeTicket;
-            btnExecute.style.marginLeft = '10px';
-            const actionDiv = document.getElementById('ticketActionArea').querySelector('div');
-            if (actionDiv) actionDiv.insertBefore(btnExecute, btnReturn);
-        }
-
-        replyText.value = '';
-        btnReturn.style.display = 'none';
-        btnClose.style.display = 'none';
-        btnReply.style.display = 'none';
-        btnAccept.style.display = 'none';
-        btnExecute.style.display = 'none';
-        replyText.style.display = 'none';
 
         if (t.status === 'مغلق') {
-            // Closed: Read only
             const ratingHtml = (t.rating > 0) ? '⭐'.repeat(t.rating) : 'لم يتم التقييم';
-            historyContainer.innerHTML += `<div style="text-align:center; padding:10px; border-top:1px solid #eee; margin-top:10px;"><strong>التذكرة مغلقة</strong><br>التقييم: ${ratingHtml}</div>`;
+            html += `<div style="text-align:center; padding:10px; background:#f5f5f5; border-radius:8px; margin-top:10px; color:#666; font-size:0.9rem;">
+                        <strong>التذكرة مغلقة</strong><br>التقييم: ${ratingHtml}
+                    </div>`;
 
-            if (Auth.user.role !== 'admin' && !t.rating) {
-                historyContainer.innerHTML += `
-                 <div style="text-align:center; margin-top:10px;">
-                    <p>قيم لخدمة:</p>
-                    <select onchange="Support.rateTicket(${t.id}, this.value)" style="padding:5px;">
-                        <option value="">-- اختر --</option>
-                        <option value="5">5 ممتاز</option>
-                        <option value="4">4 جيد جدا</option>
-                        <option value="3">3 جيد</option>
-                        <option value="2">2 مقبول</option>
-                        <option value="1">1 سيء</option>
-                    </select>
+            if (!amIAdmin && !t.rating) {
+                html += `
+                 <div style="text-align:center; margin-top:10px; background:#fff; padding:15px; border-radius:8px; border:1px solid #eee;">
+                    <p style="margin-bottom:10px; font-weight:bold; color:#3E4559;">قيم الخدمة:</p>
+                    <div style="display:flex; justify-content:center; gap:5px;" class="rating-stars">
+                        ${[5, 4, 3, 2, 1].map(n => `<button onclick="Support.rateTicket(${t.id}, ${n})" style="font-size:1.5rem; background:none; border:none; color:#ddd; cursor:pointer;" onmouseover="this.style.color='#f59e0b'" onmouseout="this.style.color='#ddd'">★</button>`).join('')}
+                    </div>
                  </div>`;
-            }
-        } else {
-            // Open Action Area
-            replyText.style.display = 'block';
-
-            if (Auth.user.role === 'admin') {
-                btnReturn.style.display = 'inline-block';
-                btnReply.style.display = 'inline-block';
-                btnReply.innerHTML = '<i class="fas fa-reply"></i> رد عادي';
-
-                // Status Flow Logic
-                if (t.status === 'جديد' || t.status === 'محدث' || t.status === 'مسترجع') {
-                    // Stage 1: Accept
-                    btnAccept.style.display = 'inline-block';
-                } else if (t.status === 'قيد التنفيذ') {
-                    // Stage 2: Execute
-                    btnExecute.style.display = 'inline-block';
-                } else if (t.status === 'تم التنفيذ') {
-                    // Stage 3: Close
-                    btnClose.style.display = 'inline-block';
-                }
-            } else {
-                // User
-                btnReply.innerHTML = '<i class="fas fa-paper-plane"></i> إرسال رد';
-                btnReply.style.display = 'inline-block';
             }
         }
 
-        // Show Modal
-        const modal = document.getElementById('ticketModal');
-        if (modal) {
-            modal.classList.add('active');
-            if (modal.style.display !== 'block') modal.style.display = 'block';
+        messagesView.innerHTML = html;
+        messagesView.scrollTop = messagesView.scrollHeight; // Auto scroll to bottom
+
+        // Update active class in list
+        Support.loadTickets();
+
+        // Configure Action Areas
+        const chatInputArea = document.getElementById('chatInputArea');
+        const adminActionArea = document.getElementById('adminActionArea');
+        const replyText = document.getElementById('replyText');
+        replyText.value = '';
+
+        if (t.status === 'مغلق') {
+            chatInputArea.style.display = 'none';
+            adminActionArea.style.display = 'none';
+        } else {
+            chatInputArea.style.display = 'flex';
+            if (amIAdmin) {
+                adminActionArea.style.display = 'flex';
+                // Hide specific buttons based on status
+                const btnAccept = document.getElementById('btnAccept');
+                const btnExecute = document.getElementById('btnExecute');
+                const btnReturn = document.getElementById('btnReturn');
+                const btnClose = document.getElementById('btnCloseTicket');
+
+                btnAccept.style.display = 'none';
+                btnExecute.style.display = 'none';
+                btnReturn.style.display = 'none';
+                btnClose.style.display = 'none';
+
+                if (t.status === 'جديد' || t.status === 'محدث' || t.status === 'مسترجع') {
+                    btnAccept.style.display = 'block';
+                    btnReturn.style.display = 'block';
+                } else if (t.status === 'قيد التنفيذ' || t.status === 'قيد المعالجة') {
+                    btnExecute.style.display = 'block';
+                    btnReturn.style.display = 'block';
+                } else if (t.status === 'تم التنفيذ') {
+                    btnClose.style.display = 'block';
+                }
+            } else {
+                adminActionArea.style.display = 'none';
+            }
         }
     },
 
     closeModal: () => {
-        const modal = document.getElementById('ticketModal');
-        if (modal) {
-            modal.classList.remove('active');
-            modal.style.display = 'none';
-        }
-        Support.currentTicketId = null;
+        // Obsolete with chat interface
     },
 
     sendReply: () => {
@@ -2554,9 +2611,8 @@ const Support = {
         tickets[idx].status = newStatus;
 
         Storage.set('tickets', tickets);
-        alert('تم تنفيذ الإجراء بنجاح');
-        Support.closeModal();
         Support.loadTickets();
+        Support.openTicket(id); // Refresh chat pane
     },
 
     rateTicket: (id, rating) => {
@@ -2785,3 +2841,28 @@ if (typeof Orders !== 'undefined') window.Orders = Orders;
 if (typeof Support !== 'undefined') window.Support = Support;
 if (typeof System !== 'undefined') window.System = System;
 
+
+/* ===== GLOBAL DARK MODE ===== */
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('traof_dark_mode', isDark ? '1' : '0');
+    updateDarkIcon(isDark);
+}
+
+function updateDarkIcon(isDark) {
+    const icon = document.getElementById('darkIcon');
+    const btn = document.getElementById('darkModeToggleBtn');
+    if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+    if (btn) btn.innerHTML = isDark ? '<i id="darkIcon" class="fas fa-sun" style="color:#f59e0b;"></i> المظهر الفاتح' : '<i id="darkIcon" class="fas fa-moon"></i> المظهر الداكن';
+}
+
+// Global Init for Dark Mode
+document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('traof_dark_mode') === '1') {
+        document.body.classList.add('dark-mode');
+        updateDarkIcon(true);
+    } else {
+        updateDarkIcon(false);
+    }
+});

@@ -7,7 +7,8 @@
     <title>تفاصيل المتجر - تراوف</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap"
+        rel="stylesheet">
 
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
@@ -127,6 +128,11 @@
             <li><a href="users.html"><i class="fas fa-users-cog"></i> المستخدمين</a></li>
             <li><a href="settings.html"><i class="fas fa-cog"></i> الإعدادات</a></li>
             <li><a href="support.html"><i class="fas fa-headset"></i> الدعم الفني</a></li>
+            <li><a href="#" id="darkModeToggleBtn" onclick="toggleDarkMode()"><i id="darkIcon" class="fas fa-moon"></i>
+                    المظهر الداكن</a></li>
+            <li><a href="#"
+                    onclick="if(typeof logout==='function')logout();else{localStorage.clear();location.href='login.html';}"><i
+                        class="fas fa-sign-out-alt"></i> تسجيل خروج</a></li>
         </ul>
     </nav>
 

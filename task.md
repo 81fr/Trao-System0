@@ -4,6 +4,16 @@
 - [x] Implement Support Ticket System (support.html) <!-- id: 25 -->
 - [x] Implement Support Logic (JS) <!-- id: 26 -->
 - [x] Move 'Made in Traof' and Logo to Main Content Footer <!-- id: 30 -->
-- [x] Update Logo in Footer <!-- id: 31 -->
+- [x] Wallet System Upgrades
+      - [x] Replace the basic table structure with a premium "Vault Card" dashboard format.
+      - [x] Integrate modern icons, gradient backgrounds, and progress bars for the vault cards.
+    - [x] Support Chat Interface Upgrades
+      - [x] Replace the static ticket table list with a dynamic, WhatsApp-style split-pane view in `support.html`.
+      - [x] Update CSS to style chat bubbles separately for the user and admin views.
+      - [x] Overhaul `script.js` to manage the chat pane instead of opening generic modals.
+    - [x] Global Dark Mode (الوضع المظلم الشامل)
+      - [x] Add dark mode toggle button to the sidebar.
+      - [x] Define CSS variables for dark theme colors.
+      - [x] Implement JS logic to toggle and persist the theme using localStorage.
 - [x] Implement Edit/Delete for Cards <!-- id: 32 -->
 - [x] Enhance Supply Orders (Withdraw, Reject Reason, Admin Actions) <!-- id: 33 -->

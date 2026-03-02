@@ -3,12 +3,12 @@
 
 <head>
     <meta charset="UTF-8" />
-    
     <title>الدعم الفني - تراوف</title>
 
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap"
+        rel="stylesheet">
 
     <!-- PWA / Mobile App Meta Tags -->
     <link rel="manifest" href="manifest.json">
@@ -17,12 +17,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="assets/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
 </head>
 
 <body>
 
-        <nav class="sidebar">
+    <nav class="sidebar">
         <div class="sidebar-header">
             <img src="assets/logo.png" alt="TRAOF Logo" style="max-height:50px;">
         </div>
@@ -33,23 +32,36 @@
         </div>
         <div class="nav-section-label">القائمة الرئيسية</div>
         <ul class="nav-links">
-            <li><a href="index.html" ><span class="nav-icon-box"><i class="fas fa-home"></i></span> لوحة التحكم</a></li>
-            <li><a href="cards.html" ><span class="nav-icon-box"><i class="fas fa-credit-card"></i></span> البطاقات</a></li>
-            <li><a href="wallets.html" ><span class="nav-icon-box"><i class="fas fa-wallet"></i></span> المحافظ</a></li>
-            <li><a href="merchants.html" ><span class="nav-icon-box"><i class="fas fa-store"></i></span> المتاجر</a></li>
-            <li><a href="orders.html" ><span class="nav-icon-box"><i class="fas fa-file-invoice-dollar"></i></span> أوامر التوريد</a></li>
-            <li><a href="pos.html" ><span class="nav-icon-box"><i class="fas fa-cash-register"></i></span> نقطة البيع</a></li>
-            <li><a href="reports.html" ><span class="nav-icon-box"><i class="fas fa-chart-bar"></i></span> التقارير</a></li>
+            <li><a href="index.html"><span class="nav-icon-box"><i class="fas fa-home"></i></span> لوحة التحكم</a></li>
+            <li><a href="cards.html"><span class="nav-icon-box"><i class="fas fa-credit-card"></i></span> البطاقات</a>
+            </li>
+            <li><a href="wallets.html"><span class="nav-icon-box"><i class="fas fa-wallet"></i></span> المحافظ</a></li>
+            <li><a href="merchants.html"><span class="nav-icon-box"><i class="fas fa-store"></i></span> المتاجر</a></li>
+            <li><a href="orders.html"><span class="nav-icon-box"><i class="fas fa-file-invoice-dollar"></i></span> أوامر
+                    التوريد</a></li>
+            <li><a href="pos.html"><span class="nav-icon-box"><i class="fas fa-cash-register"></i></span> نقطة البيع</a>
+            </li>
+            <li><a href="reports.html"><span class="nav-icon-box"><i class="fas fa-chart-bar"></i></span> التقارير</a>
+            </li>
         </ul>
         <div class="nav-section-label">الإدارة</div>
         <ul class="nav-links" style="flex:0;">
-            <li><a href="users.html" ><span class="nav-icon-box"><i class="fas fa-users-cog"></i></span> المستخدمين</a></li>
-            <li><a href="settings.html" ><span class="nav-icon-box"><i class="fas fa-cog"></i></span> الإعدادات</a></li>
-            <li><a href="monitor.html" ><span class="nav-icon-box"><i class="fas fa-stethoscope"></i></span> فحص النظام</a></li>
-            <li><a href="support.html" class="active"><span class="nav-icon-box"><i class="fas fa-headset"></i></span> الدعم الفني</a></li>
+            <li><a href="users.html"><span class="nav-icon-box"><i class="fas fa-users-cog"></i></span> المستخدمين</a>
+            </li>
+            <li><a href="settings.html"><span class="nav-icon-box"><i class="fas fa-cog"></i></span> الإعدادات</a></li>
+            <li><a href="monitor.html"><span class="nav-icon-box"><i class="fas fa-stethoscope"></i></span> فحص
+                    النظام</a></li>
+            <li><a href="support.html" class="active"><span class="nav-icon-box"><i class="fas fa-headset"></i></span>
+                    الدعم الفني</a></li>
         </ul>
         <div class="sidebar-bottom">
-            <button class="sidebar-logout" onclick="if(typeof logout==='function')logout();else{localStorage.clear();location.href='login.html';}">
+
+            <button id="darkModeToggleBtn" class="dark-toggle" onclick="toggleDarkMode()" style="width:100%; text-align:right; margin-bottom:10px; padding:12px 20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.05); color:inherit; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s; font-family:inherit; font-size:0.95rem;">
+                <i id="darkIcon" class="fas fa-moon"></i> المظهر الداكن
+            </button>
+        
+            <button class="sidebar-logout"
+                onclick="if(typeof logout==='function')logout();else{localStorage.clear();location.href='login.html';}">
                 <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
             </button>
         </div>
@@ -63,78 +75,91 @@
             </div>
         </header>
 
-        <div class="form-container">
-            <h3>تواصل معنا</h3>
-            <p>إذا واجهت أي مشكلة، يرجى التواصل مع فريق الدعم.</p>
-            <div class="form-group">
-                <label>عنوان الرسالة</label>
-                <input id="ticketTitle" type="text" placeholder="عنوان المشكلة">
+        <div id="supportChatLayout" class="support-chat-layout" style="display:none;">
+            <!-- Sidebar (Tickets List) -->
+            <div class="chat-sidebar">
+                <div class="chat-sidebar-header">
+                    <span>المحادثات والتذاكر</span>
+                    <button id="chatNewBtn" class="chat-new-btn" onclick="Support.showNewTicketForm()"
+                        title="تذكرة جديدة"><i class="fas fa-plus"></i></button>
+                </div>
+                <div class="chat-list" id="chatListContainer">
+                    <!-- Chat items injected here -->
+                </div>
             </div>
-            <div class="form-group">
-                <label>الوصف</label>
-                <textarea id="ticketDesc"
-                    style="width:100%; padding:10px; border:1px solid var(--border); border-radius:10px;" rows="5"
-                    placeholder="اشرح المشكلة بالتفصيل..."></textarea>
-            </div>
-            <button onclick="Support.submitTicket()"><i class="fas fa-paper-plane"></i> إرسال</button>
-        </div>
 
-        <div id="ticketListContainer" class="form-container"
-            style="display:none; border-top: 4px solid var(--brand-teal);">
-            <h3><i class="fas fa-inbox"></i> قائمة التذاكر</h3>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>المرسل</th>
-                            <th>العنوان</th>
-                            <th>التاريخ</th>
-                            <th>الحالة</th>
-                            <th>إجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ticketsTableBody"></tbody>
-                </table>
-            </div>
-        </div>
+            <!-- Main Chat Area -->
+            <div class="chat-window" id="chatWindowArea">
+                <!-- Empty State -->
+                <div class="chat-empty-state" id="chatEmptyState">
+                    <i class="fas fa-comments"
+                        style="font-size:4.5rem; margin-bottom:15px; color:#cbd5e0; opacity:0.7;"></i>
+                    <p style="font-size:1.1rem; color:#a0aec0;">اختر تذكرة لفتح المحادثة أو قم بإنشاء تذكرة جديدة</p>
+                </div>
 
-        <!-- Ticket Details Modal -->
-        <div id="ticketModal" class="modal-backdrop">
-            <div class="modal">
-                <header
-                    style="display:flex; justify-content:space-between; align-items:center; padding: 15px 20px; border-bottom: 1px solid #eee;">
-                    <h2 id="modalTicketTitle" style="margin:0;">تفاصيل التذكرة</h2>
-                    <span class="close-modal" onclick="Support.closeModal()"
-                        style="cursor:pointer; font-size:1.5rem;">&times;</span>
-                </header>
-
-                <div class="modal-body" style="padding: 20px;">
-                    <div id="ticketHistory" class="ticket-history"
-                        style="margin: 0 0 20px 0; max-height: 300px; overflow-y: auto; background: #f9f9f9; padding: 15px; border-radius: 8px;">
-                        <!-- Conversation loads here -->
+                <!-- Active Conversation -->
+                <div id="chatActiveArea" style="display:none; flex:1; flex-direction:column;">
+                    <div class="chat-window-header">
+                        <div class="cw-title" id="cwTitle">عنوان التذكرة</div>
+                        <div id="cwStatusContainer"></div>
                     </div>
 
-                    <div id="ticketActionArea" style="border-top: 1px solid #ddd; padding-top: 15px;">
-                        <textarea id="replyText" rows="3" placeholder="اكتب ردك أو ملاحظاتك هنا..."
-                            style="width:100%; padding:10px; border:1px solid #ddd; border-radius:4px; margin-bottom:10px;"></textarea>
-                        <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                            <button id="btnReply" onclick="Support.sendReply()"
-                                style="background-color: var(--brand-teal);"><i class="fas fa-paper-plane"></i> إرسال
-                                رد</button>
-                            <button id="btnReturn" onclick="Support.returnTicketAction()"
-                                style="background-color: #ffc107; color: #333; display: none;"><i
-                                    class="fas fa-undo"></i>
-                                إعادة التذكرة</button>
-                            <button id="btnCloseTicket" onclick="Support.closeTicketAction()"
-                                style="background-color: #dc3545; display: none;"><i class="fas fa-times-circle"></i>
-                                إغلاق
-                                التذكرة</button>
-                        </div>
+                    <div class="chat-messages" id="chatMessagesView">
+                        <!-- Bubbles injected here -->
+                    </div>
+
+                    <div class="chat-input-area" id="chatInputArea">
+                        <textarea class="chat-input" id="replyText" rows="1"
+                            placeholder="اكتب ردك أو رسالتك هنا..."></textarea>
+                        <button class="chat-send-btn" id="btnReply" onclick="Support.sendReply()"><i
+                                class="fas fa-paper-plane"></i></button>
+                    </div>
+
+                    <!-- Admin Actions Panel -->
+                    <div id="adminActionArea"
+                        style="display:none; padding:12px 20px; background:#fff; border-top:1px solid #eee; gap:10px; justify-content:flex-end; align-items:center;">
+                        <span style="font-size:0.85rem; color:#888; margin-left:auto;">إجراءات إدارية:</span>
+                        <button id="btnAccept" onclick="Support.acceptTicket()"
+                            style="padding:8px 16px; border-radius:8px; color:#fff; background:#28a745; border:none; cursor:pointer; font-weight:600;"><i
+                                class="fas fa-check"></i> قبول</button>
+                        <button id="btnExecute" onclick="Support.executeTicket()"
+                            style="padding:8px 16px; border-radius:8px; color:#fff; background:#17a2b8; border:none; cursor:pointer; font-weight:600;"><i
+                                class="fas fa-tools"></i> تنفيذ</button>
+                        <button id="btnReturn" onclick="Support.returnTicketAction()"
+                            style="padding:8px 16px; border-radius:8px; color:#333; background:#ffc107; border:none; cursor:pointer; font-weight:600;"><i
+                                class="fas fa-undo"></i> إعادة</button>
+                        <button id="btnCloseTicket" onclick="Support.closeTicketAction()"
+                            style="padding:8px 16px; border-radius:8px; color:#fff; background:#dc3545; border:none; cursor:pointer; font-weight:600;"><i
+                                class="fas fa-times-circle"></i> إغلاق</button>
+                    </div>
+                </div>
+
+                <!-- New Ticket Form -->
+                <div id="newTicketArea" style="display:none; flex:1; padding:40px; background:#fff; overflow-y:auto;">
+                    <h2 style="margin-bottom:25px; color:#3E4559; display:flex; align-items:center; gap:10px;"><i
+                            class="fas fa-pencil-alt" style="color:#00A59B;"></i> إنشاء تذكرة دعم فني</h2>
+                    <div class="form-group">
+                        <label>عنوان المشكلة / الطلب</label>
+                        <input id="ticketTitle" type="text" placeholder="مثال: مشكلة في شحن المحفظة"
+                            style="width:100%; padding:14px; border:1px solid #ddd; border-radius:12px; font-size:1rem;">
+                    </div>
+                    <div class="form-group" style="margin-top:20px;">
+                        <label>الوصف التفصيلي</label>
+                        <textarea id="ticketDesc"
+                            style="width:100%; padding:14px; border:1px solid #ddd; border-radius:12px; resize:vertical; font-size:1rem;"
+                            rows="6" placeholder="يرجى شرح تفاصيل المشكلة بوضوح لنتمكن من مساعدتك..."></textarea>
+                    </div>
+                    <div style="margin-top:25px; display:flex; gap:10px;">
+                        <button onclick="Support.submitTicket()"
+                            style="background:#00A59B; color:#fff; padding:14px 30px; border-radius:12px; font-weight:bold; border:none; cursor:pointer; font-size:1rem; box-shadow:0 4px 10px rgba(0,165,155,0.3); transition:0.2s;"><i
+                                class="fas fa-paper-plane" style="margin-left:5px;"></i> إرسال التذكرة</button>
+                        <button onclick="Support.hideNewTicketForm()"
+                            style="background:#f1f3f5; color:#555; padding:14px 30px; border-radius:12px; font-weight:bold; border:none; cursor:pointer; font-size:1rem; transition:background 0.2s;">إلغاء</button>
                     </div>
                 </div>
             </div>
         </div>
+
         <footer class="main-footer">
             <p>صنع في تراؤف</p>
             <img src="assets/logo.png" alt="TRAOF Logo">
@@ -153,7 +178,6 @@
             });
         }
     </script>
-
 </body>
 
 </html>

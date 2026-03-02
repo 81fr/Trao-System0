@@ -571,6 +571,11 @@
             </li>
         </ul>
         <div class="sidebar-bottom">
+
+            <button id="darkModeToggleBtn" class="dark-toggle" onclick="toggleDarkMode()" style="width:100%; text-align:right; margin-bottom:10px; padding:12px 20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.05); color:inherit; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s; font-family:inherit; font-size:0.95rem;">
+                <i id="darkIcon" class="fas fa-moon"></i> المظهر الداكن
+            </button>
+        
             <button class="sidebar-logout"
                 onclick="if(typeof logout==='function')logout();else{localStorage.clear();location.href='login.html';}">
                 <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
@@ -612,6 +617,9 @@
 
         <!-- Hero Banner -->
         <div class="dash-hero animate-in">
+            <div class="dash-wave-container">
+                <div class="dash-wave"></div>
+            </div>
             <div class="hero-text">
                 <h2>مرحباً بك في نظام تراوف</h2>
                 <p>نظام إدارة البطاقات والمحافظ الخيرية — لوحة المراقبة الشاملة</p>
@@ -748,21 +756,9 @@
                         العمليات</span>
                     <span class="badge" id="txBadge">0</span>
                 </h3>
-                <table class="mini-table">
-                    <thead>
-                        <tr>
-                            <th>البطاقة</th>
-                            <th>المتجر</th>
-                            <th>المبلغ</th>
-                            <th>التاريخ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recentTxBody">
-                        <tr>
-                            <td colspan="4" style="text-align:center; color:#aaa; padding:30px;">لا توجد عمليات</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="timeline-widget" id="recentTxBody">
+                    <div style="text-align:center; color:#aaa; padding:30px;">لا توجد عمليات</div>
+                </div>
             </div>
 
             <!-- Top Cards -->
@@ -1086,17 +1082,25 @@
             const orders = Storage.get('supply_orders') || [];
             const merchants = Storage.get('merchants') || [];
 
-            // Recent Transactions (last 8)
+            // Recent Transactions Timeline (last 8)
             const txBody = document.getElementById('recentTxBody');
             document.getElementById('txBadge').textContent = tx.length + ' عملية';
             if (tx.length > 0) {
-                txBody.innerHTML = tx.slice(-8).reverse().map(t => `
-                    <tr>
-                        <td style="font-family:monospace; font-weight:600; font-size:0.8rem">${t.card}</td>
-                        <td>${t.merchant}</td>
-                        <td style="font-weight:600; color:#00A59B">${Number(t.amount).toLocaleString('ar-SA')} ر.س</td>
-                        <td style="color:#8c97a8; font-size:0.75rem">${t.date}</td>
-                    </tr>`).join('');
+                txBody.innerHTML = tx.slice(-8).reverse().map((t, idx) => {
+                    const colors = ['', 'tl-green', 'tl-orange'];
+                    const colorClass = colors[idx % 3];
+                    return `
+                    <div class="timeline-item ${colorClass}">
+                        <div class="timeline-time">${t.date}</div>
+                        <div class="timeline-content">
+                            <div>
+                                <div class="timeline-title">${t.merchant}</div>
+                                <div style="font-size:0.75rem; color:#8c97a8; font-family:monospace;">${t.card}</div>
+                            </div>
+                            <div class="timeline-amount">${Number(t.amount).toLocaleString('ar-SA')} ر.س</div>
+                        </div>
+                    </div>`;
+                }).join('');
             }
 
             // Top Cards (by balance)
@@ -1122,25 +1126,25 @@
             document.getElementById('ordersBadge').textContent = orders.length + ' أمر';
             if (orders.length > 0) {
                 document.getElementById('ordersBody').innerHTML = orders.slice(-6).reverse().map(o => `
-                    <tr>
+                        < tr >
                         <td style="font-family:monospace; font-weight:600">#${o.id}</td>
                         <td style="font-size:0.78rem">${(o.item || '').substring(0, 25)}${(o.item || '').length > 25 ? '...' : ''}</td>
                         <td>${o.partner}</td>
                         <td style="font-weight:600">${Number(o.cost).toLocaleString('ar-SA')}</td>
                         <td>${statusPills[o.status] || o.status}</td>
-                    </tr>`).join('');
+                    </tr > `).join('');
             }
 
             // Top Merchants
             document.getElementById('merchBadge').textContent = merchants.length + ' متجر';
             if (merchants.length > 0) {
                 document.getElementById('topMerchBody').innerHTML = [...merchants].sort((a, b) => b.transactions - a.transactions).slice(0, 6).map(m => `
-                    <tr>
+                        < tr >
                         <td style="font-weight:500">${m.name}</td>
                         <td style="font-size:0.78rem; color:#8c97a8">${m.category}</td>
                         <td style="font-weight:600; color:#8b5cf6">${m.transactions}</td>
                         <td><span class="status-dot ${m.status === 'نشط' ? 'active' : 'inactive'}"></span>${m.status}</td>
-                    </tr>`).join('');
+                    </tr >`).join('');
             }
         }
 
@@ -1215,10 +1219,10 @@
             const cnt = document.getElementById('notifCount');
             if (list) {
                 list.innerHTML = notifs.map(n => `
-                    <div class="notif-item">
+                        < div class="notif-item" >
                         <div class="notif-icon-box ${n.cls}"><i class="${n.icon}"></i></div>
                         <div class="notif-text"><p>${n.text}</p><small>${n.time}</small></div>
-                    </div>
+                    </div >
                 `).join('');
             }
             if (cnt) { cnt.textContent = notifs.length; cnt.style.display = ''; }
