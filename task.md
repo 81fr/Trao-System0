@@ -17,3 +17,20 @@
       - [x] Implement JS logic to toggle and persist the theme using localStorage.
 - [x] Implement Edit/Delete for Cards <!-- id: 32 -->
 - [x] Enhance Supply Orders (Withdraw, Reject Reason, Admin Actions) <!-- id: 33 -->
+
+## Phase 2: Advanced System Features
+- [x] 1. AI-Powered Insights (Admin Dashboard)
+  - [x] Add sliding glow insights panel to `index.html`.
+  - [x] Implement JS typewriter effect and dummy AI predictions.
+- [x] 2. Supply Orders Kanban Board
+  - [x] Convert `orders.html` table to a drag-and-drop Kanban view.
+  - [x] Update `script.js` to handle drag events and status changes.
+- [ ] 3. Merchant Gamification & Rewards
+  - [ ] Add achievements UI to `merchant_home.html`.
+  - [ ] Display badges in admin `merchant_view.html`.
+- [ ] 4. Actionable Smart Notifications
+  - [ ] Overhaul notification dropdown/drawer with actionable buttons.
+  - [ ] Add JS logic to handle inline actions (e.g., Quick Charge).
+- [ ] 5. Interactive 3D Card Viewer
+  - [ ] Add 3D CSS transform logic to `beneficiary_home.html` card.
+  - [ ] Include mousemove tilt effect JS.

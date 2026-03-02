@@ -572,10 +572,11 @@
         </ul>
         <div class="sidebar-bottom">
 
-            <button id="darkModeToggleBtn" class="dark-toggle" onclick="toggleDarkMode()" style="width:100%; text-align:right; margin-bottom:10px; padding:12px 20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.05); color:inherit; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s; font-family:inherit; font-size:0.95rem;">
+            <button id="darkModeToggleBtn" class="dark-toggle" onclick="toggleDarkMode()"
+                style="width:100%; text-align:right; margin-bottom:10px; padding:12px 20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.05); color:inherit; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s; font-family:inherit; font-size:0.95rem;">
                 <i id="darkIcon" class="fas fa-moon"></i> المظهر الداكن
             </button>
-        
+
             <button class="sidebar-logout"
                 onclick="if(typeof logout==='function')logout();else{localStorage.clear();location.href='login.html';}">
                 <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
@@ -626,6 +627,20 @@
                 <div class="hero-date" id="heroDate"></div>
             </div>
             <img src="assets/logo.png" alt="TRAOF Logo">
+        </div>
+
+        <!-- AI Insights Panel -->
+        <div class="ai-insights-panel animate-in">
+            <div class="ai-glow"></div>
+            <div class="ai-icon"><i class="fas fa-robot"></i></div>
+            <div class="ai-content">
+                <h4 style="margin:0 0 5px; color:#fff; display:flex; align-items:center; gap:8px;">
+                    رؤى الذكاء الاصطناعي <span class="badge"
+                        style="background:var(--brand-green); font-size:0.65rem;">Beta</span>
+                </h4>
+                <div id="aiTypewriter" class="ai-text">جاري تحليل بيانات النظام للحصول على رؤى ذكية...</div>
+            </div>
+            <button class="ai-refresh-btn" onclick="generateAIInsight()"><i class="fas fa-sync-alt"></i> تحديث</button>
         </div>
 
         <!-- Stats Row -->

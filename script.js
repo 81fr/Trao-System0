@@ -1954,89 +1954,161 @@ const Orders = {
         }
     },
     load: () => {
-        console.log('Orders.load() called');
+        console.log('Orders.load() (Kanban) called');
         try {
+            const isKanban = !!document.getElementById('kanbanBoard');
             const grid = document.getElementById('ordersGrid');
-            if (!grid) {
-                console.warn('ordersGrid not found');
-                return;
-            }
 
-            // Ensure data exists
-            let orders = Storage.get('supply_orders');
-            console.log('Retrieved orders:', orders);
+            // If we are on a page that uses the old grid and hasn't been updated (like merchant_home if not updated)
+            const targetContainer = isKanban ? document.getElementById('kanbanBoard') : grid;
+            if (!targetContainer) return;
 
-            if (!orders || !Array.isArray(orders)) {
-                orders = [];
-                Storage.set('supply_orders', []);
-            }
-
-            // Populate merchants dropdown
+            let orders = Storage.get('supply_orders') || [];
             if (Orders.populateMerchants) Orders.populateMerchants();
 
-            // Render grid
-            grid.innerHTML = '';
-            if (orders.length === 0) {
-                console.log('No orders to display');
-                grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#777; background:#fff; border-radius:16px; border:1px dashed #ccc;">لا توجد أوامر توريد حالياً. قم بإنشاء أول طلب!</div>';
-            } else {
-                console.log('Rendering ' + orders.length + ' orders');
-                // Sort by ID desc (newest first)
-                orders.slice().reverse().forEach(o => {
-                    if (!o) return;
+            if (!isKanban && grid) {
+                // Fallback for pages still using ordersGrid
+                grid.innerHTML = orders.length ? '' : '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#777; background:#fff; border-radius:16px; border:1px dashed #ccc;">لا توجد أوامر توريد.</div>';
+            }
 
-                    let statusRole = 'status-badge';
-                    let statusText = o.status;
-                    let statusColorStyle = '';
+            // Reset Kanban columns if present
+            const cols = {
+                Pending: document.getElementById('cards-Pending'),
+                Accepted: document.getElementById('cards-Accepted'),
+                Completed: document.getElementById('cards-Completed'),
+                Other: document.getElementById('cards-Other')
+            };
+            const counts = { Pending: 0, Accepted: 0, Completed: 0, Other: 0 };
 
-                    if (o.status === 'Completed') { statusText = 'منفذ'; statusRole += ' status-active'; }
-                    else if (o.status === 'Pending') { statusText = 'قيد الانتظار'; statusColorStyle = 'background:#fff8e1; color:#f57f17; border-color:#ffecb3;'; }
-                    else if (o.status === 'Withdrawn') { statusText = 'مسحوب'; statusColorStyle = 'background:#f1f2f6; color:#6c757d; border-color:#dbe2e8;'; }
-                    else if (o.status === 'Rejected') { statusText = 'مرفوض'; statusRole += ' status-inactive'; }
-                    else if (o.status === 'Cancelled') { statusText = 'ملغي'; statusColorStyle = 'background:#000; color:#fff;'; }
-                    else if (o.status === 'Accepted') { statusText = 'مقبول'; statusColorStyle = 'background:#e3f2fd; color:#0d47a1; border-color:#bbdefb;'; }
+            if (isKanban) {
+                Object.values(cols).forEach(col => { if (col) col.innerHTML = ''; });
+            }
 
+            orders.slice().reverse().forEach(o => {
+                if (!o) return;
+
+                let statusRole = 'status-badge';
+                let statusText = o.status;
+                let statusColorStyle = '';
+                let colKey = 'Other'; // Default for Rejected, Cancelled, Withdrawn
+
+                if (o.status === 'Completed') { statusText = 'منفذ'; statusRole += ' status-active'; colKey = 'Completed'; }
+                else if (o.status === 'Pending') { statusText = 'قيد الانتظار'; statusColorStyle = 'background:#fff8e1; color:#f57f17; border-color:#ffecb3;'; colKey = 'Pending'; }
+                else if (o.status === 'Accepted') { statusText = 'مقبول'; statusColorStyle = 'background:#e3f2fd; color:#0d47a1; border-color:#bbdefb;'; colKey = 'Accepted'; }
+                else if (o.status === 'Withdrawn') { statusText = 'مسحوب'; statusColorStyle = 'background:#f1f2f6; color:#6c757d; border-color:#dbe2e8;'; }
+                else if (o.status === 'Rejected') { statusText = 'مرفوض'; statusRole += ' status-inactive'; }
+                else if (o.status === 'Cancelled') { statusText = 'ملغي'; statusColorStyle = 'background:#000; color:#fff;'; }
+
+                counts[colKey]++;
+
+                const cardHTML = `
+                    <div class="card-menu-btn" onclick="toggleCardMenu(this)">
+                        <i class="fas fa-ellipsis-v"></i>
+                        <div class="card-menu-dropdown" style="display:none;">
+                            ${Orders.getActionsHTML(o)}
+                        </div>
+                    </div>
+                    <div class="k-card-header">
+                        <span class="k-card-id">#${o.id}</span>
+                        ${!isKanban ? `<span class="${statusRole}" style="${statusColorStyle}">${statusText}</span>` : ''}
+                    </div>
+                    <div class="k-card-title">${o.item}</div>
+                    <div class="k-card-partner"><i class="fas fa-store"></i> ${o.partner}</div>
+                    <div class="k-card-footer">
+                        <span class="k-card-cost">${Number(o.cost).toLocaleString('ar-SA')} <small>ريال</small></span>
+                        <span class="k-card-date">${o.date}</span>
+                    </div>
+                    ${o.status === 'Rejected' ? `<div style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--border); color:red; font-size:0.8rem;">سبب الرفض: ${o.rejectionReason}</div>` : ''}
+                `;
+
+                if (isKanban && cols[colKey]) {
                     const card = document.createElement('div');
-                    card.className = 'merchant-card'; // Reuse merchant card style
-                    card.innerHTML = `
-                        <div class="card-menu-btn" onclick="toggleCardMenu(this)">
-                            <i class="fas fa-ellipsis-v"></i>
-                            <div class="card-menu-dropdown" style="display:none;">
-                                ${Orders.getActionsHTML(o)}
-                            </div>
-                        </div>
-
-                        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:12px;">
-                            <span style="font-family:monospace; font-size:0.9rem; color:#888; background:#f8f9fa; padding:2px 8px; border-radius:4px;">#${o.id}</span>
-                            <span class="${statusRole}" style="${statusColorStyle}">${statusText}</span>
-                        </div>
-
-                        <h3 style="margin-bottom:6px; font-size:1.1rem; color:var(--brand-ink);">${o.item}</h3>
-                        <p style="color:var(--brand-teal); font-weight:600; font-size:0.95rem; margin-bottom:16px;">
-                            <i class="fas fa-store" style="margin-left:5px; opacity:0.7;"></i> ${o.partner}
-                        </p>
-
-                        <div style="background:#f8f9fa; padding:12px; border-radius:10px; margin-bottom:16px;">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                                <span style="color:#777; font-size:0.85rem;">القيمة:</span>
-                                <span style="font-weight:bold; font-size:1.1rem;">${Number(o.cost).toLocaleString('ar-SA')} <small>ريال</small></span>
-                            </div>
-                            <div style="display:flex; justify-content:space-between;">
-                                <span style="color:#777; font-size:0.85rem;">التاريخ:</span>
-                                <span style="font-size:0.9rem;">${o.date}</span>
-                            </div>
-                            ${o.status === 'Rejected' ? `<div style="margin-top:8px; padding-top:8px; border-top:1px dashed #ddd; color:red; font-size:0.85rem;">سبب الرفض: ${o.rejectionReason}</div>` : ''}
-                        </div>
-                     `;
+                    card.className = 'k-card';
+                    card.draggable = true;
+                    card.id = 'order-card-' + o.id;
+                    card.ondragstart = (e) => Orders.dragStart(e, o.id);
+                    card.ondragend = Orders.dragEnd;
+                    card.innerHTML = cardHTML;
+                    cols[colKey].appendChild(card);
+                } else if (grid) {
+                    const card = document.createElement('div');
+                    card.className = 'merchant-card';
+                    card.innerHTML = cardHTML;
                     grid.appendChild(card);
-                });
+                }
+            });
+
+            if (isKanban) {
+                document.getElementById('count-Pending').innerText = counts.Pending;
+                document.getElementById('count-Accepted').innerText = counts.Accepted;
+                document.getElementById('count-Completed').innerText = counts.Completed;
+                document.getElementById('count-Other').innerText = counts.Other;
             }
 
         } catch (e) {
             console.error('Orders.load error:', e);
-            document.getElementById('ordersGrid').innerHTML = `<div style="color:red;text-align:center">حدث خطأ: ${e.message}</div>`;
         }
     },
+
+    // Kanban Drag & Drop
+    dragStart: (e, id) => {
+        e.dataTransfer.setData('text/plain', id);
+        setTimeout(() => e.target.classList.add('dragging'), 0);
+    },
+    dragEnd: (e) => {
+        e.target.classList.remove('dragging');
+        document.querySelectorAll('.kanban-column').forEach(c => c.classList.remove('drag-over'));
+    },
+    allowDrop: (e) => {
+        e.preventDefault();
+        const col = e.target.closest('.kanban-column');
+        if (col) col.classList.add('drag-over');
+    },
+    drop: (e) => {
+        e.preventDefault();
+        document.querySelectorAll('.kanban-column').forEach(c => c.classList.remove('drag-over'));
+
+        const col = e.target.closest('.kanban-column');
+        if (!col) return;
+
+        const orderIdStr = e.dataTransfer.getData('text/plain');
+        if (!orderIdStr) return;
+        const newStatusGroup = col.getAttribute('data-status');
+
+        // Find order
+        let orders = Storage.get('supply_orders') || [];
+        const idx = orders.findIndex(o => o.id == orderIdStr);
+        if (idx === -1) return;
+
+        const currentStatus = orders[idx].status;
+        let finalStatus = newStatusGroup;
+
+        // Map grouped column back to actual data status if needed
+        if (newStatusGroup === 'Other') {
+            if (currentStatus !== 'Rejected' && currentStatus !== 'Withdrawn' && currentStatus !== 'Cancelled') {
+                finalStatus = 'Cancelled'; // Default if dragged to 'Other' from active
+            } else {
+                return; // Already in Other
+            }
+        } else if (newStatusGroup === 'Completed') {
+            finalStatus = 'Completed';
+        } else if (newStatusGroup === 'Accepted') {
+            finalStatus = 'Accepted';
+        } else if (newStatusGroup === 'Pending') {
+            finalStatus = 'Pending';
+        }
+
+        if (finalStatus !== currentStatus) {
+            orders[idx].status = finalStatus;
+            Storage.set('supply_orders', orders);
+
+            // Log action if changing to executed/withdrawn/accepted manually
+            if (finalStatus === 'Completed') System.log(`تم تحويل طلب توريد #${orderIdStr} إلى مكتمل عن طريق السحب والإفلات`);
+
+            Orders.load();
+        }
+    },
+
 
     getActionsHTML: (o) => {
         let html = '';
@@ -2865,4 +2937,56 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         updateDarkIcon(false);
     }
+
+    // Auto-init AI Insights if on dashboard
+    if (document.getElementById('aiTypewriter')) {
+        setTimeout(generateAIInsight, 1000);
+    }
 });
+
+/* ===== Phase 2: AI Insights ===== */
+const aiInsightsList = [
+    '<i class="fas fa-arrow-up" style="color:#8CC240"></i> <strong>ارتفاع المبيعات:</strong> متجر "أسواق العثيم" حقق زيادة 15% في العمليات هذا الأسبوع مقارنة بالأسبوع الماضي.',
+    '<i class="fas fa-exclamation-triangle" style="color:#f59e0b"></i> <strong>تنبيه ميزانية:</strong> من المتوقع نفاذ ميزانية محفظة "كسوة الشتاء" خلال 12 يوماً بناءً على معدل الاستهلاك الحالي.',
+    '<i class="fas fa-check-circle" style="color:#00A59B"></i> <strong>أداء النظام:</strong> 98% من البطاقات النشطة تم استخدامها مرة واحدة على الأقل خلال الـ 30 يوماً الماضية.',
+    '<i class="fas fa-chart-line" style="color:#8b5cf6"></i> <strong>توقع الإنفاق:</strong> بناءً على المواسم السابقة، من المتوقع زيادة السحوبات بنسبة 25% الأسبوع القادم استعداداً لشهر رمضان.',
+    '<i class="fas fa-bolt" style="color:#ef4444"></i> <strong>اكتشاف استثنائي:</strong> البطاقة رقم "4711" أجرت 3 عمليات متتالية في أقل من دقيقتين. يرجى المراجعة.'
+];
+
+let aiTypingInterval;
+
+function generateAIInsight() {
+    const typewriter = document.getElementById('aiTypewriter');
+    const refreshBtn = document.querySelector('.ai-refresh-btn i');
+    if (!typewriter) return;
+
+    clearInterval(aiTypingInterval);
+    refreshBtn.classList.add('fa-spin');
+
+    // Pick a random insight
+    const insightHTML = aiInsightsList[Math.floor(Math.random() * aiInsightsList.length)];
+
+    // Strip HTML tags for the typing effect, we will type the text then inject the full HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = insightHTML;
+    const plainText = tempDiv.textContent || tempDiv.innerText || "";
+    const iconHTML = insightHTML.substring(0, insightHTML.indexOf('</i>') + 4);
+    const strongHTML = insightHTML.substring(insightHTML.indexOf('<strong>'), insightHTML.indexOf('</strong>') + 9);
+    const prefixHTML = iconHTML + ' ' + strongHTML + ' ';
+    const textToType = plainText.replace(tempDiv.querySelector('strong').innerText, '').trim();
+
+    typewriter.innerHTML = prefixHTML + '<span id="aiCursor">|</span>';
+
+    let i = 0;
+    aiTypingInterval = setInterval(() => {
+        if (i < textToType.length) {
+            typewriter.innerHTML = prefixHTML + textToType.substring(0, i + 1) + '<span id="aiCursor" style="animation: blink 1s infinite;">|</span>';
+            i++;
+        } else {
+            clearInterval(aiTypingInterval);
+            typewriter.innerHTML = insightHTML; // Set final HTML without cursor
+            refreshBtn.classList.remove('fa-spin');
+        }
+    }, 30); // Typing speed
+}
+
