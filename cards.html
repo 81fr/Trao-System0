@@ -3,11 +3,11 @@
 
 <head>
     <meta charset="UTF-8" />
-    
     <title>إدارة البطاقات - تراوف</title>
     <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap"
+        rel="stylesheet">
 
     <!-- PWA / Mobile App Meta Tags -->
     <link rel="manifest" href="manifest.json">
@@ -16,12 +16,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="assets/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
 </head>
 
 <body>
 
-        <nav class="sidebar">
+    <nav class="sidebar">
         <div class="sidebar-header">
             <img src="assets/logo.png" alt="TRAOF Logo" style="max-height:50px;">
         </div>
@@ -32,23 +31,31 @@
         </div>
         <div class="nav-section-label">القائمة الرئيسية</div>
         <ul class="nav-links">
-            <li><a href="index.html" ><span class="nav-icon-box"><i class="fas fa-home"></i></span> لوحة التحكم</a></li>
-            <li><a href="cards.html" class="active"><span class="nav-icon-box"><i class="fas fa-credit-card"></i></span> البطاقات</a></li>
-            <li><a href="wallets.html" ><span class="nav-icon-box"><i class="fas fa-wallet"></i></span> المحافظ</a></li>
-            <li><a href="merchants.html" ><span class="nav-icon-box"><i class="fas fa-store"></i></span> المتاجر</a></li>
-            <li><a href="orders.html" ><span class="nav-icon-box"><i class="fas fa-file-invoice-dollar"></i></span> أوامر التوريد</a></li>
-            <li><a href="pos.html" ><span class="nav-icon-box"><i class="fas fa-cash-register"></i></span> نقطة البيع</a></li>
-            <li><a href="reports.html" ><span class="nav-icon-box"><i class="fas fa-chart-bar"></i></span> التقارير</a></li>
+            <li><a href="index.html"><span class="nav-icon-box"><i class="fas fa-home"></i></span> لوحة التحكم</a></li>
+            <li><a href="cards.html" class="active"><span class="nav-icon-box"><i class="fas fa-credit-card"></i></span>
+                    البطاقات</a></li>
+            <li><a href="wallets.html"><span class="nav-icon-box"><i class="fas fa-wallet"></i></span> المحافظ</a></li>
+            <li><a href="merchants.html"><span class="nav-icon-box"><i class="fas fa-store"></i></span> المتاجر</a></li>
+            <li><a href="orders.html"><span class="nav-icon-box"><i class="fas fa-file-invoice-dollar"></i></span> أوامر
+                    التوريد</a></li>
+            <li><a href="pos.html"><span class="nav-icon-box"><i class="fas fa-cash-register"></i></span> نقطة البيع</a>
+            </li>
+            <li><a href="reports.html"><span class="nav-icon-box"><i class="fas fa-chart-bar"></i></span> التقارير</a>
+            </li>
         </ul>
         <div class="nav-section-label">الإدارة</div>
         <ul class="nav-links" style="flex:0;">
-            <li><a href="users.html" ><span class="nav-icon-box"><i class="fas fa-users-cog"></i></span> المستخدمين</a></li>
-            <li><a href="settings.html" ><span class="nav-icon-box"><i class="fas fa-cog"></i></span> الإعدادات</a></li>
-            <li><a href="monitor.html" ><span class="nav-icon-box"><i class="fas fa-stethoscope"></i></span> فحص النظام</a></li>
-            <li><a href="support.html" ><span class="nav-icon-box"><i class="fas fa-headset"></i></span> الدعم الفني</a></li>
+            <li><a href="users.html"><span class="nav-icon-box"><i class="fas fa-users-cog"></i></span> المستخدمين</a>
+            </li>
+            <li><a href="settings.html"><span class="nav-icon-box"><i class="fas fa-cog"></i></span> الإعدادات</a></li>
+            <li><a href="monitor.html"><span class="nav-icon-box"><i class="fas fa-stethoscope"></i></span> فحص
+                    النظام</a></li>
+            <li><a href="support.html"><span class="nav-icon-box"><i class="fas fa-headset"></i></span> الدعم الفني</a>
+            </li>
         </ul>
         <div class="sidebar-bottom">
-            <button class="sidebar-logout" onclick="if(typeof logout==='function')logout();else{localStorage.clear();location.href='login.html';}">
+            <button class="sidebar-logout"
+                onclick="if(typeof logout==='function')logout();else{localStorage.clear();location.href='login.html';}">
                 <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
             </button>
         </div>
@@ -62,63 +69,559 @@
             </div>
         </header>
 
-        <div class="form-container">
-            <h3>إصدار بطاقة جديدة</h3>
-            <input type="hidden" id="editingCardId">
-            <div class="form-group">
-                <label>رقم البطاقة</label>
-                <div style="display:flex; gap:10px;">
-                    <input type="text" id="cardNumInput" placeholder="أدخل الرقم" />
-                    <button class="secondary" onclick="Actions.generateCardNum()">توليد</button>
+        <!-- ===== Statistics Bar ===== -->
+        <div class="cards-stats-bar" id="cardsStatsBar">
+            <div class="cards-stat-item">
+                <div class="cards-stat-icon st-total"><i class="fas fa-credit-card"></i></div>
+                <div class="cards-stat-info">
+                    <h4>إجمالي البطاقات</h4>
+                    <div class="stat-num" id="statTotalCards">0</div>
                 </div>
             </div>
-            <div class="form-group">
-                <label>نوع المحفظة</label>
-                <select id="cardWalletInput"></select>
+            <div class="cards-stat-item">
+                <div class="cards-stat-icon st-active"><i class="fas fa-check-circle"></i></div>
+                <div class="cards-stat-info">
+                    <h4>بطاقات نشطة</h4>
+                    <div class="stat-num" id="statActiveCards">0</div>
+                </div>
             </div>
-            <div class="form-group">
-                <label>اسم المستفيد</label>
-                <select id="cardBeneficiaryInput"></select>
+            <div class="cards-stat-item">
+                <div class="cards-stat-icon st-frozen"><i class="fas fa-ban"></i></div>
+                <div class="cards-stat-info">
+                    <h4>بطاقات موقوفة</h4>
+                    <div class="stat-num" id="statFrozenCards">0</div>
+                </div>
             </div>
-            <div class="form-group">
-                <label>الرصيد الأولي</label>
-                <input type="number" id="cardBalanceInput" placeholder="0.00" />
-            </div>
-            <div class="form-group">
-                <label>الحالة</label>
-                <select id="cardStatusInput">
-                    <option value="نشط">نشط</option>
-                    <option value="غير نشط">غير نشط</option>
-                </select>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button id="saveCardBtn" onclick="Actions.addCard()"><i class="fas fa-plus"></i> إصدار البطاقة</button>
-                <button id="cancelCardEditBtn" onclick="Actions.cancelCardEdit()"
-                    style="background:#dc3545; display:none;"><i class="fas fa-times"></i> إلغاء</button>
+            <div class="cards-stat-item">
+                <div class="cards-stat-icon st-balance"><i class="fas fa-coins"></i></div>
+                <div class="cards-stat-info">
+                    <h4>إجمالي الأرصدة</h4>
+                    <div class="stat-num" id="statTotalBalance">0</div>
+                </div>
             </div>
         </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>رقم البطاقة</th>
-                        <th>نوع المحفظة</th>
-                        <th>المستفيد</th>
-                        <th>الرصيد</th>
-                        <th>الحالة</th>
-                        <th>إجراءات</th>
-                    </tr>
-                </thead>
-                <tbody id="cardsTableBody"></tbody>
-            </table>
+        <!-- ===== Issue Card Form (collapsible) ===== -->
+        <div class="form-container" id="cardFormContainer">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="margin:0;"><i class="fas fa-plus-circle"></i> <span id="cardFormTitle">إصدار بطاقة
+                        جديدة</span></h3>
+                <button class="secondary" onclick="CardPage.toggleForm()" id="toggleFormBtn"
+                    style="padding:6px 14px; font-size:.82rem;">
+                    <i class="fas fa-chevron-up" id="toggleFormIcon"></i>
+                </button>
+            </div>
+            <div id="cardFormBody">
+                <input type="hidden" id="editingCardId">
+                <div class="cards-form-grid">
+                    <div class="form-group">
+                        <label>رقم البطاقة</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" id="cardNumInput" placeholder="أدخل الرقم" style="flex:1;" />
+                            <button class="secondary" onclick="Actions.generateCardNum()"
+                                style="padding:8px 14px; white-space:nowrap;">
+                                <i class="fas fa-random"></i> توليد
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>نوع المحفظة</label>
+                        <select id="cardWalletInput"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>اسم المستفيد</label>
+                        <select id="cardBeneficiaryInput"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>الرصيد الأولي</label>
+                        <input type="number" id="cardBalanceInput" placeholder="0.00" />
+                    </div>
+                    <div class="form-group">
+                        <label>كلمة مرور البطاقة (PIN)</label>
+                        <input type="password" id="cardPinInput" placeholder="4 أرقام" maxlength="6" />
+                    </div>
+                    <div class="form-group">
+                        <label>تاريخ الانتهاء</label>
+                        <input type="date" id="cardExpiryInput" />
+                    </div>
+                    <div class="form-group">
+                        <label>الحالة</label>
+                        <select id="cardStatusInput">
+                            <option value="نشط">نشط</option>
+                            <option value="موقوف">موقوف</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:flex; gap:10px; margin-top:8px;">
+                    <button id="saveCardBtn" onclick="Actions.addCard()"><i class="fas fa-plus"></i> إصدار
+                        البطاقة</button>
+                    <button id="cancelCardEditBtn" onclick="Actions.cancelCardEdit()"
+                        style="background:#dc3545; display:none;"><i class="fas fa-times"></i> إلغاء</button>
+                </div>
+            </div>
         </div>
+
+        <!-- ===== Search & Filter Bar ===== -->
+        <div class="cards-filter-bar">
+            <div class="filter-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="cardsSearchInput" placeholder="ابحث برقم البطاقة أو اسم المستفيد..."
+                    oninput="CardPage.filterCards()">
+            </div>
+            <select id="cardsFilterWallet" onchange="CardPage.filterCards()">
+                <option value="">كل المحافظ</option>
+            </select>
+            <select id="cardsFilterStatus" onchange="CardPage.filterCards()">
+                <option value="">كل الحالات</option>
+                <option value="نشط">نشط</option>
+                <option value="موقوف">موقوف</option>
+            </select>
+            <button class="secondary" onclick="CardPage.exportCSV()"
+                style="padding:8px 14px; font-size:.82rem; white-space:nowrap;">
+                <i class="fas fa-file-export"></i> تصدير
+            </button>
+        </div>
+
+        <!-- ===== Visual Cards Grid ===== -->
+        <div class="cards-visual-grid" id="cardsVisualGrid"></div>
+
+        <!-- ===== Card Detail Modal ===== -->
+        <div class="card-detail-overlay" id="cardDetailOverlay" onclick="if(event.target===this)CardPage.closeDetail()">
+            <div class="card-detail-modal">
+                <div class="cd-card-preview" id="cdPreview">
+                    <button class="cd-close-btn" onclick="CardPage.closeDetail()"><i class="fas fa-times"></i></button>
+                    <div class="cd-header-row">
+                        <span class="cd-wallet-badge" id="cdWallet"></span>
+                        <span class="cd-status-badge" id="cdStatus"></span>
+                    </div>
+                    <div class="cd-card-number" id="cdNumber">0000 0000</div>
+                    <div class="cd-info-row">
+                        <span class="cd-beneficiary-name" id="cdBeneficiary">-</span>
+                        <div class="cd-balance-box">
+                            <small>الرصيد المتاح</small>
+                            <div class="cd-balance-val" id="cdBalance">0.00 ريال</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cd-modal-body">
+                    <!-- Card Info -->
+                    <h4 class="cd-section-title"><i class="fas fa-info-circle"></i> معلومات البطاقة</h4>
+                    <table class="cd-info-table" id="cdInfoTable">
+                        <tr>
+                            <td>رقم الهوية</td>
+                            <td id="cdIdentity">-</td>
+                        </tr>
+                        <tr>
+                            <td>تاريخ الإصدار</td>
+                            <td id="cdIssueDate">-</td>
+                        </tr>
+                        <tr>
+                            <td>تاريخ الانتهاء</td>
+                            <td id="cdExpiry">-</td>
+                        </tr>
+                    </table>
+
+                    <!-- Operations -->
+                    <h4 class="cd-section-title"><i class="fas fa-th-large"></i> العمليات على البطاقة</h4>
+                    <div class="cd-ops-grid">
+                        <div class="cd-op-item" onclick="CardPage.addBalance()">
+                            <div class="cd-op-icon op-green"><i class="fas fa-plus-circle"></i></div>
+                            <span class="cd-op-label">إضافة<br>رصيد</span>
+                        </div>
+                        <div class="cd-op-item" onclick="CardPage.toggleStatus()">
+                            <div class="cd-op-icon op-orange" id="cdToggleIcon"><i class="fas fa-ban"></i></div>
+                            <span class="cd-op-label" id="cdToggleLabel">تجميد<br>البطاقة</span>
+                        </div>
+                        <div class="cd-op-item" onclick="CardPage.copyNumber()">
+                            <div class="cd-op-icon op-cyan"><i class="fas fa-copy"></i></div>
+                            <span class="cd-op-label">نسخ<br>الرقم</span>
+                        </div>
+                        <div class="cd-op-item" onclick="CardPage.changePin()">
+                            <div class="cd-op-icon op-purple"><i class="fas fa-key"></i></div>
+                            <span class="cd-op-label">تغيير<br>كلمة المرور</span>
+                        </div>
+                        <div class="cd-op-item" onclick="CardPage.editFromModal()">
+                            <div class="cd-op-icon op-blue"><i class="fas fa-edit"></i></div>
+                            <span class="cd-op-label">تعديل<br>البطاقة</span>
+                        </div>
+                        <div class="cd-op-item" onclick="CardPage.renameCard()">
+                            <div class="cd-op-icon op-teal"><i class="fas fa-tag"></i></div>
+                            <span class="cd-op-label">إعادة<br>تسمية</span>
+                        </div>
+                        <div class="cd-op-item" onclick="CardPage.transferBalance()">
+                            <div class="cd-op-icon op-ink"><i class="fas fa-exchange-alt"></i></div>
+                            <span class="cd-op-label">تحويل<br>رصيد</span>
+                        </div>
+                        <div class="cd-op-item" onclick="CardPage.deleteFromModal()">
+                            <div class="cd-op-icon op-red"><i class="fas fa-trash-alt"></i></div>
+                            <span class="cd-op-label">حذف<br>البطاقة</span>
+                        </div>
+                    </div>
+
+                    <!-- Transactions -->
+                    <h4 class="cd-section-title"><i class="fas fa-history"></i> آخر العمليات</h4>
+                    <div class="cd-transactions-list" id="cdTransactions"></div>
+                </div>
+            </div>
+        </div>
+
         <footer class="main-footer">
             <p>صنع في تراؤف</p>
             <img src="assets/logo.png" alt="TRAOF Logo">
         </footer>
     </main>
+
     <script src="script.js"></script>
+    <script>
+        /* ===== Card Page Controller ===== */
+        const CardPage = {
+            currentCardId: null,
+            formOpen: true,
+
+            // Wallet gradient colors mapped by name
+            walletGradients: [
+                'linear-gradient(135deg, #1a1d27, #00A59B)',
+                'linear-gradient(135deg, #1a1d27, #8b5cf6)',
+                'linear-gradient(135deg, #0f172a, #3b82f6)',
+                'linear-gradient(135deg, #1a1d27, #ec4899)',
+                'linear-gradient(135deg, #1e293b, #f59e0b)',
+                'linear-gradient(135deg, #1a1d27, #ef4444)',
+                'linear-gradient(135deg, #0c4a6e, #06b6d4)',
+                'linear-gradient(135deg, #1a1d27, #8CC240)',
+            ],
+
+            getGradient(walletName) {
+                const wallets = Storage.get('wallets') || [];
+                const idx = wallets.findIndex(w => w.name === walletName);
+                return this.walletGradients[idx >= 0 ? (idx % this.walletGradients.length) : 0];
+            },
+
+            init() {
+                this.loadStats();
+                this.loadGrid();
+                this.populateFilterWallets();
+            },
+
+            loadStats() {
+                const cards = Storage.get('cards') || [];
+                const total = cards.length;
+                const active = cards.filter(c => c.status === 'نشط' || c.status === 'Active').length;
+                const frozen = total - active;
+                const balance = cards.reduce((s, c) => s + Number(c.balance || 0), 0);
+
+                document.getElementById('statTotalCards').textContent = total;
+                document.getElementById('statActiveCards').textContent = active;
+                document.getElementById('statFrozenCards').textContent = frozen;
+                document.getElementById('statTotalBalance').textContent = balance.toLocaleString('ar-SA') + ' ريال';
+            },
+
+            populateFilterWallets() {
+                const wallets = Storage.get('wallets') || [];
+                const sel = document.getElementById('cardsFilterWallet');
+                wallets.forEach(w => {
+                    const opt = document.createElement('option');
+                    opt.value = w.name;
+                    opt.textContent = w.name;
+                    sel.appendChild(opt);
+                });
+            },
+
+            loadGrid() {
+                const cards = Storage.get('cards') || [];
+                const grid = document.getElementById('cardsVisualGrid');
+
+                // Apply filters
+                const search = (document.getElementById('cardsSearchInput').value || '').trim().toLowerCase();
+                const walletFilter = document.getElementById('cardsFilterWallet').value;
+                const statusFilter = document.getElementById('cardsFilterStatus').value;
+
+                const filtered = cards.filter(card => {
+                    const matchSearch = !search ||
+                        card.number.toLowerCase().includes(search) ||
+                        (card.beneficiary || '').toLowerCase().includes(search) ||
+                        (card.identity || '').toLowerCase().includes(search);
+                    const matchWallet = !walletFilter || card.wallet === walletFilter;
+                    const matchStatus = !statusFilter || card.status === statusFilter ||
+                        (statusFilter === 'نشط' && card.status === 'Active');
+                    return matchSearch && matchWallet && matchStatus;
+                });
+
+                if (filtered.length === 0) {
+                    grid.innerHTML = `
+                        <div class="cards-empty-state" style="grid-column:1/-1;">
+                            <i class="fas fa-credit-card"></i>
+                            <h3>${search || walletFilter || statusFilter ? 'لا توجد نتائج مطابقة' : 'لا توجد بطاقات'}</h3>
+                            <p>${search || walletFilter || statusFilter ? 'جرب تغيير معايير البحث' : 'ابدأ بإصدار بطاقتك الأولى من النموذج أعلاه'}</p>
+                        </div>`;
+                    return;
+                }
+
+                grid.innerHTML = filtered.map(card => {
+                    const isActive = card.status === 'نشط' || card.status === 'Active';
+                    const gradient = this.getGradient(card.wallet);
+                    const displayNum = card.number.replace(/(\d{4})(?=\d)/g, '$1 ');
+                    return `
+                    <div class="card-visual" onclick="CardPage.showDetail(${card.id})">
+                        <div class="card-visual-top" style="background:${gradient}">
+                            <div class="cv-header">
+                                <span class="cv-wallet-name"><i class="fas fa-wallet"></i> ${card.wallet || '-'}</span>
+                                <span class="cv-status ${isActive ? 'active' : 'frozen'}">${isActive ? '● نشط' : '● موقوف'}</span>
+                            </div>
+                            <div class="cv-number">${displayNum}</div>
+                            <div class="cv-bottom-row">
+                                <span class="cv-beneficiary"><i class="fas fa-user"></i> ${card.beneficiary || 'غير محدد'}</span>
+                                <div class="cv-balance">
+                                    <small>الرصيد</small>
+                                    <strong>${Number(card.balance || 0).toLocaleString('ar-SA')} ريال</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-visual-bottom">
+                            <span class="cv-id-label"><i class="fas fa-id-card"></i> <strong>الهوية:</strong> ${card.identity || '-'}</span>
+                            <div class="card-visual-actions" onclick="event.stopPropagation()">
+                                <button class="cv-btn-edit" title="تعديل" onclick="Actions.editCard(${card.id})"><i class="fas fa-pen"></i></button>
+                                <button class="cv-btn-del" title="حذف" onclick="Actions.deleteCard(${card.id})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            },
+
+            filterCards() {
+                this.loadGrid();
+            },
+
+            showDetail(id) {
+                const cards = Storage.get('cards') || [];
+                const card = cards.find(c => c.id == id);
+                if (!card) return;
+
+                this.currentCardId = id;
+                const isActive = card.status === 'نشط' || card.status === 'Active';
+                const gradient = this.getGradient(card.wallet);
+                const displayNum = card.number.replace(/(\d{4})(?=\d)/g, '$1 ');
+
+                // Set preview
+                document.getElementById('cdPreview').style.background = gradient;
+                document.getElementById('cdWallet').innerHTML = '<i class="fas fa-wallet"></i> ' + (card.wallet || '-');
+                const statusEl = document.getElementById('cdStatus');
+                statusEl.textContent = isActive ? '● نشط' : '● موقوف';
+                statusEl.className = 'cd-status-badge ' + (isActive ? 'active' : 'frozen');
+                document.getElementById('cdNumber').textContent = displayNum;
+                document.getElementById('cdBeneficiary').innerHTML = '<i class="fas fa-user"></i> ' + (card.beneficiary || '-');
+                document.getElementById('cdBalance').textContent = Number(card.balance || 0).toLocaleString('ar-SA') + ' ريال';
+
+                // Info
+                document.getElementById('cdIdentity').textContent = card.identity || '-';
+                document.getElementById('cdIssueDate').textContent = card.issueDate || new Date(card.id).toLocaleDateString('ar-SA');
+                document.getElementById('cdExpiry').textContent = card.expiry || '-';
+
+                // Toggle button label
+                const toggleLabel = document.getElementById('cdToggleLabel');
+                const toggleIcon = document.getElementById('cdToggleIcon');
+                if (isActive) {
+                    toggleLabel.innerHTML = 'تجميد<br>البطاقة';
+                    toggleIcon.innerHTML = '<i class="fas fa-ban"></i>';
+                    toggleIcon.className = 'cd-op-icon op-orange';
+                } else {
+                    toggleLabel.innerHTML = 'تفعيل<br>البطاقة';
+                    toggleIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                    toggleIcon.className = 'cd-op-icon op-green';
+                }
+
+                // Transactions
+                const transactions = Storage.get('transactions') || [];
+                const txList = transactions.filter(t => t.card === card.number).slice(-10).reverse();
+                const txContainer = document.getElementById('cdTransactions');
+                if (txList.length === 0) {
+                    txContainer.innerHTML = '<div class="cd-tx-empty"><i class="fas fa-inbox"></i><br>لا توجد عمليات</div>';
+                } else {
+                    txContainer.innerHTML = txList.map(t => `
+                        <div class="cd-tx-item">
+                            <div>
+                                <div class="tx-merchant">${t.merchant}</div>
+                                <div class="tx-date">${t.date}</div>
+                            </div>
+                            <span class="tx-amount">-${Number(t.amount).toLocaleString('ar-SA')} ريال</span>
+                        </div>
+                    `).join('');
+                }
+
+                document.getElementById('cardDetailOverlay').classList.add('show');
+            },
+
+            closeDetail() {
+                document.getElementById('cardDetailOverlay').classList.remove('show');
+                this.currentCardId = null;
+            },
+
+            addBalance() {
+                const card = this._getCard();
+                if (!card) return;
+                const amount = prompt('أدخل المبلغ المراد إضافته:');
+                if (!amount || isNaN(amount) || Number(amount) <= 0) return;
+                const cards = Storage.get('cards') || [];
+                const c = cards.find(x => x.id == card.id);
+                if (c) {
+                    c.balance = Number(c.balance || 0) + Number(amount);
+                    Storage.set('cards', cards);
+                    showToast('تم إضافة ' + Number(amount).toLocaleString('ar-SA') + ' ريال', 'success');
+                    this.refreshAll();
+                    this.showDetail(card.id);
+                }
+            },
+
+            toggleStatus() {
+                const card = this._getCard();
+                if (!card) return;
+                const isActive = card.status === 'نشط' || card.status === 'Active';
+                const action = isActive ? 'تجميد' : 'تفعيل';
+                if (!confirm(`هل تريد ${action} البطاقة رقم ${card.number}؟`)) return;
+                const cards = Storage.get('cards') || [];
+                const c = cards.find(x => x.id == card.id);
+                if (c) {
+                    c.status = isActive ? 'موقوف' : 'نشط';
+                    Storage.set('cards', cards);
+                    showToast(`تم ${action} البطاقة بنجاح`, 'success');
+                    this.refreshAll();
+                    this.showDetail(card.id);
+                }
+            },
+
+            copyNumber() {
+                const card = this._getCard();
+                if (!card) return;
+                navigator.clipboard.writeText(card.number).then(() => {
+                    showToast('تم نسخ رقم البطاقة!', 'success');
+                }).catch(() => {
+                    const t = document.createElement('textarea');
+                    t.value = card.number;
+                    document.body.appendChild(t);
+                    t.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(t);
+                    showToast('تم نسخ رقم البطاقة!', 'success');
+                });
+            },
+
+            changePin() {
+                const card = this._getCard();
+                if (!card) return;
+                const newPin = prompt('أدخل كلمة المرور الجديدة (4-6 أرقام):');
+                if (!newPin || newPin.length < 4) return alert('كلمة المرور يجب أن تكون 4 أرقام على الأقل');
+                const confirmPin = prompt('أعد إدخال كلمة المرور الجديدة:');
+                if (newPin !== confirmPin) return alert('❌ كلمتا المرور غير متطابقتين');
+                const cards = Storage.get('cards') || [];
+                const c = cards.find(x => x.id == card.id);
+                if (c) {
+                    c.password = newPin;
+                    c.pin = newPin;
+                    Storage.set('cards', cards);
+                    showToast('تم تغيير كلمة المرور بنجاح', 'success');
+                }
+            },
+
+            renameCard() {
+                const card = this._getCard();
+                if (!card) return;
+                const newLabel = prompt('أدخل الاسم الجديد للبطاقة:', card.label || card.beneficiary || '');
+                if (!newLabel || !newLabel.trim()) return;
+                const cards = Storage.get('cards') || [];
+                const c = cards.find(x => x.id == card.id);
+                if (c) {
+                    c.label = newLabel.trim();
+                    Storage.set('cards', cards);
+                    showToast('تم تغيير اسم البطاقة', 'success');
+                    this.refreshAll();
+                    this.showDetail(card.id);
+                }
+            },
+
+            transferBalance() {
+                const card = this._getCard();
+                if (!card) return;
+                const cards = Storage.get('cards') || [];
+                const otherCards = cards.filter(c => c.id != card.id && (c.status === 'نشط' || c.status === 'Active'));
+                if (otherCards.length === 0) return alert('لا توجد بطاقات أخرى نشطة للتحويل إليها');
+                const list = otherCards.map((c, i) => `${i + 1}. ${c.number} - ${c.beneficiary}`).join('\n');
+                const choice = prompt(`اختر البطاقة المستلمة بالرقم:\n${list}`);
+                if (!choice) return;
+                const targetCard = otherCards[parseInt(choice) - 1];
+                if (!targetCard) return alert('اختيار غير صحيح');
+                const amount = prompt(`تحويل من البطاقة ${card.number}\nإلى البطاقة ${targetCard.number}\n\nأدخل المبلغ:`);
+                if (!amount || isNaN(amount) || Number(amount) <= 0) return;
+                if (Number(amount) > Number(card.balance)) return alert('❌ الرصيد غير كافي');
+                const src = cards.find(x => x.id == card.id);
+                const tgt = cards.find(x => x.id == targetCard.id);
+                if (src && tgt) {
+                    src.balance = Number(src.balance) - Number(amount);
+                    tgt.balance = Number(tgt.balance) + Number(amount);
+                    Storage.set('cards', cards);
+                    showToast(`تم تحويل ${Number(amount).toLocaleString('ar-SA')} ريال بنجاح`, 'success');
+                    this.refreshAll();
+                    this.showDetail(card.id);
+                }
+            },
+
+            editFromModal() {
+                const card = this._getCard();
+                if (!card) return;
+                this.closeDetail();
+                Actions.editCard(card.id);
+            },
+
+            deleteFromModal() {
+                const card = this._getCard();
+                if (!card) return;
+                if (!confirm(`هل أنت متأكد من حذف البطاقة رقم ${card.number}؟\n\nلن تتمكن من استرجاعها!`)) return;
+                let cards = Storage.get('cards') || [];
+                cards = cards.filter(c => c.id != card.id);
+                Storage.set('cards', cards);
+                this.closeDetail();
+                showToast('تم حذف البطاقة', 'success');
+                this.refreshAll();
+            },
+
+            toggleForm() {
+                const body = document.getElementById('cardFormBody');
+                const icon = document.getElementById('toggleFormIcon');
+                this.formOpen = !this.formOpen;
+                body.style.display = this.formOpen ? '' : 'none';
+                icon.className = this.formOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+            },
+
+            exportCSV() {
+                const cards = Storage.get('cards') || [];
+                if (cards.length === 0) return showToast('لا توجد بطاقات للتصدير', 'error');
+                const headers = ['رقم البطاقة', 'المحفظة', 'المستفيد', 'الهوية', 'الرصيد', 'الحالة'];
+                const rows = cards.map(c => [c.number, c.wallet, c.beneficiary, c.identity || '', c.balance, c.status]);
+                const csv = '\uFEFF' + [headers, ...rows].map(r => r.join(',')).join('\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'cards_export.csv';
+                a.click();
+                showToast('تم تصدير البطاقات بنجاح', 'success');
+            },
+
+            refreshAll() {
+                this.loadStats();
+                this.loadGrid();
+            },
+
+            _getCard() {
+                if (!this.currentCardId) return null;
+                const cards = Storage.get('cards') || [];
+                return cards.find(c => c.id == this.currentCardId) || null;
+            }
+        };
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            CardPage.init();
+        });
+    </script>
 
     <script>
         // PWA Service Worker Register

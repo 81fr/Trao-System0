@@ -711,6 +711,10 @@ const Actions = {
         const balance = parseFloat(document.getElementById('cardBalanceInput').value);
         const beneficiary = document.getElementById('cardBeneficiaryInput').value;
         const status = document.getElementById('cardStatusInput').value;
+        const pinEl = document.getElementById('cardPinInput');
+        const expiryEl = document.getElementById('cardExpiryInput');
+        const pin = pinEl ? pinEl.value : '';
+        const expiry = expiryEl ? expiryEl.value : '';
 
         // Validation with visual feedback
         let hasError = false;
@@ -731,7 +735,7 @@ const Actions = {
             // Edit Mode
             const index = cards.findIndex(c => c.id == id);
             if (index !== -1) {
-                cards[index] = { ...cards[index], number, wallet, balance, status, beneficiary: beneficiary || 'غير محدد', identity };
+                cards[index] = { ...cards[index], number, wallet, balance, status, beneficiary: beneficiary || 'غير محدد', identity, pin: pin || cards[index].pin, password: pin || cards[index].password, expiry: expiry || cards[index].expiry };
                 Storage.set('cards', cards);
                 showToast('تم تحديث البطاقة بنجاح', 'success');
             }
@@ -739,13 +743,14 @@ const Actions = {
             // Create Mode
             if (cards.some(c => c.number === number)) return showToast('رقم البطاقة موجود بالفعل', 'error');
             Storage.add('cards', {
-                id: Date.now(), number, wallet, balance, status: status || 'نشط', beneficiary: beneficiary || 'غير محدد', identity
+                id: Date.now(), number, wallet, balance, status: status || 'نشط', beneficiary: beneficiary || 'غير محدد', identity,
+                pin: pin || '1234', password: pin || '1234', expiry: expiry || '', issueDate: new Date().toLocaleDateString('ar-SA')
             });
             showToast('تم إصدار البطاقة بنجاح!', 'success');
         }
 
         Actions.cancelCardEdit();
-        location.reload();
+        if (typeof CardPage !== 'undefined') { CardPage.refreshAll(); } else { location.reload(); }
     },
 
     editCard: (id) => {
@@ -763,21 +768,37 @@ const Actions = {
         document.getElementById('cardWalletInput').value = card.wallet;
         document.getElementById('cardBeneficiaryInput').value = card.beneficiary === 'غير محدد' ? '' : card.beneficiary;
 
+        const pinEl = document.getElementById('cardPinInput');
+        if (pinEl) pinEl.value = card.pin || card.password || '';
+        const expiryEl = document.getElementById('cardExpiryInput');
+        if (expiryEl) expiryEl.value = card.expiry || '';
+
+        // If form is collapsed, expand it
+        if (typeof CardPage !== 'undefined' && !CardPage.formOpen) CardPage.toggleForm();
+
+        const formTitle = document.getElementById('cardFormTitle');
+        if (formTitle) formTitle.textContent = 'تعديل البطاقة';
+
         document.getElementById('saveCardBtn').innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
         document.getElementById('cancelCardEditBtn').style.display = 'inline-block';
-        window.scrollTo(0, 0);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     },
 
     cancelCardEdit: () => {
         document.getElementById('editingCardId').value = '';
         document.getElementById('cardNumInput').value = '';
         document.getElementById('cardBalanceInput').value = '';
-        document.getElementById('cardWalletInput').value = '';
-        document.getElementById('cardBeneficiaryInput').value = '';
         document.getElementById('cardStatusInput').value = 'نشط';
-
+        const w = document.getElementById('cardWalletInput'); if (w) w.selectedIndex = 0;
+        const b = document.getElementById('cardBeneficiaryInput'); if (b) b.selectedIndex = 0;
+        const pinEl = document.getElementById('cardPinInput'); if (pinEl) pinEl.value = '';
+        const expiryEl = document.getElementById('cardExpiryInput'); if (expiryEl) expiryEl.value = '';
+        const formTitle = document.getElementById('cardFormTitle');
+        if (formTitle) formTitle.textContent = 'إصدار بطاقة جديدة';
         document.getElementById('saveCardBtn').innerHTML = '<i class="fas fa-plus"></i> إصدار البطاقة';
         document.getElementById('cancelCardEditBtn').style.display = 'none';
+        if (typeof CardPage !== 'undefined') { CardPage.refreshAll(); }
+        else if (typeof loadCardsTable === 'function') loadCardsTable();
     },
 
     deleteCard: (id) => {
@@ -785,7 +806,8 @@ const Actions = {
         let cards = Storage.get('cards') || [];
         cards = cards.filter(c => c.id != id);
         Storage.set('cards', cards);
-        location.reload();
+        showToast('تم حذف البطاقة', 'success');
+        if (typeof CardPage !== 'undefined') { CardPage.refreshAll(); } else { location.reload(); }
     },
 
     addWallet: () => {
@@ -1220,6 +1242,12 @@ function loadUsersTable() {
 }
 
 function loadCardsTable() {
+    // New visual grid mode
+    if (typeof CardPage !== 'undefined' && document.getElementById('cardsVisualGrid')) {
+        CardPage.init();
+        return;
+    }
+    // Legacy table fallback
     const cards = Storage.get('cards') || [];
     const tbody = document.getElementById('cardsTableBody');
     if (!tbody) return;
