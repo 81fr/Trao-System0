@@ -7,6 +7,177 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        .location-map-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .location-map-overlay.active {
+            display: flex;
+        }
+
+        .location-map-dialog {
+            background: #fff;
+            border-radius: 24px;
+            width: 95%;
+            max-width: 550px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(40px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .location-map-dialog .map-header {
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #00A59B, #8CC240);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .location-map-dialog .map-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .location-map-dialog #benLocationMap {
+            height: 350px;
+            width: 100%;
+        }
+
+        .location-map-dialog .map-footer {
+            padding: 16px 24px;
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            background: #f9fafb;
+            border-top: 1px solid #eee;
+        }
+
+        .location-map-dialog .map-footer .coords {
+            font-size: 0.8rem;
+            color: #666;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .location-map-dialog .map-footer button {
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-save-loc {
+            background: linear-gradient(135deg, #00A59B, #059669);
+            color: white;
+        }
+
+        .btn-save-loc:hover {
+            transform: scale(1.03);
+        }
+
+        .btn-gps {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-gps:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-close-map {
+            background: none;
+            color: white;
+            font-size: 1.3rem;
+            padding: 4px 10px;
+        }
+
+        .dark-mode .location-map-dialog {
+            background: #1e293b;
+        }
+
+        .dark-mode .location-map-dialog .map-footer {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        .dark-mode .location-map-dialog .map-footer .coords {
+            color: #94a3b8;
+        }
+
+        /* Mini Map Preview */
+        .saved-location-preview {
+            display: none;
+            margin: 15px 0;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .saved-location-preview:hover {
+            border-color: #00A59B;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 165, 155, 0.15);
+        }
+
+        .saved-location-preview img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .saved-location-preview .preview-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+            color: white;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+
+        .saved-location-preview .preview-overlay i {
+            font-size: 1rem;
+        }
+
+        .dark-mode .saved-location-preview {
+            border-color: #334155;
+        }
+    </style>
 
     <!-- PWA / Mobile App Meta Tags -->
     <link rel="manifest" href="manifest.json">
@@ -52,35 +223,38 @@
         <!-- بطاقة فعّالة -->
         <div id="cardDetailsSection">
             <!-- البطاقة البصرية الحقيقية -->
-            <div class="beneficiary-visual-card">
-                <div class="bvc-reflection"></div>
-                <div class="bvc-header">
-                    <img class="bvc-logo" src="assets/logo.png" alt="Traof Logo">
-                    <span id="cardStatusBadge" class="bvc-status active">نشط</span>
-                </div>
-                <div class="bvc-chip-row">
-                    <svg class="bvc-chip" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 75">
-                        <defs>
-                            <linearGradient id="chipGrad" x1="0" y1="0" x2="1" y2="1">
-                                <stop offset="0%" stop-color="#f5d76e" />
-                                <stop offset="100%" stop-color="#d4af37" />
-                            </linearGradient>
-                        </defs>
-                        <rect width="100" height="75" rx="12" fill="url(#chipGrad)" stroke="#c5a017" stroke-width="2" />
-                        <path d="M30 0v75M70 0v75M0 37.5h30M70 37.5h30M30 20c15 0 15 35 0 35M70 20c-15 0-15 35 0 35"
-                            fill="none" stroke="#c5a017" stroke-width="2" opacity="0.8" />
-                    </svg>
-                    <i class="fas fa-wifi bvc-contactless"></i>
-                </div>
-                <div class="bvc-number" id="cardNumberDisplay" dir="ltr">0000 0000 0000 0000</div>
-                <div class="bvc-footer">
-                    <div class="bvc-name-box">
-                        <small>حامل البطاقة</small>
-                        <div class="bvc-name" id="cardHolderName">-</div>
+            <div class="beneficiary-visual-card-container">
+                <div class="beneficiary-visual-card" id="bvcCard">
+                    <div class="bvc-reflection"></div>
+                    <div class="bvc-header">
+                        <img class="bvc-logo" src="assets/logo.png" alt="Traof Logo">
+                        <span id="cardStatusBadge" class="bvc-status active">نشط</span>
                     </div>
-                    <div class="bvc-expiry-box">
-                        <small>تاريخ الانتهاء</small>
-                        <div class="bvc-expiry" id="cardExpiryDisplay">12/30</div>
+                    <div class="bvc-chip-row">
+                        <svg class="bvc-chip" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 75">
+                            <defs>
+                                <linearGradient id="chipGrad" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0%" stop-color="#f5d76e" />
+                                    <stop offset="100%" stop-color="#d4af37" />
+                                </linearGradient>
+                            </defs>
+                            <rect width="100" height="75" rx="12" fill="url(#chipGrad)" stroke="#c5a017"
+                                stroke-width="2" />
+                            <path d="M30 0v75M70 0v75M0 37.5h30M70 37.5h30M30 20c15 0 15 35 0 35M70 20c-15 0-15 35 0 35"
+                                fill="none" stroke="#c5a017" stroke-width="2" opacity="0.8" />
+                        </svg>
+                        <i class="fas fa-wifi bvc-contactless"></i>
+                    </div>
+                    <div class="bvc-number" id="cardNumberDisplay" dir="ltr">0000 0000 0000 0000</div>
+                    <div class="bvc-footer">
+                        <div class="bvc-name-box">
+                            <small>حامل البطاقة</small>
+                            <div class="bvc-name" id="cardHolderName">-</div>
+                        </div>
+                        <div class="bvc-expiry-box">
+                            <small>تاريخ الانتهاء</small>
+                            <div class="bvc-expiry" id="cardExpiryDisplay">12/30</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -135,6 +309,15 @@
                         <i class="fas fa-trash-alt"></i>
                     </div>
                     <span>إلغاء<br>البطاقة</span>
+                </div>
+            </div>
+
+            <!-- Saved Location Mini Map Preview -->
+            <div class="saved-location-preview" id="benSavedLocPreview" onclick="BenLocationPicker.openGoogleMaps()">
+                <img id="benMiniMapImg" src="" alt="موقعك على الخريطة">
+                <div class="preview-overlay">
+                    <span><i class="fas fa-map-marker-alt"></i> موقع المنزل المحفوظ</span>
+                    <span><i class="fas fa-external-link-alt"></i> فتح في Google Maps</span>
                 </div>
             </div>
 
@@ -230,6 +413,27 @@
                 </thead>
                 <tbody id="beneficiaryTransactionsTable"></tbody>
             </table>
+        </div>
+
+        <!-- Location Map Modal -->
+        <div class="location-map-overlay" id="benLocationOverlay">
+            <div class="location-map-dialog">
+                <div class="map-header">
+                    <h3><i class="fas fa-map-marker-alt"></i> تحديد موقع المنزل</h3>
+                    <button class="btn-close-map" onclick="BenLocationPicker.close()"><i
+                            class="fas fa-times"></i></button>
+                </div>
+                <div id="benLocationMap"></div>
+                <div class="map-footer">
+                    <div class="coords" id="benCoords">انقر على الخريطة لتحديد موقعك</div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-gps" onclick="BenLocationPicker.useGPS()"><i class="fas fa-crosshairs"></i>
+                            GPS</button>
+                        <button class="btn-save-loc" id="benSaveLocBtn" onclick="BenLocationPicker.save()" disabled><i
+                                class="fas fa-check"></i> حفظ</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <footer class="main-footer">
@@ -360,20 +564,7 @@
             },
 
             setLocation: () => {
-                if (!navigator.geolocation) return alert('المتصفح لا يدعم تحديد الموقع');
-                alert('جاري تحديد موقعك...');
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        const card = CardOps.getMyCard();
-                        if (!card) return;
-                        const cards = Storage.get('cards') || [];
-                        const c = cards.find(x => x.number === card.number);
-                        if (c) { c.location = { lat: pos.coords.latitude, lng: pos.coords.longitude }; Storage.set('cards', cards); }
-                        alert(`✅ تم حفظ الموقع\nخط العرض: ${pos.coords.latitude.toFixed(6)}\nخط الطول: ${pos.coords.longitude.toFixed(6)}`);
-                        if (typeof showToast === 'function') showToast('تم تحديد الموقع بنجاح', 'success');
-                    },
-                    (err) => alert('❌ فشل تحديد الموقع: ' + err.message)
-                );
+                BenLocationPicker.open();
             },
 
             deleteCard: () => {
@@ -624,7 +815,187 @@
             PendingPurchase.startPolling();
         }
 
-        document.addEventListener('DOMContentLoaded', initBeneficiary);
+        /* 3D Tilt Effect for Card */
+        function init3DTilt() {
+            const card = document.getElementById('bvcCard');
+            if (!card) return;
+
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const rotateX = ((y - centerY) / centerY) * -15; // Max 15 degrees
+                const rotateY = ((x - centerX) / centerX) * 15;
+
+                card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+                // Reflection position
+                const mouseX = (x / rect.width) * 100;
+                const mouseY = (y / rect.height) * 100;
+                card.style.setProperty('--mouse-x', `${mouseX}%`);
+                card.style.setProperty('--mouse-y', `${mouseY}%`);
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'rotateX(0deg) rotateY(0deg)';
+                card.style.setProperty('--mouse-x', '50%');
+                card.style.setProperty('--mouse-y', '50%');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initBeneficiary();
+            init3DTilt();
+        });
+
+        /* ===== Beneficiary Location Picker with Interactive Map ===== */
+        const BenLocationPicker = {
+            map: null,
+            marker: null,
+            selectedLat: null,
+            selectedLng: null,
+
+            open: () => {
+                const overlay = document.getElementById('benLocationOverlay');
+                overlay.classList.add('active');
+
+                setTimeout(() => {
+                    if (!BenLocationPicker.map) {
+                        BenLocationPicker.map = L.map('benLocationMap').setView([28.4334, 45.9711], 13);
+                        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                            attribution: '&copy; CartoDB'
+                        }).addTo(BenLocationPicker.map);
+
+                        BenLocationPicker.map.on('click', (e) => {
+                            BenLocationPicker.placeMarker(e.latlng.lat, e.latlng.lng);
+                        });
+                    } else {
+                        BenLocationPicker.map.invalidateSize();
+                    }
+
+                    // Load existing location if saved
+                    const card = CardOps.getMyCard();
+                    if (card && card.location && card.location.lat) {
+                        BenLocationPicker.placeMarker(card.location.lat, card.location.lng);
+                        BenLocationPicker.map.setView([card.location.lat, card.location.lng], 14);
+                    } else {
+                        // Auto GPS on first open
+                        BenLocationPicker.useGPS();
+                    }
+                }, 200);
+            },
+
+            close: () => {
+                document.getElementById('benLocationOverlay').classList.remove('active');
+            },
+
+            placeMarker: (lat, lng) => {
+                BenLocationPicker.selectedLat = lat;
+                BenLocationPicker.selectedLng = lng;
+
+                if (BenLocationPicker.marker) {
+                    BenLocationPicker.marker.setLatLng([lat, lng]);
+                } else {
+                    BenLocationPicker.marker = L.marker([lat, lng], {
+                        draggable: true
+                    }).addTo(BenLocationPicker.map);
+
+                    BenLocationPicker.marker.on('dragend', (e) => {
+                        const pos = e.target.getLatLng();
+                        BenLocationPicker.selectedLat = pos.lat;
+                        BenLocationPicker.selectedLng = pos.lng;
+                        document.getElementById('benCoords').textContent = `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
+                    });
+                }
+
+                document.getElementById('benCoords').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                document.getElementById('benSaveLocBtn').disabled = false;
+                BenLocationPicker.map.setView([lat, lng], Math.max(BenLocationPicker.map.getZoom(), 13));
+            },
+
+            useGPS: () => {
+                if (!navigator.geolocation) return;
+                document.getElementById('benCoords').textContent = 'جاري تحديد موقعك تلقائياً...';
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        BenLocationPicker.placeMarker(pos.coords.latitude, pos.coords.longitude);
+                        BenLocationPicker.map.setView([pos.coords.latitude, pos.coords.longitude], 16);
+                    },
+                    (err) => {
+                        document.getElementById('benCoords').textContent = '\u0641\u0634\u0644 \u062a\u062d\u062f\u064a\u062f \u0627\u0644\u0645\u0648\u0642\u0639: ' + err.message;
+                    }
+                );
+            },
+
+            save: () => {
+                if (!BenLocationPicker.selectedLat) return;
+                const card = CardOps.getMyCard();
+                if (!card) return alert('لا توجد بطاقة نشطة');
+                const cards = Storage.get('cards') || [];
+                const c = cards.find(x => x.number === card.number);
+                if (c) {
+                    c.location = { lat: BenLocationPicker.selectedLat, lng: BenLocationPicker.selectedLng };
+                    Storage.set('cards', cards);
+                }
+
+                // Also save to beneficiaries
+                const beneficiaries = Storage.get('beneficiaries') || [];
+                const user = Auth.user;
+                const benefName = user.linkedEntity || user.name;
+                const ben = beneficiaries.find(b => b.name === benefName);
+                if (ben) {
+                    ben.location = { lat: BenLocationPicker.selectedLat, lng: BenLocationPicker.selectedLng };
+                    Storage.set('beneficiaries', beneficiaries);
+                }
+
+                // Show mini-map preview
+                BenLocationPicker.showMiniMap(BenLocationPicker.selectedLat, BenLocationPicker.selectedLng);
+
+                if (typeof showToast === 'function') showToast('تم حفظ الموقع بنجاح!', 'success');
+                BenLocationPicker.close();
+            },
+
+            showMiniMap: (lat, lng) => {
+                const preview = document.getElementById('benSavedLocPreview');
+                const img = document.getElementById('benMiniMapImg');
+                if (!preview || !img) return;
+                // Use OpenStreetMap static map
+                img.src = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=15&size=600x250&markers=${lat},${lng},red-pushpin`;
+                img.onerror = () => {
+                    // Fallback: use a simple colored div
+                    img.style.display = 'none';
+                    preview.style.background = 'linear-gradient(135deg, #0f172a, #1e293b)';
+                    preview.style.height = '100px';
+                    preview.querySelector('.preview-overlay').innerHTML = `<span><i class="fas fa-map-marker-alt"></i> ${lat.toFixed(5)}, ${lng.toFixed(5)}</span><span><i class="fas fa-external-link-alt"></i> فتح في Google Maps</span>`;
+                };
+                preview.style.display = 'block';
+                preview.dataset.lat = lat;
+                preview.dataset.lng = lng;
+            },
+
+            openGoogleMaps: () => {
+                const preview = document.getElementById('benSavedLocPreview');
+                const lat = preview.dataset.lat;
+                const lng = preview.dataset.lng;
+                if (lat && lng) {
+                    window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
+                }
+            }
+        };
+
+        // Auto-load mini-map if location is saved
+        setTimeout(() => {
+            try {
+                const card = CardOps.getMyCard();
+                if (card && card.location && card.location.lat) {
+                    BenLocationPicker.showMiniMap(card.location.lat, card.location.lng);
+                }
+            } catch (e) { }
+        }, 500);
     </script>
 </body>
 

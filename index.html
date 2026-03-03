@@ -9,7 +9,9 @@
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css" />
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         /* ===== Dashboard Premium Styles ===== */
         .dash-hero {
@@ -497,6 +499,50 @@
             transition: all 0.8s ease;
         }
 
+        /* Map Section */
+        .map-section {
+            margin-bottom: 28px;
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        #mapContainer {
+            height: 400px;
+            width: 100%;
+            border-radius: 12px;
+            z-index: 10;
+        }
+
+        .dark-mode #mapContainer {
+            filter: grayscale(0.5) contrast(1.2) brightness(0.8);
+        }
+
+        .map-marker-pulse {
+            width: 12px;
+            height: 12px;
+            background: var(--brand-teal);
+            border-radius: 50%;
+            box-shadow: 0 0 0 rgba(0, 165, 155, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(0, 165, 155, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(0, 165, 155, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(0, 165, 155, 0);
+            }
+        }
+
         /* Responsive */
         @media (max-width: 1100px) {
             .charts-grid-3 {
@@ -762,6 +808,13 @@
             </a>
         </div>
 
+        <!-- GIS / Global Activity Map -->
+        <h2 class="section-title"><i class="fas fa-globe-americas" style="color:#00A59B;"></i> المراقبة الجغرافية الحية
+        </h2>
+        <div class="map-section animate-in">
+            <div id="mapContainer"></div>
+        </div>
+
         <!-- Data Tables -->
         <div class="data-section">
             <!-- Recent Transactions -->
@@ -849,6 +902,68 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Activity Log & Data Export Row -->
+        <div class="data-section" style="margin-top:24px;">
+            <!-- Activity Log Timeline -->
+            <div class="data-box animate-in">
+                <h3>
+                    <span><i class="fas fa-clipboard-list" style="color:#6366f1; margin-inline-end:8px;"></i> سجل
+                        النشاطات</span>
+                    <button onclick="ActivityLog.clear(); ActivityLog.renderTimeline('activityLogBody', 15);"
+                        style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:0.8rem; font-family:inherit;"><i
+                            class="fas fa-trash"></i> مسح</button>
+                </h3>
+                <div id="activityLogBody" class="timeline-widget" style="max-height:350px; overflow-y:auto;"></div>
+            </div>
+
+            <!-- Data Export -->
+            <div class="data-box animate-in">
+                <h3>
+                    <span><i class="fas fa-file-export" style="color:#10b981; margin-inline-end:8px;"></i> تصدير
+                        البيانات</span>
+                </h3>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:10px 0;">
+                    <button onclick="DataExport.exportCards()"
+                        style="padding:16px; border-radius:14px; border:2px solid var(--border); background:var(--card); color:var(--text-primary); cursor:pointer; transition:0.3s; font-family:inherit; display:flex; flex-direction:column; align-items:center; gap:8px;"
+                        onmouseover="this.style.borderColor='#3b82f6'"
+                        onmouseout="this.style.borderColor='var(--border)'">
+                        <i class="fas fa-credit-card" style="font-size:1.5rem; color:#3b82f6;"></i>
+                        <span style="font-weight:600; font-size:0.85rem;">تصدير البطاقات</span>
+                        <small style="color:var(--muted);">CSV</small>
+                    </button>
+                    <button onclick="DataExport.exportMerchants()"
+                        style="padding:16px; border-radius:14px; border:2px solid var(--border); background:var(--card); color:var(--text-primary); cursor:pointer; transition:0.3s; font-family:inherit; display:flex; flex-direction:column; align-items:center; gap:8px;"
+                        onmouseover="this.style.borderColor='#10b981'"
+                        onmouseout="this.style.borderColor='var(--border)'">
+                        <i class="fas fa-store" style="font-size:1.5rem; color:#10b981;"></i>
+                        <span style="font-weight:600; font-size:0.85rem;">تصدير المتاجر</span>
+                        <small style="color:var(--muted);">CSV</small>
+                    </button>
+                    <button onclick="DataExport.exportTransactions()"
+                        style="padding:16px; border-radius:14px; border:2px solid var(--border); background:var(--card); color:var(--text-primary); cursor:pointer; transition:0.3s; font-family:inherit; display:flex; flex-direction:column; align-items:center; gap:8px;"
+                        onmouseover="this.style.borderColor='#f59e0b'"
+                        onmouseout="this.style.borderColor='var(--border)'">
+                        <i class="fas fa-receipt" style="font-size:1.5rem; color:#f59e0b;"></i>
+                        <span style="font-weight:600; font-size:0.85rem;">تصدير العمليات</span>
+                        <small style="color:var(--muted);">CSV</small>
+                    </button>
+                    <button onclick="DataExport.exportBeneficiaries()"
+                        style="padding:16px; border-radius:14px; border:2px solid var(--border); background:var(--card); color:var(--text-primary); cursor:pointer; transition:0.3s; font-family:inherit; display:flex; flex-direction:column; align-items:center; gap:8px;"
+                        onmouseover="this.style.borderColor='#8b5cf6'"
+                        onmouseout="this.style.borderColor='var(--border)'">
+                        <i class="fas fa-users" style="font-size:1.5rem; color:#8b5cf6;"></i>
+                        <span style="font-weight:600; font-size:0.85rem;">تصدير المستفيدين</span>
+                        <small style="color:var(--muted);">CSV</small>
+                    </button>
+                </div>
+                <button onclick="DataExport.exportAll()"
+                    style="width:100%; padding:14px; border-radius:14px; border:none; background:linear-gradient(135deg, #00A59B, #8CC240); color:white; cursor:pointer; font-weight:bold; font-size:1rem; font-family:inherit; margin-top:8px; transition:0.3s;"
+                    onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                    <i class="fas fa-download"></i> تصدير جميع البيانات
+                </button>
             </div>
         </div>
 
@@ -1176,6 +1291,7 @@
                 buildCardsStatus();
                 buildOrdersStatus();
                 loadTables();
+                initDashboardMap();
             }, 100);
         };
     </script>
@@ -1207,41 +1323,177 @@
             const cnt = document.getElementById('notifCount');
             if (cnt) cnt.style.display = 'none';
         }
+        // Actionable Smart Notifications Handlers
+        const QuickAction = {
+            chargeCard: (num) => {
+                const amount = prompt(`أدخل مبلغ الشحن للبطاقة ${num}:`, '100');
+                if (amount && !isNaN(amount)) {
+                    const cards = Storage.get('cards') || [];
+                    const c = cards.find(x => x.number === num);
+                    if (c) {
+                        c.balance = (Number(c.balance) + Number(amount)).toFixed(2);
+                        Storage.set('cards', cards);
+                        if (typeof showToast === 'function') showToast(`تم شحن البطاقة ${num} بمبلغ ${amount} ريال بنجاح`, 'success');
+                        else alert(`تم شحن البطاقة ${num} بمبلغ ${amount} ريال بنجاح`);
+                        loadNotifications();
+                        if (typeof loadStats === 'function') loadStats();
+                    }
+                }
+            },
+            viewPurchase: (code) => {
+                // For now, redirect to POS or just alert
+                if (typeof showToast === 'function') showToast(`جاري استعراض كود الشراء: ${code}`, 'info');
+                else alert(`كود الشراء: ${code}`);
+                // In a real app we might open a modal with purchase details
+            },
+            approvePurchase: (code) => {
+                const pending = Storage.get('pendingPurchases') || [];
+                const idx = pending.findIndex(p => p.code === code);
+                if (idx !== -1) {
+                    pending[idx].status = 'confirmed';
+                    Storage.set('pendingPurchases', pending);
+                    if (typeof showToast === 'function') showToast(`تمت الموافقة على الطلب ${code} بنجاح`, 'success');
+                    else alert(`تمت الموافقة على الطلب ${code} بنجاح`);
+                    loadNotifications();
+                }
+            }
+        };
+
         // Generate sample notifications from data
         function loadNotifications() {
             const notifs = [];
             const cards = (typeof Storage !== 'undefined' && Storage.get) ? Storage.get('cards') || [] : [];
             const lowBalance = cards.filter(c => Number(c.balance || 0) < 100 && (c.status === 'نشط' || c.status === 'Active'));
+
             lowBalance.slice(0, 3).forEach(c => {
                 notifs.push({
                     icon: 'fas fa-exclamation-triangle',
                     cls: 'ni-orange',
                     text: `رصيد منخفض: بطاقة ${c.number} — ${Number(c.balance || 0).toFixed(0)} ريال`,
-                    time: 'الآن'
+                    time: 'الآن',
+                    actions: [
+                        { label: 'شحن سريع', icon: 'fas fa-bolt', primary: true, onclick: `QuickAction.chargeCard('${c.number}')` }
+                    ]
                 });
             });
+
             const pending = (typeof Storage !== 'undefined' && Storage.get) ? Storage.get('pendingPurchases') || [] : [];
             pending.filter(p => p.status === 'pending').slice(0, 2).forEach(p => {
                 notifs.push({
                     icon: 'fas fa-shopping-cart',
                     cls: 'ni-teal',
                     text: `طلب شراء جديد بمبلغ ${Number(p.amount || 0).toFixed(2)} ريال`,
-                    time: 'الآن'
+                    time: 'الآن',
+                    actions: [
+                        { label: 'موافقة', icon: 'fas fa-check', primary: true, onclick: `QuickAction.approvePurchase('${p.code}')` },
+                        { label: 'تفاصيل', icon: 'fas fa-eye', primary: false, onclick: `QuickAction.viewPurchase('${p.code}')` }
+                    ]
                 });
             });
-            if (notifs.length === 0) return;
+
             const list = document.getElementById('notifList');
             const cnt = document.getElementById('notifCount');
             if (list) {
-                list.innerHTML = notifs.map(n => `
-                        < div class="notif-item" >
-                        <div class="notif-icon-box ${n.cls}"><i class="${n.icon}"></i></div>
-                        <div class="notif-text"><p>${n.text}</p><small>${n.time}</small></div>
-                    </div >
-                `).join('');
+                if (notifs.length === 0) {
+                    list.innerHTML = '<div class="notif-empty"><i class="fas fa-bell-slash"></i> لا توجد إشعارات حالياً</div>';
+                } else {
+                    list.innerHTML = notifs.map(n => `
+                        <div class="notif-item">
+                            <div class="notif-icon-box ${n.cls}"><i class="${n.icon}"></i></div>
+                            <div class="notif-text">
+                                <p>${n.text}</p>
+                                <small>${n.time}</small>
+                                ${n.actions ? `
+                                    <div class="notif-actions">
+                                        ${n.actions.map(a => `
+                                            <button class="notif-btn ${a.primary ? 'notif-btn-primary' : 'notif-btn-secondary'}" onclick="${a.onclick}">
+                                                <i class="${a.icon}"></i> ${a.label}
+                                            </button>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                }
             }
-            if (cnt) { cnt.textContent = notifs.length; cnt.style.display = ''; }
+            if (cnt) {
+                cnt.textContent = notifs.length;
+                cnt.style.display = notifs.length > 0 ? '' : 'none';
+            }
         }
+        // Initialize the Interactive Global Activity Map
+        function initDashboardMap() {
+            const mapContainer = document.getElementById('mapContainer');
+            if (!mapContainer || typeof L === 'undefined') return;
+
+            // Center of activity (Hafar Al-Batin, Saudi Arabia)
+            const center = [28.4334, 45.9711];
+            const map = L.map('mapContainer').setView(center, 12);
+
+            // Dark Mode Tile Layer (CartoDB Dark Matter)
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; CartoDB',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Fetch data
+            const merchants = Storage.get('merchants') || [];
+            const tx = Storage.get('transactions') || [];
+
+            // Custom Pulse Icon
+            const pulseIcon = L.divIcon({
+                className: 'map-pulse-wrapper',
+                html: '<div class="map-marker-pulse"></div>',
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            });
+
+            // Plot Merchants (Simulated Locations if not present)
+            merchants.forEach((m, i) => {
+                // Generate slightly offset coords based on name hash for consistent plotting
+                const seed = m.name.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+                const lat = center[0] + (Math.sin(seed) * 0.05);
+                const lng = center[1] + (Math.cos(seed) * 0.05);
+
+                const marker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        className: 'merchant-marker',
+                        html: `<div style="background:var(--brand-teal); width:10px; height:10px; border-radius:50%; border:2px solid white; box-shadow:0 0 10px rgba(0,165,155,0.5);"></div>`,
+                        iconSize: [10, 10]
+                    })
+                }).addTo(map);
+
+                marker.bindPopup(`
+                    <div style="font-family: Tajawal; direction: rtl; text-align: right;">
+                        <strong style="color:var(--brand-teal);">${m.name}</strong><br>
+                        <small style="color:#888;">${m.category || 'متجر'}</small><br>
+                        <span style="font-size:0.8rem; font-weight:bold;">${Number(m.totalSales || 0).toLocaleString()} ريال</span>
+                    </div>
+                `);
+            });
+
+            // Simulate a "Live Pulse" for latest transactions
+            if (tx.length > 0) {
+                const latest = tx.slice(0, 5);
+                latest.forEach((t, i) => {
+                    const seed = (t.merchant || 'm').split('').reduce((a, b) => a + b.charCodeAt(0), 0) + i;
+                    const lat = center[0] + (Math.sin(seed * 1.5) * 0.04);
+                    const lng = center[1] + (Math.cos(seed * 1.5) * 0.04);
+
+                    L.marker([lat, lng], { icon: pulseIcon }).addTo(map)
+                        .bindTooltip(`عملية سحب: ${t.amount} ر.س`, { permanent: false, direction: 'top' });
+                });
+            }
+
+            // Sync with theme toggle (dark mode filter is in CSS)
+            window.addEventListener('themeChanged', () => {
+                // Leaflet doesn't need much JS change if we use CSS filters, 
+                // but we could switch tile layers if preferred.
+            });
+        }
+
         // Close notif dropdown when clicking outside
         document.addEventListener('click', e => {
             const dd = document.getElementById('notifDropdown');
@@ -1287,6 +1539,9 @@
 
         // Load notifications after data is ready
         setTimeout(loadNotifications, 500);
+
+        // Render activity log
+        setTimeout(() => { if (typeof ActivityLog !== 'undefined') ActivityLog.renderTimeline('activityLogBody', 15); }, 600);
     </script>
 
     <script>

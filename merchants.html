@@ -7,7 +7,186 @@
     <title>المتاجر - تراوف</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #merchantMap {
+            height: 400px;
+            width: 100%;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .dark-mode #merchantMap {
+            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .map-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .map-section-header h2 {
+            font-size: 1.4rem;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dark-mode .map-section-header h2 {
+            color: white;
+        }
+
+        /* Admin Map Picker styles */
+        .location-map-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .location-map-overlay.active {
+            display: flex;
+        }
+
+        .location-map-dialog {
+            background: #fff;
+            border-radius: 24px;
+            width: 95%;
+            max-width: 550px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(40px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .location-map-dialog .map-header {
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #00A59B, #8CC240);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .location-map-dialog .map-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .location-map-dialog #adminPickerMap {
+            height: 380px;
+            width: 100%;
+        }
+
+        .location-map-dialog .map-footer {
+            padding: 16px 24px;
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            background: #f9fafb;
+            border-top: 1px solid #eee;
+        }
+
+        .location-map-dialog .map-footer .coords {
+            font-size: 0.8rem;
+            color: #666;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .location-map-dialog .map-footer button {
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-save-loc {
+            background: linear-gradient(135deg, #00A59B, #059669);
+            color: white;
+        }
+
+        .btn-save-loc:hover {
+            transform: scale(1.03);
+        }
+
+        .btn-gps {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-close-map {
+            background: none;
+            color: white;
+            font-size: 1.3rem;
+            padding: 4px 10px;
+            cursor: pointer;
+        }
+
+        .pick-loc-btn {
+            padding: 8px 16px;
+            border: 1px solid #00A59B;
+            background: rgba(0, 165, 155, 0.08);
+            color: #00A59B;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: 0.3s;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .pick-loc-btn:hover {
+            background: rgba(0, 165, 155, 0.18);
+        }
+
+        .dark-mode .location-map-dialog {
+            background: #1e293b;
+        }
+
+        .dark-mode .location-map-dialog .map-footer {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        .dark-mode .pick-loc-btn {
+            border-color: #059669;
+            color: #34d399;
+        }
+    </style>
 
     <!-- PWA / Mobile App Meta Tags -->
     <link rel="manifest" href="manifest.json">
@@ -21,7 +200,7 @@
 
 <body>
 
-        <nav class="sidebar">
+    <nav class="sidebar">
         <div class="sidebar-header">
             <img src="assets/logo.png" alt="TRAOF Logo" style="max-height:50px;">
         </div>
@@ -32,28 +211,38 @@
         </div>
         <div class="nav-section-label">القائمة الرئيسية</div>
         <ul class="nav-links">
-            <li><a href="index.html" ><span class="nav-icon-box"><i class="fas fa-home"></i></span> لوحة التحكم</a></li>
-            <li><a href="cards.html" ><span class="nav-icon-box"><i class="fas fa-credit-card"></i></span> البطاقات</a></li>
-            <li><a href="wallets.html" ><span class="nav-icon-box"><i class="fas fa-wallet"></i></span> المحافظ</a></li>
-            <li><a href="merchants.html" class="active"><span class="nav-icon-box"><i class="fas fa-store"></i></span> المتاجر</a></li>
-            <li><a href="orders.html" ><span class="nav-icon-box"><i class="fas fa-file-invoice-dollar"></i></span> أوامر التوريد</a></li>
-            <li><a href="pos.html" ><span class="nav-icon-box"><i class="fas fa-cash-register"></i></span> نقطة البيع</a></li>
-            <li><a href="reports.html" ><span class="nav-icon-box"><i class="fas fa-chart-bar"></i></span> التقارير</a></li>
+            <li><a href="index.html"><span class="nav-icon-box"><i class="fas fa-home"></i></span> لوحة التحكم</a></li>
+            <li><a href="cards.html"><span class="nav-icon-box"><i class="fas fa-credit-card"></i></span> البطاقات</a>
+            </li>
+            <li><a href="wallets.html"><span class="nav-icon-box"><i class="fas fa-wallet"></i></span> المحافظ</a></li>
+            <li><a href="merchants.html" class="active"><span class="nav-icon-box"><i class="fas fa-store"></i></span>
+                    المتاجر</a></li>
+            <li><a href="orders.html"><span class="nav-icon-box"><i class="fas fa-file-invoice-dollar"></i></span> أوامر
+                    التوريد</a></li>
+            <li><a href="pos.html"><span class="nav-icon-box"><i class="fas fa-cash-register"></i></span> نقطة البيع</a>
+            </li>
+            <li><a href="reports.html"><span class="nav-icon-box"><i class="fas fa-chart-bar"></i></span> التقارير</a>
+            </li>
         </ul>
         <div class="nav-section-label">الإدارة</div>
         <ul class="nav-links" style="flex:0;">
-            <li><a href="users.html" ><span class="nav-icon-box"><i class="fas fa-users-cog"></i></span> المستخدمين</a></li>
-            <li><a href="settings.html" ><span class="nav-icon-box"><i class="fas fa-cog"></i></span> الإعدادات</a></li>
-            <li><a href="monitor.html" ><span class="nav-icon-box"><i class="fas fa-stethoscope"></i></span> فحص النظام</a></li>
-            <li><a href="support.html" ><span class="nav-icon-box"><i class="fas fa-headset"></i></span> الدعم الفني</a></li>
+            <li><a href="users.html"><span class="nav-icon-box"><i class="fas fa-users-cog"></i></span> المستخدمين</a>
+            </li>
+            <li><a href="settings.html"><span class="nav-icon-box"><i class="fas fa-cog"></i></span> الإعدادات</a></li>
+            <li><a href="monitor.html"><span class="nav-icon-box"><i class="fas fa-stethoscope"></i></span> فحص
+                    النظام</a></li>
+            <li><a href="support.html"><span class="nav-icon-box"><i class="fas fa-headset"></i></span> الدعم الفني</a>
+            </li>
         </ul>
         <div class="sidebar-bottom">
 
-            <button id="darkModeToggleBtn" class="dark-toggle" onclick="toggleDarkMode()" style="width:100%; text-align:right; margin-bottom:10px; padding:12px 20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.05); color:inherit; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s; font-family:inherit; font-size:0.95rem;">
+            <button id="darkModeToggleBtn" class="dark-toggle" onclick="toggleDarkMode()"
+                style="width:100%; text-align:right; margin-bottom:10px; padding:12px 20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.05); color:inherit; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s; font-family:inherit; font-size:0.95rem;">
                 <i id="darkIcon" class="fas fa-moon"></i> المظهر الداكن
             </button>
-        
-            <button class="sidebar-logout" onclick="if(typeof logout==='function')logout();else{localStorage.clear();location.href='login.html';}">
+
+            <button class="sidebar-logout"
+                onclick="if(typeof logout==='function')logout();else{localStorage.clear();location.href='login.html';}">
                 <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
             </button>
         </div>
@@ -101,6 +290,11 @@
                 <div class="form-group" style="flex:1">
                     <label>الموقع / الفرع</label>
                     <input id="merchantLocationInput" type="text" placeholder="الرياض - حي...">
+                    <input type="hidden" id="merchantLatInput">
+                    <input type="hidden" id="merchantLngInput">
+                    <button type="button" class="pick-loc-btn" onclick="AdminLocationPicker.open()">
+                        <i class="fas fa-map-marker-alt"></i> تحديد على الخريطة
+                    </button>
                 </div>
             </div>
 
@@ -147,7 +341,37 @@
             </div>
         </div>
 
+        <div class="map-section-header">
+            <h2><i class="fas fa-map-marked-alt" style="color: #00A59B;"></i> دليل المتاجر التفاعلي</h2>
+            <div id="mapStatus" style="font-size: 0.85rem; color: #666;">
+                <span class="status-dot active"></span> جاري تحديث بيانات المواقع...
+            </div>
+        </div>
+        <div id="merchantMap"></div>
+
         <div id="merchantsGrid" class="grid-container"></div>
+
+        <!-- Admin Location Picker Modal -->
+        <div class="location-map-overlay" id="adminLocOverlay">
+            <div class="location-map-dialog">
+                <div class="map-header">
+                    <h3><i class="fas fa-map-marker-alt"></i> تحديد موقع المتجر</h3>
+                    <button class="btn-close-map" onclick="AdminLocationPicker.close()"><i
+                            class="fas fa-times"></i></button>
+                </div>
+                <div id="adminPickerMap"></div>
+                <div class="map-footer">
+                    <div class="coords" id="adminPickerCoords">انقر على الخريطة لتحديد الموقع</div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-gps" onclick="AdminLocationPicker.useGPS()"><i class="fas fa-crosshairs"></i>
+                            GPS</button>
+                        <button class="btn-save-loc" id="adminSaveLocBtn" onclick="AdminLocationPicker.save()"
+                            disabled><i class="fas fa-check"></i> تثبيت</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <footer class="main-footer">
             <p>صنع في تراؤف</p>
             <img src="assets/logo.png" alt="TRAOF Logo">
@@ -156,14 +380,203 @@
     <script src="script.js"></script>
 
     <script>
-        // PWA Service Worker Register
+        /* ===== MERCHANT MAP ENGINE ===== */
+        let merchantMap;
+        let markers = [];
+
+        function initMerchantsMap() {
+            const mapEl = document.getElementById('merchantMap');
+            if (!mapEl || typeof L === 'undefined') return;
+
+            // Center on Hafar Al-Batin
+            const center = [28.4334, 45.9711];
+            merchantMap = L.map('merchantMap').setView(center, 12);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; CartoDB'
+            }).addTo(merchantMap);
+
+            loadMerchantMarkers();
+        }
+
+        function loadMerchantMarkers() {
+            const merchants = (typeof Storage !== 'undefined') ? Storage.get('merchants') : JSON.parse(localStorage.getItem('merchants')) || [];
+
+            markers.forEach(m => merchantMap.removeLayer(m));
+            markers = [];
+
+            if (merchants.length === 0) {
+                document.getElementById('mapStatus').innerHTML = '<i class="fas fa-info-circle"></i> لا توجد بيانات متاجر للعرض';
+                return;
+            }
+
+            const baseLat = 28.4334, baseLng = 45.9711;
+            let hasRealCoords = false;
+
+            merchants.forEach((m, i) => {
+                // Use real coordinates if saved, otherwise simulate
+                let lat, lng;
+                if (m.coords && m.coords.lat) {
+                    lat = m.coords.lat;
+                    lng = m.coords.lng;
+                    hasRealCoords = true;
+                } else {
+                    const seed = m.name ? m.name.split('').reduce((a, b) => a + b.charCodeAt(0), 0) : i;
+                    lat = baseLat + (Math.sin(seed + i) * 0.06);
+                    lng = baseLng + (Math.cos(seed + i) * 0.06);
+                }
+
+                const hasLocation = !!(m.coords && m.coords.lat);
+                const marker = L.circleMarker([lat, lng], {
+                    radius: hasLocation ? 10 : 7,
+                    fillColor: hasLocation ? '#00A59B' : '#94a3b8',
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: hasLocation ? 0.9 : 0.5
+                }).addTo(merchantMap);
+
+                const locBadge = hasLocation
+                    ? '<span style="color:#10b981; font-size:0.7rem;">\u2705 موقع حقيقي</span>'
+                    : '<span style="color:#f59e0b; font-size:0.7rem;">\u26a0\ufe0f موقع تقريبي</span>';
+                const popupContent = `
+                    <div style="font-family: Tajawal, sans-serif; min-width: 151px; text-align: right;">
+                        <h4 style="margin: 0 0 5px 0; color: #00A59B;">${m.name}</h4>
+                        <div style="font-size: 0.8rem; color: #666; margin-bottom: 4px;">
+                            <i class="fas fa-tag"></i> ${m.category}<br>
+                            <i class="fas fa-map-marker-alt"></i> ${m.location || 'غير محدد'}
+                        </div>
+                        ${locBadge}
+                        <button onclick="location.href='merchant_view.html?id=${m.id}'" 
+                                style="width:100%; padding:8px; background:#8cc240; color:white; border:none; border-radius:8px; cursor:pointer; font-size:0.75rem; font-weight:bold; margin-top:8px;">
+                            عرض الملف الشخصي
+                        </button>
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+                markers.push(marker);
+            });
+
+            // If any merchant has real coords, fit bounds to show all
+            if (hasRealCoords) {
+                const group = L.featureGroup(markers);
+                merchantMap.fitBounds(group.getBounds().pad(0.2));
+            }
+
+            document.getElementById('mapStatus').innerHTML = `<span class="status-dot active"></span> تم عرض ${merchants.length} متجر على الخريطة`;
+        }
+
+        window.onload = function () {
+            setTimeout(initMerchantsMap, 200);
+
+            // Sync with dark mode
+            const observer = new MutationObserver(() => {
+                if (merchantMap) {
+                    // Refresh map view if needed or apply dark theme tweaks
+                }
+            });
+            observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+        };
+
+        /* ===== SIDEBAR TOGGLE & DARK MODE ===== */
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('traof_dark_mode', isDark ? '1' : '0');
+            const icon = document.getElementById('darkIcon');
+            if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        if (localStorage.getItem('traof_dark_mode') === '1') {
+            document.body.classList.add('dark-mode');
+            const icon = document.getElementById('darkIcon');
+            if (icon) icon.className = 'fas fa-sun';
+        }
+
+        // PWA Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(reg => console.log('SW registered!', reg))
-                    .catch(err => console.log('SW failed!', err));
+                navigator.serviceWorker.register('./service-worker.js');
             });
         }
+
+        /* ===== Admin Location Picker ===== */
+        const AdminLocationPicker = {
+            map: null, marker: null, selectedLat: null, selectedLng: null,
+
+            open: () => {
+                document.getElementById('adminLocOverlay').classList.add('active');
+                setTimeout(() => {
+                    if (!AdminLocationPicker.map) {
+                        AdminLocationPicker.map = L.map('adminPickerMap').setView([28.4334, 45.9711], 13);
+                        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                            attribution: '&copy; CartoDB'
+                        }).addTo(AdminLocationPicker.map);
+                        AdminLocationPicker.map.on('click', (e) => {
+                            AdminLocationPicker.placeMarker(e.latlng.lat, e.latlng.lng);
+                        });
+                    } else {
+                        AdminLocationPicker.map.invalidateSize();
+                    }
+
+                    // Load existing coords from hidden inputs
+                    const existLat = document.getElementById('merchantLatInput').value;
+                    const existLng = document.getElementById('merchantLngInput').value;
+                    if (existLat && existLng) {
+                        AdminLocationPicker.placeMarker(parseFloat(existLat), parseFloat(existLng));
+                        AdminLocationPicker.map.setView([parseFloat(existLat), parseFloat(existLng)], 14);
+                    } else {
+                        // Auto GPS on first open
+                        AdminLocationPicker.useGPS();
+                    }
+                }, 200);
+            },
+
+            close: () => { document.getElementById('adminLocOverlay').classList.remove('active'); },
+
+            placeMarker: (lat, lng) => {
+                AdminLocationPicker.selectedLat = lat;
+                AdminLocationPicker.selectedLng = lng;
+                if (AdminLocationPicker.marker) {
+                    AdminLocationPicker.marker.setLatLng([lat, lng]);
+                } else {
+                    AdminLocationPicker.marker = L.marker([lat, lng], { draggable: true }).addTo(AdminLocationPicker.map);
+                    AdminLocationPicker.marker.on('dragend', (e) => {
+                        const pos = e.target.getLatLng();
+                        AdminLocationPicker.selectedLat = pos.lat;
+                        AdminLocationPicker.selectedLng = pos.lng;
+                        document.getElementById('adminPickerCoords').textContent = `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
+                    });
+                }
+                document.getElementById('adminPickerCoords').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                document.getElementById('adminSaveLocBtn').disabled = false;
+                AdminLocationPicker.map.setView([lat, lng], Math.max(AdminLocationPicker.map.getZoom(), 13));
+            },
+
+            useGPS: () => {
+                if (!navigator.geolocation) return;
+                document.getElementById('adminPickerCoords').textContent = 'جاري تحديد الموقع تلقائياً...';
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        AdminLocationPicker.placeMarker(pos.coords.latitude, pos.coords.longitude);
+                        AdminLocationPicker.map.setView([pos.coords.latitude, pos.coords.longitude], 16);
+                    },
+                    (err) => { document.getElementById('adminPickerCoords').textContent = 'فشل: ' + err.message; }
+                );
+            },
+
+            save: () => {
+                if (!AdminLocationPicker.selectedLat) return;
+                document.getElementById('merchantLatInput').value = AdminLocationPicker.selectedLat;
+                document.getElementById('merchantLngInput').value = AdminLocationPicker.selectedLng;
+                if (typeof showToast === 'function') showToast('تم تثبيت الموقع على الخريطة \u2705', 'success');
+                AdminLocationPicker.close();
+            }
+        };
     </script>
 
 </body>

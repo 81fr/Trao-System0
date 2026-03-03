@@ -3,13 +3,214 @@
 
 <head>
     <meta charset="UTF-8" />
-    
+
     <title>لوحة التاجر - تراوف</title>
 
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        .location-map-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .location-map-overlay.active {
+            display: flex;
+        }
+
+        .location-map-dialog {
+            background: #fff;
+            border-radius: 24px;
+            width: 95%;
+            max-width: 550px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(40px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .location-map-dialog .map-header {
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #00A59B, #8CC240);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .location-map-dialog .map-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .location-map-dialog #merchantLocationMap {
+            height: 350px;
+            width: 100%;
+        }
+
+        .location-map-dialog .map-footer {
+            padding: 16px 24px;
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            align-items: center;
+            background: #f9fafb;
+            border-top: 1px solid #eee;
+        }
+
+        .location-map-dialog .map-footer .coords {
+            font-size: 0.8rem;
+            color: #666;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .location-map-dialog .map-footer button {
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-save-loc {
+            background: linear-gradient(135deg, #00A59B, #059669);
+            color: white;
+        }
+
+        .btn-save-loc:hover {
+            transform: scale(1.03);
+        }
+
+        .btn-gps {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-close-map {
+            background: none;
+            color: white;
+            font-size: 1.3rem;
+            padding: 4px 10px;
+        }
+
+        .set-location-btn {
+            width: 100%;
+            padding: 14px;
+            border: 2px dashed #00A59B;
+            background: rgba(0, 165, 155, 0.05);
+            color: #00A59B;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 24px;
+            font-family: inherit;
+        }
+
+        .set-location-btn:hover {
+            background: rgba(0, 165, 155, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .set-location-btn .loc-saved {
+            color: #10b981;
+            font-size: 0.85rem;
+            font-weight: normal;
+        }
+
+        .dark-mode .location-map-dialog {
+            background: #1e293b;
+        }
+
+        .dark-mode .location-map-dialog .map-footer {
+            background: #0f172a;
+            border-color: #334155;
+        }
+
+        .dark-mode .set-location-btn {
+            border-color: #059669;
+            color: #34d399;
+            background: rgba(0, 165, 155, 0.08);
+        }
+
+        /* Mini Map Preview */
+        .saved-location-preview {
+            display: none;
+            margin: 0 0 24px 0;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .saved-location-preview:hover {
+            border-color: #00A59B;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 165, 155, 0.15);
+        }
+
+        .saved-location-preview img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .saved-location-preview .preview-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+            color: white;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+
+        .saved-location-preview .preview-overlay i {
+            font-size: 1rem;
+        }
+
+        .dark-mode .saved-location-preview {
+            border-color: #334155;
+        }
+    </style>
 
     <!-- PWA / Mobile App Meta Tags -->
     <link rel="manifest" href="manifest.json">
@@ -30,7 +231,8 @@
             <li><a href="pos.html"><i class="fas fa-cash-register"></i> نقطة البيع</a></li>
             <li><a href="reports.html"><i class="fas fa-chart-bar"></i> التقارير</a></li>
             <li><a href="support.html"><i class="fas fa-headset"></i> الدعم الفني</a></li>
-            <li><a href="#" id="darkModeToggleBtn" onclick="toggleDarkMode()"><i id="darkIcon" class="fas fa-moon"></i> المظهر الداكن</a></li>
+            <li><a href="#" id="darkModeToggleBtn" onclick="toggleDarkMode()"><i id="darkIcon" class="fas fa-moon"></i>
+                    المظهر الداكن</a></li>
             <li><a href="#" onclick="Auth.logout()"><i class="fas fa-sign-out-alt"></i> تسجيل خروج</a></li>
         </ul>
     </nav>
@@ -54,6 +256,94 @@
                 <h3>مبيعات اليوم</h3>
                 <div class="value" id="merchantToday">0</div>
             </div>
+        </div>
+
+        <!-- Set My Store Location -->
+        <button class="set-location-btn" id="storeLocationBtn" onclick="MerchantLocationPicker.open()">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>تحديد موقع المتجر على الخريطة</span>
+        </button>
+
+        <!-- Location Map Modal -->
+        <div class="location-map-overlay" id="merchantLocOverlay">
+            <div class="location-map-dialog">
+                <div class="map-header">
+                    <h3><i class="fas fa-store"></i> تحديد موقع المتجر</h3>
+                    <button class="btn-close-map" onclick="MerchantLocationPicker.close()"><i
+                            class="fas fa-times"></i></button>
+                </div>
+                <div id="merchantLocationMap"></div>
+                <div class="map-footer">
+                    <div class="coords" id="merchantLocCoords">انقر على الخريطة لتحديد موقع متجرك</div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-gps" onclick="MerchantLocationPicker.useGPS()"><i
+                                class="fas fa-crosshairs"></i> GPS</button>
+                        <button class="btn-save-loc" id="merchantSaveLocBtn" onclick="MerchantLocationPicker.save()"
+                            disabled><i class="fas fa-check"></i> حفظ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saved Location Mini Map Preview -->
+        <div class="saved-location-preview" id="merchantSavedLocPreview"
+            onclick="MerchantLocationPicker.openGoogleMaps()">
+            <img id="merchantMiniMapImg" src="" alt="موقع المتجر على الخريطة">
+            <div class="preview-overlay">
+                <span><i class="fas fa-store"></i> موقع المتجر المحفوظ</span>
+                <span><i class="fas fa-external-link-alt"></i> فتح في Google Maps</span>
+            </div>
+        </div>
+
+        <!-- NEW: Gamification & Rewards Section -->
+        <div class="gamification-panel animate-in" id="merchantGamification"
+            style="margin-bottom: 28px; background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: space-between; overflow: hidden; position: relative;">
+            <div
+                style="position: absolute; right: -20px; top: -20px; opacity: 0.05; font-size: 15rem; pointer-events: none;">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div style="z-index: 1; width: 100%;">
+                <h3 style="margin: 0 0 10px; color: #f59e0b; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-crown"></i> برنامج التميز للتجار
+                </h3>
+                <p style="margin: 0 0 20px; font-size: 0.95rem; opacity: 0.9;">أنجز المزيد من العمليات لترقية وسامك
+                    وزيادة موثوقية متجرك ضمن شبكة تراؤف!</p>
+                <div
+                    style="display: flex; gap: 20px; align-items: center; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <div style="flex-shrink: 0; text-align: center;">
+                        <div id="merchantBadgeIcon"
+                            style="width: 60px; height: 60px; border-radius: 50%; background: #334155; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: 2px solid #64748b; margin: 0 auto 5px; transition: all 0.5s;">
+                            <i class="fas fa-medal" style="color: #94a3b8;"></i>
+                        </div>
+                        <span id="merchantBadgeName" style="font-size: 0.8rem; color: #cbd5e1; font-weight: bold;">تاجر
+                            جديد</span>
+                    </div>
+                    <div style="flex: 1;">
+                        <div
+                            style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px;">
+                            <span id="merchantProgressText">العمليات: 0</span>
+                            <span id="merchantNextBadge" style="color: #94a3b8;"><i class="fas fa-lock"></i> الهدف:
+                                برونزي (10 عمليات)</span>
+                        </div>
+                        <div style="height: 10px; background: rgba(0,0,0,0.3); border-radius: 5px; overflow: hidden;">
+                            <div id="merchantProgressBar"
+                                style="height: 100%; width: 0%; background: linear-gradient(90deg, #f59e0b, #fbbf24); transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 5px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Sales Chart -->
+        <div class="animate-in"
+            style="background:var(--card); border-radius:20px; padding:24px; margin-bottom:24px; box-shadow:var(--shadow);">
+            <h3 style="margin:0 0 16px; display:flex; align-items:center; gap:10px; font-size:1.1rem;">
+                <i class="fas fa-chart-line" style="color:#3b82f6;"></i> إحصائيات المبيعات الأسبوعية
+                <span id="merchantGrowth"
+                    style="margin-right:auto; font-size:0.8rem; padding:4px 10px; border-radius:20px;"></span>
+            </h3>
+            <canvas id="merchantWeeklyChart" height="180"></canvas>
         </div>
 
         <!-- ===== QR Scanner Section ===== -->
@@ -406,9 +696,65 @@ ${pending.map(p => `- كود: ${p.code} | مبلغ: ${p.amount} | حالة: ${p.
             const myTx = tx; // مبدئياً كل العمليات؛ مستقبلاً نربط المتجر بالحساب
             document.getElementById('merchantTxCount').innerText = myTx.length;
 
-            // مبيعات اليوم (بدون فلترة تاريخ دقيقة في هذا النموذج)
             const total = myTx.reduce((s, t) => s + Number(t.amount || 0), 0);
             document.getElementById('merchantToday').innerText = total.toFixed(2);
+
+            // ======== Gamification UI Update ========
+            const txCount = myTx.length;
+            let badgeName = 'تاجر مبتدئ';
+            let badgeIcon = '<i class="fas fa-medal" style="color: #cbd5e1;"></i>';
+            let iconBg = '#334155';
+            let iconBorder = '#64748b';
+            let nextBadge = '';
+            let progress = 0;
+            let barGradient = 'linear-gradient(90deg, #f59e0b, #fbbf24)';
+
+            if (txCount < 10) {
+                badgeName = 'تاجر مبتدئ';
+                nextBadge = '<i class="fas fa-lock"></i> الهدف: برونزي (10 عمليات)';
+                progress = (txCount / 10) * 100;
+                barGradient = 'linear-gradient(90deg, #b45309, #d97706)';
+            } else if (txCount < 50) {
+                badgeName = 'وسام برونزي';
+                badgeIcon = '<i class="fas fa-award" style="color: #b45309;"></i>';
+                iconBg = '#fef3c7'; iconBorder = '#f59e0b';
+                nextBadge = '<i class="fas fa-lock"></i> الهدف: فضي (50 عملية)';
+                progress = (txCount / 50) * 100;
+                barGradient = 'linear-gradient(90deg, #94a3b8, #cbd5e1)';
+            } else if (txCount < 100) {
+                badgeName = 'وسام فضي';
+                badgeIcon = '<i class="fas fa-gem" style="color: #94a3b8;"></i>';
+                iconBg = '#f8fafc'; iconBorder = '#cbd5e1';
+                nextBadge = '<i class="fas fa-lock"></i> الهدف: ذهبي (100 عملية)';
+                progress = (txCount / 100) * 100;
+                barGradient = 'linear-gradient(90deg, #eab308, #fde047)';
+            } else {
+                badgeName = 'وسام ذهبي';
+                badgeIcon = '<i class="fas fa-crown" style="color: #eab308;"></i>';
+                iconBg = '#27272a'; iconBorder = '#facc15';
+                nextBadge = '<i class="fas fa-star" style="color:#eab308;"></i> شريك حصري';
+                progress = 100;
+                barGradient = 'linear-gradient(90deg, #eab308, #facc15)';
+            }
+
+            const badgeIconEl = document.getElementById('merchantBadgeIcon');
+            if (badgeIconEl) {
+                badgeIconEl.innerHTML = badgeIcon;
+                badgeIconEl.style.background = iconBg;
+                badgeIconEl.style.borderColor = iconBorder;
+                document.getElementById('merchantBadgeName').innerText = badgeName;
+                document.getElementById('merchantProgressText').innerText = `العمليات: ${txCount}`;
+                document.getElementById('merchantNextBadge').innerHTML = nextBadge;
+
+                setTimeout(() => {
+                    const bar = document.getElementById('merchantProgressBar');
+                    if (bar) {
+                        bar.style.width = `${progress}%`;
+                        bar.style.background = barGradient;
+                    }
+                }, 500);
+            }
+            // ========================================
 
             const tbody = document.getElementById('merchantTxTable');
             tbody.innerHTML = myTx.map(t => `
@@ -475,12 +821,212 @@ ${pending.map(p => `- كود: ${p.code} | مبلغ: ${p.amount} | حالة: ${p.
     </script>
 
     <script>
+        /* ===== Merchant Location Picker ===== */
+        const MerchantLocationPicker = {
+            map: null, marker: null, selectedLat: null, selectedLng: null,
+
+            open: () => {
+                document.getElementById('merchantLocOverlay').classList.add('active');
+                setTimeout(() => {
+                    if (!MerchantLocationPicker.map) {
+                        MerchantLocationPicker.map = L.map('merchantLocationMap').setView([28.4334, 45.9711], 13);
+                        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                            attribution: '&copy; CartoDB'
+                        }).addTo(MerchantLocationPicker.map);
+                        MerchantLocationPicker.map.on('click', (e) => {
+                            MerchantLocationPicker.placeMarker(e.latlng.lat, e.latlng.lng);
+                        });
+                    } else {
+                        MerchantLocationPicker.map.invalidateSize();
+                    }
+
+                    // Load existing location
+                    const user = Auth.user;
+                    const merchantName = user.linkedEntity || user.name;
+                    const merchants = Storage.get('merchants') || [];
+                    const m = merchants.find(x => x.name === merchantName);
+                    if (m && m.coords && m.coords.lat) {
+                        MerchantLocationPicker.placeMarker(m.coords.lat, m.coords.lng);
+                        MerchantLocationPicker.map.setView([m.coords.lat, m.coords.lng], 14);
+                    } else {
+                        // Auto GPS on first open
+                        MerchantLocationPicker.useGPS();
+                    }
+                }, 200);
+            },
+
+            close: () => { document.getElementById('merchantLocOverlay').classList.remove('active'); },
+
+            placeMarker: (lat, lng) => {
+                MerchantLocationPicker.selectedLat = lat;
+                MerchantLocationPicker.selectedLng = lng;
+                if (MerchantLocationPicker.marker) {
+                    MerchantLocationPicker.marker.setLatLng([lat, lng]);
+                } else {
+                    MerchantLocationPicker.marker = L.marker([lat, lng], { draggable: true }).addTo(MerchantLocationPicker.map);
+                    MerchantLocationPicker.marker.on('dragend', (e) => {
+                        const pos = e.target.getLatLng();
+                        MerchantLocationPicker.selectedLat = pos.lat;
+                        MerchantLocationPicker.selectedLng = pos.lng;
+                        document.getElementById('merchantLocCoords').textContent = `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}`;
+                    });
+                }
+                document.getElementById('merchantLocCoords').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                document.getElementById('merchantSaveLocBtn').disabled = false;
+                MerchantLocationPicker.map.setView([lat, lng], Math.max(MerchantLocationPicker.map.getZoom(), 13));
+            },
+
+            useGPS: () => {
+                if (!navigator.geolocation) return;
+                document.getElementById('merchantLocCoords').textContent = 'جاري تحديد موقعك تلقائياً...';
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        MerchantLocationPicker.placeMarker(pos.coords.latitude, pos.coords.longitude);
+                        MerchantLocationPicker.map.setView([pos.coords.latitude, pos.coords.longitude], 16);
+                    },
+                    (err) => { document.getElementById('merchantLocCoords').textContent = 'فشل تحديد الموقع: ' + err.message; }
+                );
+            },
+
+            save: () => {
+                if (!MerchantLocationPicker.selectedLat) return;
+                const user = Auth.user;
+                const merchantName = user.linkedEntity || user.name;
+                const merchants = Storage.get('merchants') || [];
+                const m = merchants.find(x => x.name === merchantName);
+                if (m) {
+                    m.coords = { lat: MerchantLocationPicker.selectedLat, lng: MerchantLocationPicker.selectedLng };
+                    Storage.set('merchants', merchants);
+                    document.getElementById('storeLocationBtn').innerHTML = `<i class="fas fa-map-marker-alt"></i> <span>موقع المتجر <span class="loc-saved">✅ محفوظ</span></span>`;
+                }
+                // Show mini-map preview
+                MerchantLocationPicker.showMiniMap(MerchantLocationPicker.selectedLat, MerchantLocationPicker.selectedLng);
+                if (typeof showToast === 'function') showToast('تم حفظ موقع المتجر بنجاح!', 'success');
+                MerchantLocationPicker.close();
+            },
+
+            showMiniMap: (lat, lng) => {
+                const preview = document.getElementById('merchantSavedLocPreview');
+                const img = document.getElementById('merchantMiniMapImg');
+                if (!preview || !img) return;
+                img.src = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=15&size=600x250&markers=${lat},${lng},red-pushpin`;
+                img.onerror = () => {
+                    img.style.display = 'none';
+                    preview.style.background = 'linear-gradient(135deg, #0f172a, #1e293b)';
+                    preview.style.height = '100px';
+                    preview.querySelector('.preview-overlay').innerHTML = `<span><i class="fas fa-store"></i> ${lat.toFixed(5)}, ${lng.toFixed(5)}</span><span><i class="fas fa-external-link-alt"></i> فتح في Google Maps</span>`;
+                };
+                preview.style.display = 'block';
+                preview.dataset.lat = lat;
+                preview.dataset.lng = lng;
+            },
+
+            openGoogleMaps: () => {
+                const preview = document.getElementById('merchantSavedLocPreview');
+                const lat = preview.dataset.lat;
+                const lng = preview.dataset.lng;
+                if (lat && lng) {
+                    window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank');
+                }
+            },
+
+            checkSaved: () => {
+                const user = Auth.user;
+                if (!user) return;
+                const merchantName = user.linkedEntity || user.name;
+                const merchants = Storage.get('merchants') || [];
+                const m = merchants.find(x => x.name === merchantName);
+                if (m && m.coords && m.coords.lat) {
+                    document.getElementById('storeLocationBtn').innerHTML = `<i class="fas fa-map-marker-alt"></i> <span>موقع المتجر <span class="loc-saved">✅ محفوظ</span></span>`;
+                    MerchantLocationPicker.showMiniMap(m.coords.lat, m.coords.lng);
+                }
+            }
+        };
+        // Check on load
+        document.addEventListener('DOMContentLoaded', () => setTimeout(MerchantLocationPicker.checkSaved, 300));
+
+        // Weekly Sales Chart
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const ctx = document.getElementById('merchantWeeklyChart');
+                if (!ctx || typeof Chart === 'undefined') return;
+                const user = Auth.user;
+                const merchantName = user ? (user.linkedEntity || user.name) : '';
+                const txns = (Storage.get('transactions') || []).filter(t => t.merchant === merchantName);
+
+                const days = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+                const thisWeek = [0, 0, 0, 0, 0, 0, 0];
+                const lastWeek = [0, 0, 0, 0, 0, 0, 0];
+
+                // Simulate data from transactions
+                txns.forEach((t, i) => {
+                    thisWeek[i % 7] += parseFloat(t.amount) || 0;
+                });
+                // Simulate last week as 80% of this week + variance
+                thisWeek.forEach((v, i) => { lastWeek[i] = Math.max(0, v * 0.8 + (Math.random() * 20 - 10)); });
+
+                // If no real data, show sample
+                if (txns.length === 0) {
+                    [120, 85, 200, 150, 310, 95, 180].forEach((v, i) => thisWeek[i] = v);
+                    [90, 100, 170, 130, 250, 80, 150].forEach((v, i) => lastWeek[i] = v);
+                }
+
+                const totalThis = thisWeek.reduce((a, b) => a + b, 0);
+                const totalLast = lastWeek.reduce((a, b) => a + b, 0);
+                const growth = totalLast > 0 ? ((totalThis - totalLast) / totalLast * 100).toFixed(1) : 0;
+                const growthEl = document.getElementById('merchantGrowth');
+                if (growthEl) {
+                    growthEl.textContent = (growth >= 0 ? '↑' : '↓') + ' ' + Math.abs(growth) + '%';
+                    growthEl.style.background = growth >= 0 ? '#10b98120' : '#ef444420';
+                    growthEl.style.color = growth >= 0 ? '#10b981' : '#ef4444';
+                }
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: days,
+                        datasets: [{
+                            label: 'هذا الأسبوع',
+                            data: thisWeek,
+                            borderColor: '#00A59B',
+                            backgroundColor: 'rgba(0,165,155,0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#00A59B'
+                        }, {
+                            label: 'الأسبوع الماضي',
+                            data: lastWeek,
+                            borderColor: '#94a3b8',
+                            backgroundColor: 'transparent',
+                            borderDash: [5, 5],
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#94a3b8'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { font: { family: 'Tajawal' }, usePointStyle: true } }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { font: { family: 'Tajawal' } } },
+                            x: { ticks: { font: { family: 'Tajawal' } } }
+                        }
+                    }
+                });
+            }, 500);
+        });
+    </script>
+
+    <script>
         // PWA Service Worker Register
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(reg => console.log('SW registered!', reg))
-                    .catch(err => console.log('SW failed!', err));
+                navigator.serviceWorker.register('./service-worker.js');
             });
         }
     </script>

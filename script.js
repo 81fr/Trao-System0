@@ -862,6 +862,13 @@ const Actions = {
         const bank = document.getElementById('merchantBankInput').value;
         const iban = document.getElementById('merchantIBANInput').value;
 
+        // Map Coordinates (from location picker)
+        const latInput = document.getElementById('merchantLatInput');
+        const lngInput = document.getElementById('merchantLngInput');
+        const coords = (latInput && latInput.value && lngInput && lngInput.value)
+            ? { lat: parseFloat(latInput.value), lng: parseFloat(lngInput.value) }
+            : null;
+
         if (!name) { markFieldError('merchantNameInput'); return showToast('يرجى إدخال اسم المتجر', 'error'); }
 
         let merchants = Storage.get('merchants') || [];
@@ -885,6 +892,7 @@ const Actions = {
                 merchants[idx].vatNumber = vat;
                 merchants[idx].bankName = bank;
                 merchants[idx].iban = iban;
+                if (coords) merchants[idx].coords = coords;
 
                 // Append new files to existing
                 if (currentFiles.length > 0) {
@@ -909,6 +917,7 @@ const Actions = {
                 vatNumber: vat,
                 bankName: bank,
                 iban: iban,
+                coords: coords,
                 attachments: currentFiles,
                 transactions: 0,
                 status: 'نشط'
@@ -2858,8 +2867,34 @@ Object.assign(Actions, {
             '<span class="badge-gold" style="background:#fff5f5; color:#c53030; border-color:#feb2b2; padding:5px 15px; border-radius:20px;">غير نشط</span>';
 
         let badgesHtml = badge;
+
+        // ======== Gamification UI Update ========
+        const tx = Storage.get('transactions') || [];
+        let myTx = tx.filter(t => t.partner === m.name || t.merchant === m.name);
+        let txCount = myTx.length;
+        if (txCount === 0) {
+            // Visual demonstration for mock data
+            txCount = (m.name.length * 17) % 150 + 5;
+        }
+
+        let badgeName = 'تاجر مبتدئ';
+        let badgeIcon = '<i class="fas fa-medal" style="color: #64748b;"></i>';
+        if (txCount >= 100) {
+            badgeName = 'وسام ذهبي';
+            badgeIcon = '<i class="fas fa-crown" style="color: #eab308;"></i>';
+        } else if (txCount >= 50) {
+            badgeName = 'وسام فضي';
+            badgeIcon = '<i class="fas fa-gem" style="color: #94a3b8;"></i>';
+        } else if (txCount >= 10) {
+            badgeName = 'وسام برونزي';
+            badgeIcon = '<i class="fas fa-award" style="color: #b45309;"></i>';
+        }
+
+        badgesHtml += ` <span style="background:#f8f9fa; border:1px solid #e2e8f0; padding:5px 15px; border-radius:20px; font-size:0.85rem; font-weight:bold; margin-right:5px;" title="${txCount} عملية تجارية">${badgeIcon} ${badgeName}</span>`;
+        // ========================================
+
         if (m.crNumber && m.vatNumber) {
-            badgesHtml += ' <span style="color:#28a745; font-weight:bold; margin-right:10px;"><i class="fas fa-check-circle"></i> موثق</span>';
+            badgesHtml += ' <span style="color:#10b981; font-weight:bold; margin-right:10px; font-size:0.9rem;"><i class="fas fa-check-circle"></i> موثق</span>';
         }
         document.getElementById('viewBadges').innerHTML = badgesHtml;
 
@@ -2990,3 +3025,352 @@ function generateAIInsight() {
     }, 30); // Typing speed
 }
 
+/* ===========================
+   MOBILE RESPONSIVE MENU
+=========================== */
+(function initMobileMenu() {
+    // Create hamburger button
+    const btn = document.createElement('button');
+    btn.className = 'mobile-menu-btn';
+    btn.innerHTML = '<i class="fas fa-bars"></i>';
+    btn.setAttribute('aria-label', 'فتح القائمة');
+    document.body.appendChild(btn);
+
+    // Create overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'mobile-overlay';
+    document.body.appendChild(overlay);
+
+    btn.addEventListener('click', () => {
+        const sidebar = document.querySelector('.sidebar');
+        if (!sidebar) return;
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+        btn.innerHTML = sidebar.classList.contains('open')
+            ? '<i class="fas fa-times"></i>'
+            : '<i class="fas fa-bars"></i>';
+    });
+
+    overlay.addEventListener('click', () => {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+        btn.innerHTML = '<i class="fas fa-bars"></i>';
+    });
+
+    // Close sidebar on link click (mobile)
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.sidebar a[href]')) {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            btn.innerHTML = '<i class="fas fa-bars"></i>';
+        }
+    });
+})();
+
+/* ===========================
+   ACTIVITY LOG SYSTEM
+=========================== */
+const ActivityLog = {
+    log: (action, details, user) => {
+        const logs = Storage.get('activityLog') || [];
+        logs.unshift({
+            id: Date.now(),
+            action: action,
+            details: details,
+            user: user || (Auth.user ? Auth.user.name : 'النظام'),
+            timestamp: new Date().toISOString()
+        });
+        // Keep last 200 entries
+        if (logs.length > 200) logs.length = 200;
+        Storage.set('activityLog', logs);
+    },
+
+    getAll: () => Storage.get('activityLog') || [],
+
+    getFiltered: (type, from, to) => {
+        let logs = ActivityLog.getAll();
+        if (type) logs = logs.filter(l => l.action.includes(type));
+        if (from) logs = logs.filter(l => new Date(l.timestamp) >= new Date(from));
+        if (to) logs = logs.filter(l => new Date(l.timestamp) <= new Date(to));
+        return logs;
+    },
+
+    clear: () => Storage.set('activityLog', []),
+
+    renderTimeline: (containerId, limit) => {
+        const el = document.getElementById(containerId);
+        if (!el) return;
+        const logs = ActivityLog.getAll().slice(0, limit || 20);
+        if (logs.length === 0) {
+            el.innerHTML = '<div style="text-align:center; padding:30px; color:#888;"><i class="fas fa-clipboard-list" style="font-size:2rem; margin-bottom:10px; display:block;"></i>لا توجد أنشطة مسجلة بعد</div>';
+            return;
+        }
+        const icons = {
+            'إضافة': 'fa-plus-circle', 'حذف': 'fa-trash', 'تعديل': 'fa-edit',
+            'شراء': 'fa-shopping-cart', 'تغذية': 'fa-coins', 'دخول': 'fa-sign-in-alt',
+            'موقع': 'fa-map-marker-alt', 'توريد': 'fa-file-invoice'
+        };
+        const colors = {
+            'إضافة': '#10b981', 'حذف': '#ef4444', 'تعديل': '#f59e0b',
+            'شراء': '#3b82f6', 'تغذية': '#8CC240', 'دخول': '#00A59B',
+            'موقع': '#6366f1', 'توريد': '#ec4899'
+        };
+        el.innerHTML = logs.map(l => {
+            const iconKey = Object.keys(icons).find(k => l.action.includes(k)) || '';
+            const icon = icons[iconKey] || 'fa-circle';
+            const color = colors[iconKey] || '#888';
+            const timeAgo = getTimeAgo(l.timestamp);
+            return `<div style="display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid var(--border);">
+                <div style="width:36px; height:36px; border-radius:10px; background:${color}15; color:${color}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:600; font-size:0.9rem; color:var(--text-primary);">${l.action}</div>
+                    <div style="font-size:0.8rem; color:var(--text-secondary); margin-top:2px;">${l.details}</div>
+                </div>
+                <div style="font-size:0.75rem; color:var(--muted); white-space:nowrap;">${timeAgo}</div>
+            </div>`;
+        }).join('');
+    }
+};
+
+function getTimeAgo(ts) {
+    const diff = Date.now() - new Date(ts).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return 'الآن';
+    if (m < 60) return `منذ ${m} دقيقة`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `منذ ${h} ساعة`;
+    const d = Math.floor(h / 24);
+    return `منذ ${d} يوم`;
+}
+
+// Hook into existing actions to log activities
+(function hookActivityLog() {
+    const origAddCard = Actions.addCard;
+    if (origAddCard) {
+        Actions.addCard = function () {
+            origAddCard.apply(this, arguments);
+            ActivityLog.log('إضافة بطاقة', 'تم إضافة بطاقة جديدة');
+        };
+    }
+    const origAddMerchant = Actions.addMerchant;
+    if (origAddMerchant) {
+        Actions.addMerchant = function () {
+            origAddMerchant.apply(this, arguments);
+            const name = document.getElementById('merchantName')?.value || '';
+            ActivityLog.log('إضافة/تعديل متجر', `متجر: ${name}`);
+        };
+    }
+})();
+
+/* ===========================
+   GLOBAL SEARCH (Ctrl+K)
+=========================== */
+const GlobalSearch = {
+    isOpen: false,
+
+    init: () => {
+        // Create search modal HTML
+        const modal = document.createElement('div');
+        modal.id = 'globalSearchOverlay';
+        modal.innerHTML = `
+        <div id="globalSearchDialog" style="background:var(--card); border-radius:20px; width:90%; max-width:600px; max-height:70vh; overflow:hidden; box-shadow:0 25px 60px rgba(0,0,0,0.3); display:flex; flex-direction:column;">
+            <div style="padding:20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px;">
+                <i class="fas fa-search" style="color:var(--brand-teal); font-size:1.2rem;"></i>
+                <input type="text" id="globalSearchInput" placeholder="ابحث في البطاقات، المتاجر، المستفيدين..." style="flex:1; border:none; outline:none; font-size:1.1rem; background:transparent; color:var(--text-primary); font-family:inherit;">
+                <kbd style="background:var(--thead-bg); color:var(--muted); padding:4px 10px; border-radius:6px; font-size:0.75rem; border:1px solid var(--border);">ESC</kbd>
+            </div>
+            <div id="globalSearchResults" style="padding:12px; overflow-y:auto; flex:1;"></div>
+        </div>`;
+        modal.style.cssText = 'display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; backdrop-filter:blur(8px); justify-content:center; align-items:center; padding:20px;';
+        document.body.appendChild(modal);
+
+        // Keyboard shortcut
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                GlobalSearch.toggle();
+            }
+            if (e.key === 'Escape' && GlobalSearch.isOpen) {
+                GlobalSearch.close();
+            }
+        });
+
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) GlobalSearch.close();
+        });
+
+        // Live search
+        document.getElementById('globalSearchInput')?.addEventListener('input', (e) => {
+            GlobalSearch.search(e.target.value);
+        });
+    },
+
+    toggle: () => {
+        GlobalSearch.isOpen ? GlobalSearch.close() : GlobalSearch.open();
+    },
+
+    open: () => {
+        const modal = document.getElementById('globalSearchOverlay');
+        if (!modal) return;
+        modal.style.display = 'flex';
+        GlobalSearch.isOpen = true;
+        setTimeout(() => document.getElementById('globalSearchInput')?.focus(), 100);
+    },
+
+    close: () => {
+        const modal = document.getElementById('globalSearchOverlay');
+        if (!modal) return;
+        modal.style.display = 'none';
+        GlobalSearch.isOpen = false;
+        const input = document.getElementById('globalSearchInput');
+        if (input) input.value = '';
+        const results = document.getElementById('globalSearchResults');
+        if (results) results.innerHTML = '';
+    },
+
+    search: (query) => {
+        const results = document.getElementById('globalSearchResults');
+        if (!results || !query || query.length < 2) {
+            if (results) results.innerHTML = '<div style="text-align:center; padding:30px; color:var(--muted);"><i class="fas fa-search" style="font-size:2rem; margin-bottom:10px; display:block;"></i>اكتب للبحث...</div>';
+            return;
+        }
+        const q = query.toLowerCase();
+        let items = [];
+
+        // Search cards
+        const cards = Storage.get('cards') || [];
+        cards.forEach(c => {
+            if ((c.number || '').toLowerCase().includes(q) || (c.holder || '').toLowerCase().includes(q)) {
+                items.push({ type: 'بطاقة', icon: 'fa-credit-card', color: '#3b82f6', title: c.holder || c.number, sub: `رقم: ${c.number} | رصيد: ${c.balance} ريال`, link: 'cards.html' });
+            }
+        });
+
+        // Search merchants
+        const merchants = Storage.get('merchants') || [];
+        merchants.forEach(m => {
+            if ((m.name || '').toLowerCase().includes(q) || (m.category || '').toLowerCase().includes(q)) {
+                items.push({ type: 'متجر', icon: 'fa-store', color: '#10b981', title: m.name, sub: `الفئة: ${m.category || '-'} | الموقع: ${m.location || '-'}`, link: 'merchants.html' });
+            }
+        });
+
+        // Search beneficiaries
+        const bens = Storage.get('beneficiaries') || [];
+        bens.forEach(b => {
+            if ((b.name || '').toLowerCase().includes(q) || (b.identity || '').toLowerCase().includes(q)) {
+                items.push({ type: 'مستفيد', icon: 'fa-user', color: '#8b5cf6', title: b.name, sub: `الهوية: ${b.identity || '-'}`, link: 'settings.html' });
+            }
+        });
+
+        // Search transactions
+        const txns = Storage.get('transactions') || [];
+        txns.forEach(t => {
+            if ((t.merchant || '').toLowerCase().includes(q) || (t.card || '').toLowerCase().includes(q)) {
+                items.push({ type: 'عملية', icon: 'fa-receipt', color: '#f59e0b', title: `${t.merchant} - ${t.amount} ريال`, sub: `بطاقة: ${t.card} | ${t.date || ''}`, link: 'reports.html' });
+            }
+        });
+
+        if (items.length === 0) {
+            results.innerHTML = '<div style="text-align:center; padding:30px; color:var(--muted);"><i class="fas fa-search" style="font-size:2rem; margin-bottom:10px; display:block; opacity:0.3;"></i>لا توجد نتائج لـ "' + query + '"</div>';
+            return;
+        }
+
+        results.innerHTML = items.slice(0, 15).map(item => `
+            <a href="${item.link}" style="display:flex; align-items:center; gap:14px; padding:12px 16px; border-radius:12px; text-decoration:none; color:inherit; transition:0.2s; cursor:pointer;" onmouseover="this.style.background='var(--thead-bg)'" onmouseout="this.style.background='transparent'">
+                <div style="width:40px; height:40px; border-radius:12px; background:${item.color}15; color:${item.color}; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i class="fas ${item.icon}"></i>
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:600; font-size:0.95rem;">${item.title}</div>
+                    <div style="font-size:0.8rem; color:var(--muted);">${item.sub}</div>
+                </div>
+                <span style="font-size:0.7rem; background:${item.color}20; color:${item.color}; padding:4px 10px; border-radius:20px; font-weight:600;">${item.type}</span>
+            </a>
+        `).join('');
+    }
+};
+
+// Initialize global search
+GlobalSearch.init();
+
+/* ===========================
+   DATA EXPORT (CSV)
+=========================== */
+const DataExport = {
+    toCSV: (data, filename) => {
+        if (!data || data.length === 0) {
+            if (typeof showToast === 'function') showToast('لا توجد بيانات للتصدير', 'warning');
+            return;
+        }
+        const headers = Object.keys(data[0]);
+        const csvRows = [headers.join(',')];
+        data.forEach(row => {
+            csvRows.push(headers.map(h => {
+                let val = row[h] || '';
+                if (typeof val === 'object') val = JSON.stringify(val);
+                val = String(val).replace(/"/g, '""');
+                return `"${val}"`;
+            }).join(','));
+        });
+        // Add BOM for Arabic support
+        const bom = '\uFEFF';
+        const blob = new Blob([bom + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${filename}_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        if (typeof showToast === 'function') showToast('تم تصدير البيانات بنجاح!', 'success');
+        ActivityLog.log('تصدير بيانات', `تم تصدير ${filename} (${data.length} سجل)`);
+    },
+
+    exportCards: () => DataExport.toCSV(Storage.get('cards') || [], 'البطاقات'),
+    exportMerchants: () => DataExport.toCSV(Storage.get('merchants') || [], 'المتاجر'),
+    exportTransactions: () => DataExport.toCSV(Storage.get('transactions') || [], 'العمليات'),
+    exportBeneficiaries: () => DataExport.toCSV(Storage.get('beneficiaries') || [], 'المستفيدون'),
+
+    exportAll: () => {
+        DataExport.exportCards();
+        setTimeout(() => DataExport.exportMerchants(), 500);
+        setTimeout(() => DataExport.exportTransactions(), 1000);
+    }
+};
+
+/* ===========================
+   PUSH NOTIFICATIONS (Local)
+=========================== */
+const PushNotifs = {
+    permission: false,
+
+    init: () => {
+        if ('Notification' in window && Notification.permission === 'default') {
+            // Don't request immediately, wait for user action
+        }
+    },
+
+    requestPermission: async () => {
+        if (!('Notification' in window)) return false;
+        const p = await Notification.requestPermission();
+        PushNotifs.permission = (p === 'granted');
+        return PushNotifs.permission;
+    },
+
+    send: (title, body, icon) => {
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        try {
+            new Notification(title, {
+                body: body,
+                icon: icon || 'assets/logo.png',
+                dir: 'rtl',
+                lang: 'ar',
+                badge: 'assets/logo.png'
+            });
+        } catch (e) { console.log('Notification error:', e); }
+    }
+};
+
+PushNotifs.init();

@@ -25,12 +25,23 @@
 - [x] 2. Supply Orders Kanban Board
   - [x] Convert `orders.html` table to a drag-and-drop Kanban view.
   - [x] Update `script.js` to handle drag events and status changes.
-- [ ] 3. Merchant Gamification & Rewards
-  - [ ] Add achievements UI to `merchant_home.html`.
-  - [ ] Display badges in admin `merchant_view.html`.
-- [ ] 4. Actionable Smart Notifications
-  - [ ] Overhaul notification dropdown/drawer with actionable buttons.
-  - [ ] Add JS logic to handle inline actions (e.g., Quick Charge).
-- [ ] 5. Interactive 3D Card Viewer
-  - [ ] Add 3D CSS transform logic to `beneficiary_home.html` card.
-  - [ ] Include mousemove tilt effect JS.
+- [x] 3. Merchant Gamification & Rewards
+  - [x] Add achievements UI to `merchant_home.html`.
+  - [x] Display badges in admin `merchant_view.html`.
+- [x] 4. Actionable Smart Notifications
+  - [x] Overhaul notification dropdown/drawer with actionable buttons.
+  - [x] Add JS logic to handle inline actions (e.g., Quick Charge).
+- [x] 5. Interactive 3D Card Viewer
+  - [x] Add 3D CSS transform logic to `beneficiary_home.html` card.
+  - [x] Include mousemove tilt effect JS.
+
+## Phase 3: Interactive Visualizations & GIS
+- [/] 1. Live Transaction Heatmap (Admin Dashboard)
+  - [/] Integrate Leaflet.js library.
+  - [/] Create a "dark-themed" interactive map on the dashboard.
+  - [ ] Plot transactions/merchants with custom markers and popups.
+- [ ] 2. Merchant Location Directory Map
+  - [ ] Add map view toggle to `merchants.html`.
+  - [ ] Implement clustering for merchant markers.
+- [ ] 3. Real-time Geographic Feed
+  - [ ] Add a floating "Live Pulse" indicator that pings on the map during new events.
