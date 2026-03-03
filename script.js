@@ -1932,20 +1932,57 @@ const POS = {
    SUPPLY ORDERS
 =========================== */
 const Orders = {
+    populateMerchants: () => {
+        const partnerSelect = document.getElementById('orderPartner');
+        const walletSelect = document.getElementById('orderWallet');
+
+        if (partnerSelect) {
+            const merchants = Storage.get('merchants') || [];
+            partnerSelect.innerHTML = '<option value="">اختر الشريك...</option>' + 
+                merchants.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+        }
+
+        if (walletSelect) {
+            const wallets = Storage.get('wallets') || [];
+            walletSelect.innerHTML = '<option value="">أمر توريد عام بميزانية مستقلة...</option>' + 
+                wallets.map(w => `<option value="${w.name}">${w.name} (المتاح: ${Number(w.funds).toLocaleString()} ر.س)</option>`).join('');
+        }
+    },
+
     create: () => {
         try {
             const item = document.getElementById('orderItem').value;
             const partner = document.getElementById('orderPartner').value;
-            const cost = document.getElementById('orderCost').value;
+            const walletName = document.getElementById('orderWallet') ? document.getElementById('orderWallet').value : '';
+            const cost = Number(document.getElementById('orderCost').value);
             const notes = document.getElementById('orderNotes').value;
 
             if (!item || !partner || !cost) return alert('يرجى تعبئة جميع الحقول المطلوبة (الصنف، الشريك، القيمة)');
+
+            let wallets = Storage.get('wallets') || [];
+            if (walletName) {
+                const wIdx = wallets.findIndex(w => w.name === walletName);
+                if (wIdx === -1) return alert('المحفظة المحددة غير موجودة!');
+                if (wallets[wIdx].funds < cost) return alert(`رصيد المحفظة (${wallets[wIdx].funds}) لا يكفي لقيمة التوريد (${cost})`);
+                
+                // Deduct from wallet
+                wallets[wIdx].funds -= cost;
+                if(!wallets[wIdx].history) wallets[wIdx].history = [];
+                wallets[wIdx].history.push({
+                    date: new Date().toLocaleString('ar-SA'),
+                    op: 'فاتورة/أمر توريد: ' + item,
+                    amount: cost,
+                    type: 'out'
+                });
+                Storage.set('wallets', wallets);
+            }
 
             const order = {
                 id: Date.now().toString().slice(-6),
                 item,
                 partner,
-                cost: Number(cost),
+                wallet: walletName,
+                cost: cost,
                 notes,
                 date: new Date().toLocaleDateString('ar-SA'),
                 status: 'Pending',
@@ -1953,7 +1990,7 @@ const Orders = {
             };
 
             Storage.add('supply_orders', order);
-            alert('تم إنشاء أمر التوريد بنجاح');
+            alert('تم إنشاء أمر التوريد بنجاح' + (walletName ? ' (تم خصم القيم من الرصيد)' : ''));
 
             // Reload to show changes
             location.reload();
@@ -1968,7 +2005,6 @@ const Orders = {
             const isKanban = !!document.getElementById('kanbanBoard');
             const grid = document.getElementById('ordersGrid');
 
-            // If we are on a page that uses the old grid and hasn't been updated (like merchant_home if not updated)
             const targetContainer = isKanban ? document.getElementById('kanbanBoard') : grid;
             if (!targetContainer) return;
 
@@ -3374,3 +3410,322 @@ const PushNotifs = {
 };
 
 PushNotifs.init();
+
+
+/* ===========================
+   WALLETS PAGE SPECIFIC
+=========================== */
+const WalletPage = {
+    currentActionWallet: null,
+
+    init: () => {
+        WalletPage.updateStats();
+        WalletPage.render();
+    },
+
+    toggleForm: () => {
+        const body = document.getElementById('walletFormBody');
+        const icon = document.getElementById('toggleWalletFormIcon');
+        if(body.style.display === 'none') {
+            body.style.display = 'block';
+            icon.className = 'fas fa-chevron-up';
+        } else {
+            body.style.display = 'none';
+            icon.className = 'fas fa-chevron-down';
+        }
+    },
+
+    updateStats: () => {
+        const wallets = Storage.get('wallets');
+        const cards = Storage.get('cards');
+        const totalWallets = wallets.length;
+        const totalBalance = wallets.reduce((sum, w) => sum + (parseFloat(w.funds) || 0), 0);
+        
+        const walletsMap = wallets.map(w => w.name);
+        const linkedCards = cards.filter(c => walletsMap.includes(c.wallet)).length;
+
+        const el1 = document.getElementById('statTotalWallets');
+        const el2 = document.getElementById('statTotalWalletBalance');
+        const el3 = document.getElementById('statLinkedCards');
+
+        if(el1) el1.innerText = totalWallets;
+        if(el2) el2.innerText = isNaN(totalBalance) ? '0' : totalBalance.toLocaleString('en-US');
+        if(el3) el3.innerText = linkedCards;
+    },
+
+    render: (filterText = '', filterCat = '') => {
+        const grid = document.getElementById('walletsVisualGrid');
+        if (!grid) return;
+
+        let wallets = Storage.get('wallets');
+        
+        wallets = wallets.filter(w => {
+            const matchText = (w.name || '').includes(filterText) || (w.category || '').includes(filterText);
+            const matchCat = filterCat === '' || w.category === filterCat;
+            return matchText && matchCat;
+        });
+
+        if (wallets.length === 0) {
+            grid.innerHTML = `<div class="empty-state">
+                <i class="fas fa-folder-open empty-icon"></i>
+                <p>لا توجد محافظ مطابقة للبحث</p>
+                <button class="primary" onclick="WalletPage.toggleForm()">إنشاء محفظة جديدة</button>
+            </div>`;
+            return;
+        }
+
+        grid.innerHTML = wallets.map(w => {
+            const funds = parseFloat(w.funds||0);
+            return `
+            <div class="vcard-item" style="border-right: 4px solid ${w.color || '#00A59B'};" onclick="WalletPage.openDetail(${w.id})">
+                <div class="vcard-header">
+                    <div class="vc-icon" style="background: ${w.color||'#00A59B'}15; color: ${w.color||'#00A59B'}">
+                        <i class="${w.icon || 'fas fa-wallet'}"></i>
+                    </div>
+                    <div class="vc-badge active">${w.category || 'عام'}</div>
+                </div>
+                <div class="vc-body">
+                    <h3 class="vc-name">${w.name}</h3>
+                    <div class="vc-balance">
+                        <small>الرصيد المتاح</small>
+                        <strong>${funds.toLocaleString('en-US', {minimumFractionDigits:2})} <small>ريال</small></strong>
+                    </div>
+                </div>
+                <div class="vc-footer">
+                    <span>${w.date || '—'}</span>
+                    <button class="vc-action-btn" onclick="event.stopPropagation();WalletPage.openBalanceModal('withdraw', ${w.id})"><i class="fas fa-coins"></i> سحب</button>
+                </div>
+            </div>`;
+        }).join('');
+    },
+
+    filterWallets: () => {
+        const txt = document.getElementById('walletsSearchInput')?.value.trim() || '';
+        const cat = document.getElementById('walletsFilterCategory')?.value || '';
+        WalletPage.render(txt, cat);
+    },
+
+    addWallet: () => {
+        const id = document.getElementById('editingWalletId').value;
+        const name = document.getElementById('walletNameInput').value.trim();
+        const category = document.getElementById('walletCategoryInput').value;
+        const funds = parseFloat(document.getElementById('walletFundsInput').value) || 0;
+        const target = parseFloat(document.getElementById('walletTargetInput').value) || 0;
+        const color = document.getElementById('walletColorInput').value || '#00A59B';
+        const icon = document.getElementById('walletIconInput').value || 'fas fa-wallet';
+
+        if (!name) return alert('اسم المحفظة مطلوب!');
+
+        const wallets = Storage.get('wallets');
+        if (id) {
+            const idx = wallets.findIndex(w => w.id == id);
+            if (idx > -1) {
+                wallets[idx] = { ...wallets[idx], name, category, funds, target, color, icon };
+            }
+        } else {
+            wallets.push({
+                id: Date.now(),
+                name,
+                category,
+                funds,
+                target,
+                color,
+                icon,
+                date: new Date().toLocaleDateString('ar-SA'),
+                history: [{ date: new Date().toLocaleString('ar-SA'), op: 'إنشاء المحفظة (رصيد افتتاحي)', amount: funds, type: 'in' }]
+            });
+        }
+
+        Storage.set('wallets', wallets);
+        WalletPage.cancelEdit();
+        WalletPage.init();
+        if(typeof showToast === 'function') showToast(id ? 'تم تعديل المحفظة' : 'تم إنشاء المحفظة', 'success');
+    },
+
+    editFromModal: () => {
+        if(!WalletPage.currentActionWallet) return;
+        const w = WalletPage.currentActionWallet;
+        WalletPage.closeDetail();
+        WalletPage.toggleForm();
+        
+        document.getElementById('editingWalletId').value = w.id;
+        document.getElementById('walletNameInput').value = w.name;
+        document.getElementById('walletCategoryInput').value = w.category || 'عام';
+        document.getElementById('walletFundsInput').value = w.funds;
+        document.getElementById('walletTargetInput').value = w.target || '';
+        document.getElementById('walletColorInput').value = w.color || '#00A59B';
+        document.getElementById('walletIconInput').value = w.icon || 'fas fa-wallet';
+
+        document.getElementById('walletFormTitle').innerText = 'تعديل المحفظة';
+        document.getElementById('saveWalletBtn').innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
+        document.getElementById('cancelWalletEditBtn').style.display = 'inline-block';
+        document.getElementById('walletFormBody').style.display = 'block';
+        document.getElementById('walletFormContainer').scrollIntoView({ behavior: 'smooth' });
+    },
+
+    cancelEdit: () => {
+        document.getElementById('editingWalletId').value = '';
+        document.getElementById('walletNameInput').value = '';
+        document.getElementById('walletCategoryInput').value = 'عام';
+        document.getElementById('walletFundsInput').value = '';
+        document.getElementById('walletTargetInput').value = '';
+        document.getElementById('walletColorInput').value = '#00A59B';
+        document.getElementById('walletIconInput').value = 'fas fa-wallet';
+
+        document.getElementById('walletFormTitle').innerText = 'إنشاء محفظة جديدة';
+        document.getElementById('saveWalletBtn').innerHTML = '<i class="fas fa-plus"></i> إنشاء المحفظة';
+        document.getElementById('cancelWalletEditBtn').style.display = 'none';
+    },
+
+    deleteFromModal: () => {
+        if(!WalletPage.currentActionWallet) return;
+        if(confirm('هل أنت متأكد من حذف هذه المحفظة نهائياً؟')) {
+            let wallets = Storage.get('wallets');
+            wallets = wallets.filter(w => w.id != WalletPage.currentActionWallet.id);
+            Storage.set('wallets', wallets);
+            WalletPage.closeDetail();
+            WalletPage.init();
+            if(typeof showToast === 'function') showToast('تم حذف المحفظة بنجاح', 'success');
+        }
+    },
+
+    openDetail: (id) => {
+        const wallets = Storage.get('wallets');
+        const w = wallets.find(x => x.id == id);
+        if(!w) return;
+        WalletPage.currentActionWallet = w;
+
+        document.getElementById('wdName').innerText = w.name;
+        document.getElementById('wdCategory').innerText = w.category || 'عام';
+        document.getElementById('wdBalance').innerText = (parseFloat(w.funds)||0).toLocaleString('en-US') + ' ريال';
+        document.getElementById('wdTarget').innerText = w.target ? w.target.toLocaleString('en-US') + ' ريال' : 'غير محدد';
+        document.getElementById('wdDate').innerText = w.date || '—';
+        document.getElementById('wdIconBadge').innerHTML = `<i class="${w.icon||'fas fa-wallet'}"></i>`;
+        
+        document.getElementById('wdPreview').style.background = `linear-gradient(135deg, #1a1d27, ${w.color||'#00A59B'})`;
+
+        // Render History
+        const histDiv = document.getElementById('wdTransactions');
+        const hist = w.history || [];
+        if(hist.length === 0) {
+            histDiv.innerHTML = '<div style="text-align:center;color:#888;padding:10px;">لا توجد عمليات</div>';
+        } else {
+            histDiv.innerHTML = hist.slice().reverse().map(h => `
+                <div class="trans-item">
+                    <div class="trans-icon ${h.type === 'in' ? 'success' : 'danger'}">
+                        <i class="fas fa-arrow-${h.type === 'in' ? 'down' : 'up'}"></i>
+                    </div>
+                    <div class="trans-info">
+                        <strong>${h.op}</strong>
+                        <small>${h.date}</small>
+                    </div>
+                    <div class="trans-amount ${h.type === 'in' ? 'text-success' : 'text-danger'}">
+                        ${h.type === 'in' ? '+' : '-'}${parseFloat(h.amount).toLocaleString('en-US')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Linked Cards
+        const lcDiv = document.getElementById('wdLinkedCards');
+        const cards = Storage.get('cards').filter(c => c.wallet === w.name);
+        if(cards.length === 0) {
+            lcDiv.innerHTML = '<div style="text-align:center;color:#888;padding:10px;">لا توجد بطاقات مرتبطة</div>';
+        } else {
+            lcDiv.innerHTML = cards.map(c => `
+                <div class="trans-item" style="cursor:pointer;" onclick="location.href='cards.html'">
+                    <div class="trans-icon primary"><i class="fas fa-credit-card"></i></div>
+                    <div class="trans-info">
+                        <strong>${c.masked || c.number}</strong>
+                        <small>${c.beneficiary}</small>
+                    </div>
+                    <div class="trans-amount text-primary">${parseFloat(c.balance).toLocaleString()} ر.س</div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('walletDetailOverlay').style.display = 'flex';
+    },
+
+    closeDetail: () => {
+        document.getElementById('walletDetailOverlay').style.display = 'none';
+        WalletPage.currentActionWallet = null;
+    },
+
+    openBalanceModal: (type, id = null) => {
+        if(id) {
+            const wallets = Storage.get('wallets');
+            WalletPage.currentActionWallet = wallets.find(x => x.id == id);
+            WalletPage.closeDetail();
+        }
+        
+        if(!WalletPage.currentActionWallet) return;
+
+        const isDeposit = type === 'deposit';
+        document.getElementById('walletBalanceModalTitle').innerHTML = isDeposit 
+            ? '<i class="fas fa-arrow-down text-success"></i> إيداع رصيد بالمحفظة'
+            : '<i class="fas fa-arrow-up text-danger"></i> سحب رصيد من المحفظة';
+        
+        document.getElementById('walletBalanceOpType').value = type;
+        document.getElementById('walletBalanceOpAmount').value = '';
+        document.getElementById('walletBalanceOpReason').value = isDeposit ? 'تمويل إضافي' : 'سحب / صرف من المحفظة';
+        
+        document.getElementById('walletBalanceModalOverlay').style.display = 'flex';
+    },
+
+    closeBalanceModal: () => {
+        document.getElementById('walletBalanceModalOverlay').style.display = 'none';
+        if(WalletPage.currentActionWallet && document.getElementById('walletDetailOverlay').style.display === 'none') {
+            WalletPage.openDetail(WalletPage.currentActionWallet.id);
+        }
+    },
+
+    submitBalanceOp: () => {
+        const amt = parseFloat(document.getElementById('walletBalanceOpAmount').value);
+        const reason = document.getElementById('walletBalanceOpReason').value.trim() || 'عملية مجهولة';
+        const type = document.getElementById('walletBalanceOpType').value;
+        const w = WalletPage.currentActionWallet;
+
+        if(!amt || amt <= 0) return alert('الرجاء إدخال مبلغ صحيح');
+        if(!w) return;
+
+        let wallets = Storage.get('wallets');
+        const idx = wallets.findIndex(x => x.id == w.id);
+        if(idx === -1) return;
+
+        if(type === 'withdraw' && wallets[idx].funds < amt) {
+            return alert('الرصيد في المحفظة غير كافٍ لهذه العملية!');
+        }
+
+        if(type === 'withdraw') {
+            wallets[idx].funds -= amt;
+        } else {
+            wallets[idx].funds += amt;
+        }
+
+        if(!wallets[idx].history) wallets[idx].history = [];
+        wallets[idx].history.push({
+            date: new Date().toLocaleString('ar-SA'),
+            op: reason,
+            amount: amt,
+            type: type === 'withdraw' ? 'out' : 'in'
+        });
+
+        Storage.set('wallets', wallets);
+        WalletPage.closeBalanceModal();
+        WalletPage.init();
+        if(typeof showToast === 'function') showToast('تمت العملية بنجاح', 'success');
+        WalletPage.openDetail(w.id); // Reopen to see changes
+    }
+};
+
+// Auto-init if we are on wallets.html
+if (window.location.pathname.includes('wallets.html')) {
+    document.addEventListener('DOMContentLoaded', WalletPage.init);
+}
+
+// Add these exports specifically mapped to old code format in Global Actions so original HTML won't break if needed
+if(typeof Actions !== 'undefined') {
+    Actions.addWallet = WalletPage.addWallet;
+    Actions.cancelWalletEdit = WalletPage.cancelEdit;
+}

@@ -55,10 +55,11 @@
         </ul>
         <div class="sidebar-bottom">
 
-            <button id="darkModeToggleBtn" class="dark-toggle" onclick="toggleDarkMode()" style="width:100%; text-align:right; margin-bottom:10px; padding:12px 20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.05); color:inherit; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s; font-family:inherit; font-size:0.95rem;">
+            <button id="darkModeToggleBtn" class="dark-toggle" onclick="toggleDarkMode()"
+                style="width:100%; text-align:right; margin-bottom:10px; padding:12px 20px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.05); color:inherit; cursor:pointer; display:flex; align-items:center; gap:10px; transition:0.3s; font-family:inherit; font-size:0.95rem;">
                 <i id="darkIcon" class="fas fa-moon"></i> المظهر الداكن
             </button>
-        
+
             <button class="sidebar-logout"
                 onclick="if(typeof logout==='function')logout();else{localStorage.clear();location.href='login.html';}">
                 <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
@@ -605,6 +606,38 @@
                     return showToast('الرصيد غير كافي للسحب', 'error');
                 }
 
+                // Wallet Logic
+                const wallets = Storage.get('wallets') || [];
+                const walletIdx = wallets.findIndex(w => w.name === c.wallet);
+                if (walletIdx !== -1) {
+                    if (type === 'deposit') {
+                        if (wallets[walletIdx].funds < amount) {
+                            return showToast('رصيد المحفظة المرتبطة غير كافٍ لتغذية البطاقة', 'error');
+                        }
+                        wallets[walletIdx].funds -= amount;
+                        if (!wallets[walletIdx].history) wallets[walletIdx].history = [];
+                        wallets[walletIdx].history.push({
+                            date: new Date().toLocaleString('ar-SA'),
+                            op: 'تغذية بطاقة ' + (c.masked || c.number),
+                            amount: amount,
+                            type: 'out'
+                        });
+                    } else {
+                        // Withdraw from card -> returns to wallet
+                        wallets[walletIdx].funds += amount;
+                        if (!wallets[walletIdx].history) wallets[walletIdx].history = [];
+                        wallets[walletIdx].history.push({
+                            date: new Date().toLocaleString('ar-SA'),
+                            op: 'تسوية (استرداد) من بطاقة ' + (c.masked || c.number),
+                            amount: amount,
+                            type: 'in'
+                        });
+                    }
+                    Storage.set('wallets', wallets);
+                } else if (type === 'deposit' && c.wallet) {
+                    return showToast('لم يتم العثور على المحفظة المرتبطة لخصم الرصيد!', 'error');
+                }
+
                 // Update balance
                 if (type === 'deposit') {
                     c.balance = Number(c.balance || 0) + amount;
@@ -618,7 +651,7 @@
                     id: Date.now(),
                     date: new Date().toLocaleDateString('ar-SA') + ' ' + new Date().toLocaleTimeString('ar-SA'),
                     amount: type === 'withdraw' ? -amount : amount,
-                    merchant: type === 'deposit' ? 'تغذية رصيد' : 'سحب رصيد',
+                    merchant: type === 'deposit' ? 'تغذية رصيد من المحفظة' : 'سحب رصيد للمحفظة',
                     card: c.number,
                     reason: reason,
                     type: type
@@ -682,6 +715,7 @@
 
                 const cards = Storage.get('cards') || [];
                 const transactions = Storage.get('transactions') || [];
+                const wallets = Storage.get('wallets') || [];
 
                 let successCount = 0;
                 let failCount = 0;
@@ -693,6 +727,42 @@
                     if (type === 'withdraw' && amount > Number(c.balance || 0)) {
                         failCount++;
                         continue; // skip this card because not enough balance
+                    }
+
+                    // Check wallet balance for deposit
+                    let wIdx = -1;
+                    if (c.wallet) {
+                        wIdx = wallets.findIndex(w => w.name === c.wallet);
+                    }
+
+                    if (type === 'deposit') {
+                        if (wIdx !== -1 && wallets[wIdx].funds < amount) {
+                            failCount++;
+                            continue; // skip because wallet doesn't have enough balance
+                        }
+                    }
+
+                    // Process Wallet
+                    if (wIdx !== -1) {
+                        if (type === 'deposit') {
+                            wallets[wIdx].funds -= amount;
+                            if (!wallets[wIdx].history) wallets[wIdx].history = [];
+                            wallets[wIdx].history.push({
+                                date: new Date().toLocaleString('ar-SA'),
+                                op: 'تغذية جماعية للبطاقة ' + (c.masked || c.number),
+                                amount: amount,
+                                type: 'out'
+                            });
+                        } else {
+                            wallets[wIdx].funds += amount;
+                            if (!wallets[wIdx].history) wallets[wIdx].history = [];
+                            wallets[wIdx].history.push({
+                                date: new Date().toLocaleString('ar-SA'),
+                                op: 'استرداد جماعي من بطاقة ' + (c.masked || c.number),
+                                amount: amount,
+                                type: 'in'
+                            });
+                        }
                     }
 
                     // Update balance
@@ -707,7 +777,7 @@
                         id: Date.now() + i, // ensure unique ID
                         date: new Date().toLocaleDateString('ar-SA') + ' ' + new Date().toLocaleTimeString('ar-SA'),
                         amount: type === 'withdraw' ? -amount : amount,
-                        merchant: type === 'deposit' ? 'تغذية جماعية' : 'سحب جماعي',
+                        merchant: type === 'deposit' ? 'تغذية جماعية من المحفظة' : 'سحب جماعي للمحفظة',
                         card: c.number,
                         reason: reason,
                         type: type
@@ -719,13 +789,17 @@
                 if (successCount === 0 && type === 'withdraw') {
                     return showToast('لم تتم أي عملية سحب (الأرصدة غير كافية)', 'error');
                 }
+                if (successCount === 0 && type === 'deposit') {
+                    return showToast('لم تتم أي عملية إيداع (أرصدة المحافظ غير كافية)', 'error');
+                }
 
                 Storage.set('cards', cards);
+                Storage.set('wallets', wallets);
                 Storage.set('transactions', transactions);
 
                 const typeStr = type === 'deposit' ? 'تغذية' : 'سحب';
                 let msg = `تمت عملية ال${typeStr} لعدد ${successCount} بطاقة بنجاح.`;
-                if (failCount > 0) msg += ` (فشلت العملية لـ ${failCount} بطاقة لعدم كفاية الرصيد)`;
+                if (failCount > 0) msg += ` (فشلت لـ ${failCount} بطاقة لعدم كفاية الرصيد)`;
 
                 showToast(msg, failCount > 0 ? 'warning' : 'success');
 
