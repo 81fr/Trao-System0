@@ -3493,7 +3493,7 @@ const WalletPage = {
                 </div>
                 <div class="vc-footer">
                     <span>${w.date || '—'}</span>
-                    <button class="vc-action-btn" onclick="event.stopPropagation();WalletPage.openBalanceModal('withdraw', ${w.id})"><i class="fas fa-coins"></i> سحب</button>
+                    <span class="vc-hint"><i class="fas fa-mouse-pointer"></i> اضغط للخيارات</span>
                 </div>
             </div>`;
         }).join('');

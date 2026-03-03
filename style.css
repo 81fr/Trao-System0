@@ -5139,3 +5139,22 @@ body.dark-mode .k-card {
     font-size: 1.1rem;
     margin-bottom: 20px;
 }
+
+/* Wallet Card Hint */
+.vc-hint {
+  font-size: 0.8rem;
+  color: #00A59B;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 165, 155, 0.1);
+  padding: 6px 12px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+.vcard-item:hover .vc-hint {
+  background: #00A59B;
+  color: #fff;
+  transform: scale(1.05);
+}
