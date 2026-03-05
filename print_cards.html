@@ -300,7 +300,7 @@
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const grid = document.gd('printCardsGr id');
+            const grid = document.getElementById('printCardsGrid');
             const urlParams = new URLSearchParams(window.location.search);
             const cardIdFilter = urlParams.get('id');
             const isSinglePrint = cardIdFilter !== null;

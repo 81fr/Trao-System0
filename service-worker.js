@@ -1,4 +1,4 @@
-const CACHE_NAME = 'traof-app-v6';
+const CACHE_NAME = 'traof-app-v7';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
