@@ -427,17 +427,19 @@
 
                     // Format Expiry: MM/YY
                     let printExpiry = c.expiry || '-';
-                    if (printExpiry.includes('-')) {
-                        const dateParts = printExpiry.split('-');
-                        if (dateParts.length >= 2) {
-                            const year = dateParts[0].length === 4 ? dateParts[0].substring(2) : dateParts[0];
-                            const month = dateParts[1].padStart(2, '0');
-                            printExpiry = `${month}/${year}`;
-                        }
-                    } else if (printExpiry.includes('/')) {
-                        const dateParts = printExpiry.split('/');
-                        if (dateParts.length === 2) {
-                            printExpiry = `${dateParts[0].padStart(2, '0')}/${dateParts[1]}`;
+                    if (printExpiry !== '-' && printExpiry.length > 2) {
+                        if (printExpiry.includes('-')) {
+                            const dateParts = printExpiry.split('-');
+                            if (dateParts.length >= 2) {
+                                const year = dateParts[0].length === 4 ? dateParts[0].substring(2) : dateParts[0];
+                                const month = dateParts[1].padStart(2, '0');
+                                printExpiry = `${month}/${year}`;
+                            }
+                        } else if (printExpiry.includes('/')) {
+                            const dateParts = printExpiry.split('/');
+                            if (dateParts.length === 2) {
+                                printExpiry = `${dateParts[0].padStart(2, '0')}/${dateParts[1]}`;
+                            }
                         }
                     }
 
