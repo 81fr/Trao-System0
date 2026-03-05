@@ -103,16 +103,20 @@
         }
 
         .ind-card-print {
-            background: linear-gradient(135deg, #f8fafc, #fff) !important;
+            background: linear-gradient(135deg, #1e293b, #0f172a, #312e81) !important;
+            color: #fff !important;
             border-radius: 12px;
             padding: 15px;
             width: 85.6mm;
             height: 53.98mm;
             box-sizing: border-box;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
@@ -120,140 +124,126 @@
         .ind-card-print::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 10px;
-            background: linear-gradient(90deg, #00A59B, #8CC240) !important;
+            inset: 0;
+            background-image: radial-gradient(circle at 100% 0%, rgba(255, 255, 255, .15) 0%, transparent 50%),
+                radial-gradient(circle at 0% 100%, rgba(255, 255, 255, .08) 0%, transparent 40%) !important;
+            pointer-events: none;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
 
+        /* Front specific */
         .c-header-row {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            margin-bottom: auto;
+            /* let flex distribute gap */
         }
 
         .c-wallet-badge {
-            background: rgba(0, 165, 155, 0.1) !important;
-            color: #00A59B !important;
-            padding: 4px 8px;
-            border-radius: 10px;
+            background: transparent !important;
+            color: #fff !important;
+            padding: 0;
             font-weight: 700;
             font-size: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
 
         .c-logo-placeholder {
-            opacity: 0.05;
-            font-size: 2rem;
+            display: none !important;
+            /* using reflection instead */
+        }
+
+        /* New decorative reflection like in the app */
+        .bvc-reflection {
             position: absolute;
-            bottom: -5px;
-            left: -5px;
-            transform: rotate(-15deg);
+            top: 0;
+            left: 20%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, 0) 100%);
+            transform: skewX(-25deg);
+            pointer-events: none;
+            z-index: 1;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
         .c-number {
             font-size: 1.1rem;
-            font-weight: 800;
-            letter-spacing: 2px;
-            margin-bottom: 10px;
-            font-family: 'Courier New', Courier, monospace;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, .5);
+            position: relative;
+            z-index: 2;
             text-align: left;
-            direction: ltr;
-            color: #1e293b !important;
+            font-family: 'Courier New', Courier, monospace;
+            margin-bottom: 5px;
+            color: #fff !important;
         }
 
         .c-details-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            background: #f8fafc !important;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            display: none;
+            /* We will replace this with the bvc-footer style (name and expiry only) to match beneficiary card */
         }
 
-        .c-detail-item small {
-            display: block;
-            color: #64748b !important;
-            font-size: 0.5rem;
-            margin-bottom: 2px;
-        }
-
-        .c-detail-item strong {
-            display: block;
-            color: #0f172a !important;
-            font-size: 0.65rem;
-            font-weight: 700;
-        }
-
-        .print-qrcode {
-            margin-top: 10px;
-            text-align: center;
-        }
-
-        .print-qrcode img {
-            width: 100px;
-            height: 100px;
-            border: 1px solid #ddd;
-            padding: 5px;
-            border-radius: 10px;
-            background: #fff;
-        }
-
-
-        .ind-card-back {
-            background: #fff !important;
+        .bvc-footer {
             display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            text-align: center;
-            padding: 15px;
+            justify-content: space-between;
+            align-items: flex-end;
+            position: relative;
+            z-index: 2;
+            text-transform: uppercase;
         }
 
-        .back-mag-stripe {
-            background: #1e293b !important;
-            height: 10mm;
-            width: 100%;
-            position: absolute;
-            top: 5mm;
-            left: 0;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+        .bvc-footer small {
+            font-size: .45rem;
+            opacity: 0.7;
+            margin-bottom: 2px;
+            letter-spacing: 1px;
+            display: block;
+            color: #fff !important;
         }
 
-        .back-instructions {
-            margin-top: 20mm;
-            font-size: 0.5rem;
-            color: #64748b !important;
-            line-height: 1.4;
-            max-width: 90%;
+        .bvc-footer strong {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #fff !important;
         }
 
-        .back-instructions h4 {
-            color: #0f172a !important;
-            margin-bottom: 5px;
-            font-size: 0.6rem;
-            margin-top: 0;
+        .bvc-status {
+            background: rgba(255, 255, 255, .1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: .55rem;
+            font-weight: 600;
+            color: #fff !important;
+            display: inline-block;
         }
 
-        .barcode-container {
+        /* Barcode Area in Front */
+        .print-qrcode {
             margin-top: 5px;
             text-align: center;
-            background: #fff;
-            padding: 5px;
-            border-radius: 4px;
+            z-index: 2;
+            position: relative;
+            background: rgba(255, 255, 255, 0.85) !important;
+            padding: 2px 5px;
+            border-radius: 6px;
         }
 
         .barcode-container svg {
-            max-height: 60px;
+            /* Make barcode strokes black for contrast inside the white box */
+            fill: #000 !important;
         }
 
         /* Print Media Query */
@@ -310,72 +300,71 @@
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const grid = ElementById('pr intCardsGrid');
+            const grid = document.gd('printCardsGr id');
             const urlParams = new URLSearchParams(window.location.search);
             const cardIdFilter = urlParams.get('id');
             const isSinglePrint = cardIdFilter !== null;
 
             let cards = Storage.get('cards') || [];
-            
+
             if (isSinglePrint) {
                 cards = cards.filter(c => c.id == cardIdFilter);
             }
 
-            if(cards.length === 0) {
+            if (cards.length === 0) {
                 grid.innerHTML = '<div style="text-align:center; padding:50px; color:#888;">لا توجد بطاقات مطابقة.</div>';
                 return;
             }
 
-            if(!isSinglePrint) {
+            if (!isSinglePrint) {
                 document.getElementById('printPageTitle').innerText = 'سجل البطاقات المعتمدة (الكل)';
             }
 
             grid.innerHTML = cards.map(c => {
                 const formattedNum = c.number.replace(/(\d{4})(?=\d)/g, '$1 ');
                 // Mock QR code using an API
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent('TRAOF-'+c.number)}`;
-                
-                
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent('TRAOF-' + c.number)}`;
+
+
                 // Remove spaces for barcode value
                 const cleanNum = c.number.replace(/\s/g, '');
-                
+
                 return `
-                    <!-- Front of Card -->
+                    <!-- Front of Card (Matches beneficiary-visual-card exactly) -->
                     <div class="ind-card-print">
-                        <i class="fas fa-credit-card c-logo-placeholder"></i>
+                        <div class="bvc-reflection"></div>
+                        
                         <div class="c-header-row">
-                            <spanss=et-badge"><i class="fas fa-wallet"></i> ${c.wallet || 'محفظة عامة'}</span>
-                            <span style="font-weight:bold; color:${c.status==='نشط'?'#10b981':'#ef4444'} !important;">● ${c.status || '-'}</span>
+                            <span class="c-wallet-badge"><img src="assets/logo.png" style="height:14px; filter: brightness(0) invert(1);" alt=""> ${c.wallet || 'تراؤف'}</span>
+                            <span class="bvc-status">${c.status || '-'}</span>
                         </div>
                         
-                        <div class="c-number">${formattedNum}</div>
-                        
-                        <div class="c-details-grid">
-                            <div class="c-detail-item">
-                                <small>اسم المستفيد</small>
-                                <strong>${c.beneficiary || 'غير محدد'}</strong>
+                        <div style="margin-top:auto;">
+                            <div class="bvc-chip-row" style="margin-bottom:5px;">
+                                <i class="fas fa-microchip" style="font-size:1.2rem; color:#ffd700;"></i>
                             </div>
-                            <div class="c-detail-item">
-                                <small>رقم الهوية</small>
-                                <strong>${c.identity || '-'}</strong>
-                            </div>
-                            <div class="c-detail-item">
-                                <small>تاريخ الإصدار</small>
-                                <strong>${c.issueDate || c.date || '-'}</strong>
-                            </div>
-                            <div class="c-detail-item">
-                                <small>صلاحية الانتهاء</small>
-                                <strong>${c.expiry || '-'}</strong>
+                            
+                            <div class="c-number">${formattedNum}</div>
+                            
+                            <div class="bvc-footer">
+                                <div>
+                                    <small>اسم المستفيد</small>
+                                    <strong>${c.beneficiary || 'غير محدد'}</strong>
+                                </div>
+                                <div style="text-align:left;">
+                                    <small>تاريخ الانتهاء</small>
+                                    <strong>${c.expiry || '-'}</strong>
+                                </div>
                             </div>
                         </div>
 
-                        ${isSinglePrint ? `<div class="print-qrcode" style="display:flex; justify-content:space-around; align-items:center;">
+                        ${isSinglePrint ? `
+                        <div class="print-qrcode" style="display:flex; justify-content:space-around; align-items:center;">
                             <div>
-                                <img src="${qrUrl}" alt="QR Code" style="width:40px;height:40px;">
-                                <div style="font-size:0.4rem; color:#888; margin-top:5px;">امسح للتحقق</div>
+                                <img src="${qrUrl}" alt="QR Code" style="width:30px;height:30px;">
                             </div>
                             <div class="barcode-container" style="margin-left:5px;">
-                                <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="true" jsbarcode-height="35" jsbarcode-width="1.5" jsbarcode-fontSize="14" jsbarcode-margin="0"></svg>
+                                <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="true" jsbarcode-height="25" jsbarcode-width="1.2" jsbarcode-fontSize="10" jsbarcode-margin="0" jsbarcode-lineColor="#000"></svg>
                             </div>
                         </div>` : ''}
                     </div>
@@ -399,7 +388,7 @@
 
             }).join('');
 
-            
+
             // Initialize Barcodes
             if (typeof JsBarcode !== 'undefined') {
                 JsBarcode(".barcode").init();
