@@ -1,18 +1,15 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
-    <title>طباعة بطاقات المستفيدين - تراؤف</title>
-    <!-- We can use fontawesome and our font, but mostly keep it minimal -->
+    <title>طباعة بطاقة المستفيد - تراؤف</title>
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-
+    
     <style>
         :root {
             --brand-teal: #00A59B;
         }
-
         body {
             font-family: 'Tajawal', sans-serif;
             background-color: #f1f5f9;
@@ -21,18 +18,17 @@
             color: #333;
         }
 
-        /* Top Bar for Actions (Not Printed) */
         .no-print-bar {
             background: #fff;
             padding: 15px 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-
+        
         .no-print-bar h2 {
             margin: 0;
             color: var(--brand-teal);
@@ -65,117 +61,160 @@
             background: #e2e8f0;
             color: #475569;
         }
-
         .btn-secondary:hover {
             background: #cbd5e1;
         }
 
-        /* Printable Area - A4 Size Simulation */
         .print-container {
-            background: #fff;
-            width: 210mm;
-            /* A4 Width */
-            min-height: 297mm;
-            /* A4 Height */
+            width: 210mm; 
+            min-height: 297mm; 
             margin: 0 auto;
             padding: 15mm;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             box-sizing: border-box;
+            background: none;
         }
 
         .print-header {
             text-align: center;
-            border-bottom: 2px solid #eee;
+            border-bottom: 2px solid #ddd;
             padding-bottom: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
 
         .print-header img {
             max-height: 60px;
         }
-
         .print-header h1 {
             font-size: 1.5rem;
             margin: 10px 0 0 0;
+            color: #475569;
         }
 
-        /* Cards Grid for Print */
+        /* Beautiful Individual Card */
         .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
         }
 
-        .print-card {
-            border: 2px solid #ddd;
-            border-radius: 12px;
-            padding: 15px;
-            background: #fafafa;
-            page-break-inside: avoid;
-            /* Important for print */
+        .ind-card-print {
+            background: linear-gradient(135deg, #f8fafc, #fff) !important;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             position: relative;
             overflow: hidden;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
-        /* Decoration */
-        .print-card::before {
+        .ind-card-print::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background: var(--brand-teal);
+            top: 0; left: 0; right: 0;
+            height: 10px;
+            background: linear-gradient(90deg, #00A59B, #8CC240) !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
-        .pc-wallet {
-            font-size: 0.8rem;
-            color: #777;
-            margin-bottom: 10px;
-        }
-
-        .pc-number {
-            font-size: 1.4rem;
-            font-weight: 800;
-            letter-spacing: 2px;
-            margin-bottom: 15px;
-            font-family: monospace;
-            text-align: left;
-            direction: ltr;
-        }
-
-        .pc-details {
-            font-size: 0.95rem;
-            line-height: 1.6;
-        }
-
-        .pc-details div {
+        .c-header-row {
             display: flex;
             justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 25px;
+        }
+        
+        .c-wallet-badge {
+            background: rgba(0, 165, 155, 0.1) !important;
+            color: #00A59B !important;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
 
-        .pc-details strong {
-            color: #555;
+        .c-logo-placeholder {
+            opacity: 0.1;
+            font-size: 3rem;
+            position: absolute;
+            bottom: -10px;
+            left: -10px;
+            transform: rotate(-15deg);
+        }
+
+        .c-number {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            margin-bottom: 25px;
+            font-family: 'Courier New', Courier, monospace;
+            text-align: left;
+            direction: ltr;
+            color: #1e293b !important;
+        }
+
+        .c-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            background: #f8fafc !important;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .c-detail-item small {
+            display: block;
+            color: #64748b !important;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+        }
+
+        .c-detail-item strong {
+            display: block;
+            color: #0f172a !important;
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .print-qrcode {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .print-qrcode img {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 10px;
+            background: #fff;
         }
 
         /* Print Media Query */
         @media print {
             body {
-                background: none;
+                background: #fff !important;
                 padding: 0;
             }
-
             .no-print-bar {
                 display: none !important;
             }
-
             .print-container {
                 box-shadow: none;
                 margin: 0;
                 padding: 0;
                 width: 100%;
             }
-
             @page {
                 size: A4;
                 margin: 10mm;
@@ -183,15 +222,13 @@
         }
     </style>
 </head>
-
 <body>
 
     <!-- Action Bar -->
     <div class="no-print-bar">
         <h2><i class="fas fa-print"></i> لوحة طباعة بطاقات المستفيدين</h2>
         <div style="display:flex; gap:10px;">
-            <button class="btn btn-secondary" onclick="window.history.back()"><i class="fas fa-arrow-right"></i>
-                عودة</button>
+            <button class="btn btn-secondary" onclick="window.history.back()"><i class="fas fa-arrow-right"></i> عودة</button>
             <button class="btn" onclick="window.print()"><i class="fas fa-file-pdf"></i> استخراج ورقي / PDF</button>
         </div>
     </div>
@@ -199,9 +236,8 @@
     <!-- Print Area -->
     <div class="print-container">
         <div class="print-header">
-            <!-- Ensure local path for logo works or inline it if base64 needed, using relative path for now -->
             <img src="assets/logo.png" alt="TRAOF Logo" onerror="this.style.display='none'">
-            <h1>بطاقات المستفيدين المعتمدة</h1>
+            <h1 id="printPageTitle">بطاقة المستفيد المعتمدة</h1>
         </div>
 
         <div class="cards-grid" id="printCardsGrid">
@@ -209,41 +245,78 @@
         </div>
     </div>
 
-    <!-- Load LocalStorage Script -->
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const grid = document.getElementById('printCardsGrid');
-            const cards = Storage.get('cards') || [];
+            const urlParams = new URLSearchParams(window.location.search);
+            const cardIdFilter = urlParams.get('id');
+            const isSinglePrint = cardIdFilter !== null;
 
-            if (cards.length === 0) {
-                grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:50px; color:#888;">لا توجد بطاقات مسجلة في النظام للطباعة.</div>';
+            let cards = Storage.get('cards') || [];
+            
+            if (isSinglePrint) {
+                cards = cards.filter(c => c.id == cardIdFilter);
+            }
+
+            if(cards.length === 0) {
+                grid.innerHTML = '<div style="text-align:center; padding:50px; color:#888;">لا توجد بطاقات مطابقة.</div>';
                 return;
             }
 
-            const getGradient = (walletName) => {
-                // simple hash to color just to give a small border hint if wanted, but printing is better in light colors 
-                return `var(--brand-teal)`;
-            };
+            if(!isSinglePrint) {
+                document.getElementById('printPageTitle').innerText = 'سجل البطاقات المعتمدة (الكل)';
+            }
 
             grid.innerHTML = cards.map(c => {
                 const formattedNum = c.number.replace(/(\d{4})(?=\d)/g, '$1 ');
+                // Mock QR code using an API
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent('TRAOF-'+c.number)}`;
+                
                 return `
-                    <div class="print-card" style="border-top-color: ${getGradient(c.wallet)};">
-                        <div class="pc-wallet"><i class="fas fa-wallet"></i> ${c.wallet || 'محفظة عامة'}</div>
-                        <div class="pc-number">${formattedNum}</div>
-                        
-                        <div class="pc-details">
-                            <div><strong>المستفيد:</strong> <span>${c.beneficiary || 'غير محدد'}</span></div>
-                            <div><strong>رقم الهوية:</strong> <span>${c.identity || '-'}</span></div>
-                            <div><strong>تاريخ الإصدار:</strong> <span>${c.date || '-'}</span></div>
-                            <div><strong>الحالة:</strong> <span>${c.status || '-'}</span></div>
+                    <div class="ind-card-print">
+                        <i class="fas fa-credit-card c-logo-placeholder"></i>
+                        <div class="c-header-row">
+                            <span class="c-wallet-badge"><i class="fas fa-wallet"></i> ${c.wallet || 'محفظة عامة'}</span>
+                            <span style="font-weight:bold; color:${c.status==='نشط'?'#10b981':'#ef4444'} !important;">● ${c.status || '-'}</span>
                         </div>
+                        
+                        <div class="c-number">${formattedNum}</div>
+                        
+                        <div class="c-details-grid">
+                            <div class="c-detail-item">
+                                <small>اسم المستفيد</small>
+                                <strong>${c.beneficiary || 'غير محدد'}</strong>
+                            </div>
+                            <div class="c-detail-item">
+                                <small>رقم الهوية</small>
+                                <strong>${c.identity || '-'}</strong>
+                            </div>
+                            <div class="c-detail-item">
+                                <small>تاريخ الإصدار</small>
+                                <strong>${c.issueDate || c.date || '-'}</strong>
+                            </div>
+                            <div class="c-detail-item">
+                                <small>صلاحية الانتهاء</small>
+                                <strong>${c.expiry || '-'}</strong>
+                            </div>
+                        </div>
+
+                        ${isSinglePrint ? `<div class="print-qrcode">
+                            <img src="${qrUrl}" alt="QR Code">
+                            <div style="font-size:0.75rem; color:#888; margin-top:5px;">امسح الكود للتحقق مسارياً</div>
+                        </div>` : ''}
                     </div>
                 `;
             }).join('');
+
+            // Automatically trigger print dialog for single prints after images load
+            if (isSinglePrint) {
+                setTimeout(() => {
+                    // window.print();
+                }, 1000);
+            }
         });
     </script>
 </body>
-
 </html>
