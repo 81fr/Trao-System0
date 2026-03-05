@@ -220,73 +220,192 @@ const Auth = {
    INITIAL DATA
 =========================== */
 function initData() {
+    // Helper function for random dates
+    function getRandomDate(start, end) {
+        return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime())).toISOString().split('T')[0];
+    }
+
+    const firstNamesM = ['محمد', 'أحمد', 'عبدالله', 'خالد', 'فهد', 'عبدالرحمن', 'سعد', 'سلطان', 'فيصل', 'صالح', 'علي', 'ابراهيم', 'عمر', 'طارق', 'حسن', 'حسين', 'ياسر', 'نايف', 'وليد', 'ماجد', 'تركي', 'سعود', 'نواف', 'ريان'];
+    const firstNamesF = ['سارة', 'نورة', 'فاطمة', 'مريم', 'هند', 'العنود', 'ريم', 'شهد', 'مها', 'عبير', 'ندى', 'نوف', 'أمل', 'حصة', 'هيفاء', 'منيرة', 'الجازي', 'شروق', 'روان'];
+    const familyNames = ['الغامدي', 'الشمري', 'القحطاني', 'العتيبي', 'المطيري', 'الدوسري', 'العنزي', 'الحربي', 'الصريصري', 'السبيعي', 'الشهراني', 'الأحمري', 'الشهري', 'الزهراني', 'المالكي', 'عسيري', 'التميمي', 'البقمي', 'الرشيدي'];
+
+    const regions = ['الرياض -', 'جدة -', 'الدمام -', 'مكة -', 'المدينة -', 'الطائف -'];
+    const districts = ['العليا', 'النخيل', 'الملز', 'الحمراء', 'الخالدية', 'الربيع', 'النسيم', 'السليمانية', 'الروضة', 'الصفا'];
+
+    // Generate Beneficiaries
+    let beneficiaries = [];
+    if (localStorage.getItem('beneficiaries') === null) {
+        for (let i = 1; i <= 60; i++) {
+            const isMale = Math.random() > 0.4;
+            const firstName = isMale ? firstNamesM[Math.floor(Math.random() * firstNamesM.length)] : firstNamesF[Math.floor(Math.random() * firstNamesF.length)];
+            const fatherName = firstNamesM[Math.floor(Math.random() * firstNamesM.length)];
+            const grandName = firstNamesM[Math.floor(Math.random() * firstNamesM.length)];
+            const familyName = familyNames[Math.floor(Math.random() * familyNames.length)];
+            const idNumber = '1' + Math.floor(100000000 + Math.random() * 900000000); // 10 digit ID starting with 1
+            const mobile = '05' + Math.floor(10000000 + Math.random() * 90000000);
+
+            beneficiaries.push({
+                id: i,
+                name: `${firstName} ${fatherName} ${grandName} ${familyName}`,
+                firstName: firstName,
+                fatherName: fatherName,
+                grandName: grandName,
+                familyName: familyName,
+                nationality: 'saudi',
+                identity: idNumber,
+                mobile: mobile,
+                fileNum: `F00${i}`
+            });
+        }
+        Storage.set('beneficiaries', beneficiaries);
+    } else {
+        beneficiaries = Storage.get('beneficiaries');
+    }
+
+    // Generate Wallets
+    const walletsDefault = [
+        { id: 1, name: 'إعانة غذائية', funds: 150000, merchants: 'أسواق العثيم', status: 'نشط' },
+        { id: 2, name: 'دعم كساء', funds: 85000, merchants: 'سنتربوينت', status: 'نشط' },
+        { id: 3, name: 'أجهزة ومنزل', funds: 120000, merchants: 'إكسترا', status: 'نشط' },
+        { id: 4, name: 'رعاية صحية', funds: 60000, merchants: 'صيدلية النهدي', status: 'نشط' },
+        { id: 5, name: 'حقيبة مدرسية', funds: 30000, merchants: 'مكتبة جرير', status: 'نشط' }
+    ];
+    if (localStorage.getItem('wallets') === null) {
+        Storage.set('wallets', walletsDefault);
+    }
+
+    // Generate Cards
+    if (localStorage.getItem('cards') === null) {
+        let cards = [];
+        let cardId = 1;
+        beneficiaries.forEach((ben, index) => {
+            const numWallets = Math.floor(Math.random() * 3) + 1; // 1 to 3 cards per person
+            for (let w = 0; w < numWallets; w++) {
+                const wallet = walletsDefault[Math.floor(Math.random() * walletsDefault.length)].name;
+                const balance = Math.floor(Math.random() * 200) * 10; // 0 to 2000 in tens
+                const status = Math.random() > 0.1 ? 'نشط' : 'موقوف';
+                const expYear = new Date().getFullYear() + Math.floor(Math.random() * 4);
+                const expMonth = ('0' + (Math.floor(Math.random() * 12) + 1)).slice(-2);
+
+                cards.push({
+                    id: cardId++,
+                    number: '1' + Math.floor(1000000 + Math.random() * 9000000), // 8 digit
+                    balance: balance,
+                    status: status,
+                    wallet: wallet,
+                    beneficiary: ben.name,
+                    identity: ben.identity,
+                    pin: '1234',
+                    password: '1234',
+                    expiry: `${expYear}-${expMonth}-01`,
+                    issueDate: getRandomDate(new Date(2023, 0, 1), new Date())
+                });
+            }
+        });
+        Storage.set('cards', cards);
+    }
+
+    // Generate Merchants
+    const merchantBases = [
+        { name: 'أسواق العثيم', category: 'مواد غذائية' }, { name: 'بندة', category: 'مواد غذائية' }, { name: 'الدانوب', category: 'مواد غذائية' }, { name: 'التميمي', category: 'مواد غذائية' }, { name: 'لولو هايبر', category: 'مواد غذائية' }, { name: 'أسواق المزرعة', category: 'مواد غذائية' },
+        { name: 'سنتربوينت', category: 'ملابس' }, { name: 'ماكس', category: 'ملابس' }, { name: 'رد تاغ', category: 'ملابس' }, { name: 'مذركير', category: 'ملابس' },
+        { name: 'إكسترا', category: 'إلكترونيات' }, { name: 'المنيع', category: 'إلكترونيات' }, { name: 'الشتاء والصيف', category: 'إلكترونيات' },
+        { name: 'صيدلية النهدي', category: 'أدوية' }, { name: 'صيدلية الدواء', category: 'أدوية' }, { name: 'صيدلية وايتس', category: 'أدوية' },
+        { name: 'مكتبة جرير', category: 'مستلزمات مدرسية' }, { name: 'مكتبة العبيكان', category: 'مستلزمات مدرسية' },
+        { name: 'ايكيا', category: 'أثاث' }, { name: 'ساكو', category: 'أدوات منزلية' }, { name: 'هوم سنتر', category: 'أثاث' }, { name: 'هوم بوكس', category: 'أثاث' }
+    ];
+
+    if (localStorage.getItem('merchants') === null) {
+        let merchants = [];
+        merchantBases.forEach((mb, index) => {
+            const loc = regions[Math.floor(Math.random() * regions.length)] + ' ' + districts[Math.floor(Math.random() * districts.length)];
+            const contact = firstNamesM[Math.floor(Math.random() * firstNamesM.length)] + ' ' + familyNames[Math.floor(Math.random() * familyNames.length)];
+            merchants.push({
+                id: 100 + index + 1,
+                name: mb.name,
+                category: mb.category,
+                transactions: Math.floor(Math.random() * 500) + 50,
+                status: Math.random() > 0.05 ? 'نشط' : 'موقوف',
+                contactPerson: contact,
+                phone: '05' + Math.floor(10000000 + Math.random() * 90000000),
+                email: 'info@' + mb.name.replace(/\s+/g, '').replace('أ', 'a').toLowerCase() + '.sa',
+                location: loc,
+                crNumber: '10' + Math.floor(10000000 + Math.random() * 90000000),
+                vatNumber: '310' + Math.floor(100000000000 + Math.random() * 900000000000), // 15 digits
+                bankName: ['البنك الأهلي', 'مصرف الراجحي', 'بنك الرياض', 'مصرف الإنماء'][Math.floor(Math.random() * 4)],
+                iban: 'SA' + Math.floor(10 + Math.random() * 89) + '00000000' + Math.floor(1000000000 + Math.random() * 9000000000)
+            });
+        });
+        Storage.set('merchants', merchants);
+    }
+
+    // Generate Transactions
+    if (localStorage.getItem('transactions') === null) {
+        let transactions = [];
+        const cards = Storage.get('cards') || [];
+        const merchantsList = Storage.get('merchants') || merchantBases;
+        if (cards.length > 0) {
+            for (let i = 1; i <= 200; i++) { // 200 tx
+                const card = cards[Math.floor(Math.random() * cards.length)];
+                const merchant = merchantsList[Math.floor(Math.random() * merchantsList.length)];
+                transactions.push({
+                    id: 1000 + i,
+                    card: card.number,
+                    amount: Math.floor(Math.random() * 400) + 10,
+                    date: getRandomDate(new Date(2023, 10, 1), new Date()),
+                    merchant: merchant.name
+                });
+            }
+            // Sort by date
+            transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            Storage.set('transactions', transactions);
+        }
+    }
+
+    // Generate Orders
+    if (localStorage.getItem('supply_orders') === null || Storage.get('supply_orders').length === 0) {
+        let orders = [];
+        const statuses = ['Pending', 'Accepted', 'Completed', 'Completed', 'Completed', 'Rejected', 'Withdrawn'];
+        const items = ['توريد سلال غذائية (أرز، سكر، زيت)', 'توريد بطانيات شتوية', 'توريد أجهزة تكييف سبليت', 'صيانة مستودع الجمعية وتجديد الأرفف', 'توريد ملابس أطفال صيفية', 'كوبونات شرائية للعائلات المحتاجة', 'توريد أدوية أطفال ومكملات غذائية', 'حقائب مدرسية وأدوات قرطاسية', 'توريد مواد تنظيف ومعقمات', 'توريد ثلاجات للعائلات المحتاجة', 'أدوات كهربائية منزلية (غسالات + مكانس)', 'ملابس شتوية نسائية ورجالية', 'أثاث منزلي أساسي (أسرّة وخزائن)', 'أدوات مطبخ ومستلزمات طبخ', 'لوازم مدرسية للفصل الدراسي الثاني', 'توريد حليب أطفال ومواد غذائية خاصة', 'أجهزة تدفئة للشتاء'];
+        const merchantsList = Storage.get('merchants') || merchantBases;
+
+        for (let i = 1; i <= 40; i++) {
+            orders.push({
+                id: '100' + (200 + i),
+                item: items[Math.floor(Math.random() * items.length)] + (Math.random() > 0.5 ? ' - كمية ضخمة' : ''),
+                partner: merchantsList[Math.floor(Math.random() * merchantsList.length)].name,
+                cost: Math.floor(Math.random() * 900) * 100 + 1000,
+                date: getRandomDate(new Date(2023, 6, 1), new Date()),
+                status: statuses[Math.floor(Math.random() * statuses.length)],
+                rejectionReason: Math.random() > 0.8 ? 'السعر مرتفع جداً مقارنة بالسوق' : ''
+            });
+        }
+        orders.sort((a, b) => new Date(b.date) - new Date(a.date));
+        Storage.set('supply_orders', orders);
+    }
+
+    // Generate Users
     if (localStorage.getItem('users') === null) {
         Storage.set('users', [
             { id: 1, name: 'مدير النظام', username: 'admin', password: '123', role: 'admin' },
-            { id: 2, name: 'تاجر السوبرماركت', username: 'merchant', password: '123', role: 'merchant', linkedEntity: 'سوبرماركت الرياض' },
-            { id: 3, name: 'محمد أحمد', username: 'ben1', password: '123', role: 'beneficiary', linkedEntity: 'محمد أحمد' }
+            { id: 2, name: 'سوبرماركت الرياض', username: 'merchant', password: '123', role: 'merchant', linkedEntity: 'أسواق العثيم' },
+            { id: 3, name: 'موظف مبيعات', username: 'cashier', password: '123', role: 'merchant', linkedEntity: 'سنتربوينت' }
         ]);
+        // Also map some beneficiaries to users so they can log in
+        let users = Storage.get('users');
+        beneficiaries.slice(0, 5).forEach((ben, i) => { // Top 5 beneficiaries get logins explicitly for testing
+            users.push({
+                id: 100 + i,
+                name: ben.name,
+                username: `ben${i + 1}`,
+                password: '123',
+                role: 'beneficiary',
+                linkedEntity: ben.name
+            });
+        });
+        Storage.set('users', users);
     }
-    if (localStorage.getItem('cards') === null) {
-        Storage.set('cards', [
-            { id: 1, number: '10001001', balance: 500, status: 'نشط', wallet: 'إعانة غذائية', beneficiary: 'محمد أحمد', identity: '1010101010' },
-            { id: 2, number: '10001002', balance: 1500, status: 'نشط', wallet: 'دعم كساء', beneficiary: 'سارة خالد', identity: '2020202020' },
-            { id: 3, number: '10001003', balance: 0, status: 'موقوف', wallet: 'خدمات عامة', beneficiary: 'غير محدد', identity: '' }
-        ]);
-    }
-    if (localStorage.getItem('wallets') === null) {
-        Storage.set('wallets', [
-            { id: 1, name: 'إعانة غذائية', funds: 5000, merchants: 'سوبرماركت الرياض', status: 'نشط' },
-            { id: 2, name: 'دعم كساء', funds: 2000, merchants: 'متجر الملابس العصرية', status: 'نشط' }
-        ]);
-    }
-    if (localStorage.getItem('merchants') === null) {
-        Storage.set('merchants', [
-            { id: 101, name: 'أسواق العثيم', category: 'مواد غذائية', transactions: 245, status: 'نشط', contactPerson: 'فهد العثيم', phone: '0501234567', email: 'info@othaim.sa', location: 'الرياض - العليا', crNumber: '1010123456', vatNumber: '310123456789012', bankName: 'البنك الأهلي', iban: 'SA0380000000608010167519' },
-            { id: 102, name: 'بندة', category: 'مواد غذائية', transactions: 198, status: 'نشط', contactPerson: 'سعد المحمدي', phone: '0509876543', email: 'info@panda.sa', location: 'جدة - الحمراء', crNumber: '4030234567', vatNumber: '310234567890123', bankName: 'مصرف الراجحي', iban: 'SA4420000000068427859940' },
-            { id: 103, name: 'الدانوب', category: 'مواد غذائية', transactions: 145, status: 'نشط', contactPerson: 'ياسر الدوسري', phone: '0551234567', email: 'info@danube.sa', location: 'الرياض - النخيل', crNumber: '1010345678', vatNumber: '310345678901234', bankName: 'بنك الجزيرة', iban: 'SA5860100000022957651000' },
-            { id: 104, name: 'التميمي', category: 'مواد غذائية', transactions: 88, status: 'نشط', contactPerson: 'عمر التميمي', phone: '0561234567', email: 'info@tamimi.sa', location: 'الرياض - الربيع' },
-            { id: 201, name: 'سنتربوينت', category: 'ملابس', transactions: 176, status: 'نشط', contactPerson: 'منصور الحربي', phone: '0541234567', email: 'info@centerpoint.sa', location: 'الرياض - البوليفارد' },
-            { id: 202, name: 'إكسترا', category: 'إلكترونيات', transactions: 82, status: 'نشط', contactPerson: 'طلال العنزي', phone: '0571234567', email: 'info@extra.sa', location: 'الرياض - المروج' },
-            { id: 301, name: 'صيدلية النهدي', category: 'أدوية', transactions: 310, status: 'نشط', contactPerson: 'سلمان النهدي', phone: '0581234567', email: 'info@nahdi.sa', location: 'جدة - البلد', crNumber: '4030456789', vatNumber: '310456789012345', bankName: 'مصرف الإنماء', iban: 'SA0595000068201234567000' },
-            { id: 302, name: 'مكتبة جرير', category: 'مستلزمات مدرسية', transactions: 67, status: 'نشط', contactPerson: 'عادل السعيد', phone: '0521234567', email: 'info@jarir.sa', location: 'الدمام - الشاطئ' },
-            { id: 303, name: 'المنيع', category: 'إلكترونيات', transactions: 43, status: 'نشط', contactPerson: 'نايف المنيع', phone: '0531234567', email: 'info@almanea.sa', location: 'الرياض - السلام' },
-            { id: 304, name: 'ماكس', category: 'ملابس', transactions: 95, status: 'نشط', contactPerson: 'وليد الرشيدي', phone: '0591234567', email: 'info@max.sa', location: 'جدة - النزهة' },
-            { id: 305, name: 'صيدلية الدواء', category: 'أدوية', transactions: 120, status: 'نشط', contactPerson: 'إبراهيم الشهري', phone: '0511234567', email: 'info@aldawaa.sa', location: 'الرياض - النسيم' },
-            { id: 306, name: 'ايكيا', category: 'أثاث', transactions: 35, status: 'نشط', contactPerson: 'حمد القحطاني', phone: '0542345678', email: 'info@ikea.sa', location: 'الرياض - طريق الملك فهد' },
-            { id: 307, name: 'ساكو', category: 'أدوات منزلية', transactions: 52, status: 'نشط', contactPerson: 'بدر العتيبي', phone: '0552345678', email: 'info@saco.sa', location: 'الرياض - العقيق' },
-            { id: 308, name: 'هوم سنتر', category: 'أثاث', transactions: 28, status: 'نشط', contactPerson: 'خالد البلوي', phone: '0562345678', email: 'info@homecenter.sa', location: 'جدة - التحلية' }
-        ]);
-    }
-    if (localStorage.getItem('transactions') === null) {
-        Storage.set('transactions', [
-            { id: 101, card: '10001001', amount: 50, date: '2023-10-25', merchant: 'أسواق العثيم' },
-            { id: 102, card: '10001002', amount: 200, date: '2023-10-26', merchant: 'سنتربوينت' }
-        ]);
-    }
-    const existingOrders = Storage.get('supply_orders');
-    if (!existingOrders || existingOrders.length === 0) {
-        Storage.set('supply_orders', [
-            { id: '100201', item: 'توريد سلال غذائية (أرز، سكر، زيت) - 500 سلة', partner: 'أسواق العثيم', cost: 15000, date: '2024-01-05', status: 'Completed' },
-            { id: '100202', item: 'توريد بطانيات شتوية (200 بطانية)', partner: 'سنتربوينت', cost: 8000, date: '2024-01-10', status: 'Completed' },
-            { id: '100203', item: 'توريد أجهزة تكييف سبليت (15 جهاز)', partner: 'إكسترا', cost: 25000, date: '2024-02-01', status: 'Completed' },
-            { id: '100204', item: 'صيانة مستودع الجمعية وتجديد الأرفف', partner: 'ساكو', cost: 4500, date: '2024-02-15', status: 'Rejected', rejectionReason: 'السعر مرتفع جداً مقارنة بالسوق' },
-            { id: '100205', item: 'توريد ملابس أطفال صيفية (300 قطعة)', partner: 'ماكس', cost: 12000, date: '2024-03-01', status: 'Completed' },
-            { id: '100206', item: 'كوبونات شرائية للعائلات المحتاجة', partner: 'الدانوب', cost: 50000, date: '2024-03-15', status: 'Withdrawn' },
-            { id: '100207', item: 'توريد أدوية أطفال ومكملات غذائية', partner: 'صيدلية النهدي', cost: 18000, date: '2024-04-01', status: 'Completed' },
-            { id: '100208', item: 'حقائب مدرسية وأدوات قرطاسية (500 طالب)', partner: 'مكتبة جرير', cost: 9500, date: '2024-04-20', status: 'Completed' },
-            { id: '100209', item: 'توريد مواد تنظيف ومعقمات', partner: 'بندة', cost: 5200, date: '2024-05-10', status: 'Accepted' },
-            { id: '100210', item: 'توريد ثلاجات للعائلات المحتاجة (20 ثلاجة)', partner: 'إكسترا', cost: 32000, date: '2024-06-01', status: 'Pending' },
-            { id: '100211', item: 'أدوات كهربائية منزلية (غسالات + مكانس)', partner: 'المنيع', cost: 21000, date: '2024-06-15', status: 'Completed' },
-            { id: '100212', item: 'ملابس شتوية نسائية ورجالية', partner: 'سنتربوينت', cost: 14000, date: '2024-07-01', status: 'Accepted' },
-            { id: '100213', item: 'أثاث منزلي أساسي (أسرّة وخزائن)', partner: 'ايكيا', cost: 45000, date: '2024-07-20', status: 'Completed' },
-            { id: '100214', item: 'أدوات مطبخ ومستلزمات طبخ', partner: 'ساكو', cost: 7800, date: '2024-08-05', status: 'Completed' },
-            { id: '100215', item: 'سجاد ومفروشات للعائلات الجديدة', partner: 'هوم سنتر', cost: 19000, date: '2024-08-20', status: 'Pending' },
-            { id: '100216', item: 'لوازم مدرسية للفصل الدراسي الثاني', partner: 'مكتبة جرير', cost: 11000, date: '2024-09-01', status: 'Accepted' },
-            { id: '100217', item: 'توريد حليب أطفال ومواد غذائية خاصة', partner: 'التميمي', cost: 22000, date: '2024-09-15', status: 'Completed' },
-            { id: '100218', item: 'أجهزة تدفئة للشتاء (50 جهاز)', partner: 'إكسترا', cost: 17500, date: '2024-10-01', status: 'Pending' }
-        ]);
-    }
+
     if (localStorage.getItem('customLabels') === null) {
         Storage.set('customLabels', {
             label_cards: 'البطاقات',
@@ -296,18 +415,12 @@ function initData() {
         });
     }
     if (localStorage.getItem('categories') === null) {
-        Storage.set('categories', ['إعانة غذائية', 'دعم كساء', 'خدمات عامة']);
+        Storage.set('categories', ['إعانة غذائية', 'دعم كساء', 'خدمات عامة', 'رعاية صحية', 'أجهزة ومنزل']);
     }
-    if (localStorage.getItem('beneficiaries') === null) {
-        Storage.set('beneficiaries', [
-            { id: 1, name: 'محمد أحمد علي الغامدي', firstName: 'محمد', fatherName: 'أحمد', grandName: 'علي', familyName: 'الغامدي', nationality: 'saudi', identity: '1010101010', mobile: '0512345678', fileNum: 'F001' },
-            { id: 2, name: 'سارة خالد عبدالله الشمري', firstName: 'سارة', fatherName: 'خالد', grandName: 'عبدالله', familyName: 'الشمري', nationality: 'saudi', identity: '2020202020', mobile: '0598765432', fileNum: 'F002' }
-        ]);
-    }
+
     // Seed POS Products
     if (localStorage.getItem('products') === null) {
         Storage.set('products', [
-            // فواد غذائية
             { id: 1, name: 'أرز بسمتي 5كج', category: 'مواد غذائية', price: 45.00, image: '🌾' },
             { id: 2, name: 'زيت دوار الشمس 1.5ل', category: 'مواد غذائية', price: 18.50, image: '🌻' },
             { id: 3, name: 'سكر ناعم 2كج', category: 'مواد غذائية', price: 12.00, image: '🍭' },
@@ -319,7 +432,6 @@ function initData() {
             { id: 9, name: 'مياه معدنية 330مل * 40', category: 'مشروبات', price: 15.00, image: '💧' },
             { id: 10, name: 'عصير برتقال طازج', category: 'مشروبات', price: 9.00, image: '🍊' },
             { id: 11, name: 'شاي أحمر 100 كيس', category: 'مشروبات', price: 14.50, image: '☕' },
-            // قرطاسية وملابس
             { id: 12, name: 'حقيبة مدرسية', category: 'قرطاسية', price: 85.00, image: '🎒' },
             { id: 13, name: 'دفتر جامعي 100 ورقة', category: 'قرطاسية', price: 5.00, image: '📓' },
             { id: 14, name: 'طقم أقلام حبر', category: 'قرطاسية', price: 12.00, image: '🖋️' },
@@ -1938,13 +2050,13 @@ const Orders = {
 
         if (partnerSelect) {
             const merchants = Storage.get('merchants') || [];
-            partnerSelect.innerHTML = '<option value="">اختر الشريك...</option>' + 
+            partnerSelect.innerHTML = '<option value="">اختر الشريك...</option>' +
                 merchants.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
         }
 
         if (walletSelect) {
             const wallets = Storage.get('wallets') || [];
-            walletSelect.innerHTML = '<option value="">أمر توريد عام بميزانية مستقلة...</option>' + 
+            walletSelect.innerHTML = '<option value="">أمر توريد عام بميزانية مستقلة...</option>' +
                 wallets.map(w => `<option value="${w.name}">${w.name} (المتاح: ${Number(w.funds).toLocaleString()} ر.س)</option>`).join('');
         }
     },
@@ -1964,10 +2076,10 @@ const Orders = {
                 const wIdx = wallets.findIndex(w => w.name === walletName);
                 if (wIdx === -1) return alert('المحفظة المحددة غير موجودة!');
                 if (wallets[wIdx].funds < cost) return alert(`رصيد المحفظة (${wallets[wIdx].funds}) لا يكفي لقيمة التوريد (${cost})`);
-                
+
                 // Deduct from wallet
                 wallets[wIdx].funds -= cost;
-                if(!wallets[wIdx].history) wallets[wIdx].history = [];
+                if (!wallets[wIdx].history) wallets[wIdx].history = [];
                 wallets[wIdx].history.push({
                     date: new Date().toLocaleString('ar-SA'),
                     op: 'فاتورة/أمر توريد: ' + item,
@@ -3426,7 +3538,7 @@ const WalletPage = {
     toggleForm: () => {
         const body = document.getElementById('walletFormBody');
         const icon = document.getElementById('toggleWalletFormIcon');
-        if(body.style.display === 'none') {
+        if (body.style.display === 'none') {
             body.style.display = 'block';
             icon.className = 'fas fa-chevron-up';
         } else {
@@ -3440,7 +3552,7 @@ const WalletPage = {
         const cards = Storage.get('cards');
         const totalWallets = wallets.length;
         const totalBalance = wallets.reduce((sum, w) => sum + (parseFloat(w.funds) || 0), 0);
-        
+
         const walletsMap = wallets.map(w => w.name);
         const linkedCards = cards.filter(c => walletsMap.includes(c.wallet)).length;
 
@@ -3448,9 +3560,9 @@ const WalletPage = {
         const el2 = document.getElementById('statTotalWalletBalance');
         const el3 = document.getElementById('statLinkedCards');
 
-        if(el1) el1.innerText = totalWallets;
-        if(el2) el2.innerText = isNaN(totalBalance) ? '0' : totalBalance.toLocaleString('en-US');
-        if(el3) el3.innerText = linkedCards;
+        if (el1) el1.innerText = totalWallets;
+        if (el2) el2.innerText = isNaN(totalBalance) ? '0' : totalBalance.toLocaleString('en-US');
+        if (el3) el3.innerText = linkedCards;
     },
 
     render: (filterText = '', filterCat = '') => {
@@ -3458,7 +3570,7 @@ const WalletPage = {
         if (!grid) return;
 
         let wallets = Storage.get('wallets');
-        
+
         wallets = wallets.filter(w => {
             const matchText = (w.name || '').includes(filterText) || (w.category || '').includes(filterText);
             const matchCat = filterCat === '' || w.category === filterCat;
@@ -3475,11 +3587,11 @@ const WalletPage = {
         }
 
         grid.innerHTML = wallets.map(w => {
-            const funds = parseFloat(w.funds||0);
+            const funds = parseFloat(w.funds || 0);
             return `
             <div class="vcard-item" style="border-right: 4px solid ${w.color || '#00A59B'};" onclick="WalletPage.openDetail(${w.id})">
                 <div class="vcard-header">
-                    <div class="vc-icon" style="background: ${w.color||'#00A59B'}15; color: ${w.color||'#00A59B'}">
+                    <div class="vc-icon" style="background: ${w.color || '#00A59B'}15; color: ${w.color || '#00A59B'}">
                         <i class="${w.icon || 'fas fa-wallet'}"></i>
                     </div>
                     <div class="vc-badge active">${w.category || 'عام'}</div>
@@ -3488,7 +3600,7 @@ const WalletPage = {
                     <h3 class="vc-name">${w.name}</h3>
                     <div class="vc-balance">
                         <small>الرصيد المتاح</small>
-                        <strong>${funds.toLocaleString('en-US', {minimumFractionDigits:2})} <small>ريال</small></strong>
+                        <strong>${funds.toLocaleString('en-US', { minimumFractionDigits: 2 })} <small>ريال</small></strong>
                     </div>
                 </div>
                 <div class="vc-footer">
@@ -3539,15 +3651,15 @@ const WalletPage = {
         Storage.set('wallets', wallets);
         WalletPage.cancelEdit();
         WalletPage.init();
-        if(typeof showToast === 'function') showToast(id ? 'تم تعديل المحفظة' : 'تم إنشاء المحفظة', 'success');
+        if (typeof showToast === 'function') showToast(id ? 'تم تعديل المحفظة' : 'تم إنشاء المحفظة', 'success');
     },
 
     editFromModal: () => {
-        if(!WalletPage.currentActionWallet) return;
+        if (!WalletPage.currentActionWallet) return;
         const w = WalletPage.currentActionWallet;
         WalletPage.closeDetail();
         WalletPage.toggleForm();
-        
+
         document.getElementById('editingWalletId').value = w.id;
         document.getElementById('walletNameInput').value = w.name;
         document.getElementById('walletCategoryInput').value = w.category || 'عام';
@@ -3578,36 +3690,36 @@ const WalletPage = {
     },
 
     deleteFromModal: () => {
-        if(!WalletPage.currentActionWallet) return;
-        if(confirm('هل أنت متأكد من حذف هذه المحفظة نهائياً؟')) {
+        if (!WalletPage.currentActionWallet) return;
+        if (confirm('هل أنت متأكد من حذف هذه المحفظة نهائياً؟')) {
             let wallets = Storage.get('wallets');
             wallets = wallets.filter(w => w.id != WalletPage.currentActionWallet.id);
             Storage.set('wallets', wallets);
             WalletPage.closeDetail();
             WalletPage.init();
-            if(typeof showToast === 'function') showToast('تم حذف المحفظة بنجاح', 'success');
+            if (typeof showToast === 'function') showToast('تم حذف المحفظة بنجاح', 'success');
         }
     },
 
     openDetail: (id) => {
         const wallets = Storage.get('wallets');
         const w = wallets.find(x => x.id == id);
-        if(!w) return;
+        if (!w) return;
         WalletPage.currentActionWallet = w;
 
         document.getElementById('wdName').innerText = w.name;
         document.getElementById('wdCategory').innerText = w.category || 'عام';
-        document.getElementById('wdBalance').innerText = (parseFloat(w.funds)||0).toLocaleString('en-US') + ' ريال';
+        document.getElementById('wdBalance').innerText = (parseFloat(w.funds) || 0).toLocaleString('en-US') + ' ريال';
         document.getElementById('wdTarget').innerText = w.target ? w.target.toLocaleString('en-US') + ' ريال' : 'غير محدد';
         document.getElementById('wdDate').innerText = w.date || '—';
-        document.getElementById('wdIconBadge').innerHTML = `<i class="${w.icon||'fas fa-wallet'}"></i>`;
-        
-        document.getElementById('wdPreview').style.background = `linear-gradient(135deg, #1a1d27, ${w.color||'#00A59B'})`;
+        document.getElementById('wdIconBadge').innerHTML = `<i class="${w.icon || 'fas fa-wallet'}"></i>`;
+
+        document.getElementById('wdPreview').style.background = `linear-gradient(135deg, #1a1d27, ${w.color || '#00A59B'})`;
 
         // Render History
         const histDiv = document.getElementById('wdTransactions');
         const hist = w.history || [];
-        if(hist.length === 0) {
+        if (hist.length === 0) {
             histDiv.innerHTML = '<div style="text-align:center;color:#888;padding:10px;">لا توجد عمليات</div>';
         } else {
             histDiv.innerHTML = hist.slice().reverse().map(h => `
@@ -3629,7 +3741,7 @@ const WalletPage = {
         // Render Linked Cards
         const lcDiv = document.getElementById('wdLinkedCards');
         const cards = Storage.get('cards').filter(c => c.wallet === w.name);
-        if(cards.length === 0) {
+        if (cards.length === 0) {
             lcDiv.innerHTML = '<div style="text-align:center;color:#888;padding:10px;">لا توجد بطاقات مرتبطة</div>';
         } else {
             lcDiv.innerHTML = cards.map(c => `
@@ -3653,29 +3765,29 @@ const WalletPage = {
     },
 
     openBalanceModal: (type, id = null) => {
-        if(id) {
+        if (id) {
             const wallets = Storage.get('wallets');
             WalletPage.currentActionWallet = wallets.find(x => x.id == id);
             WalletPage.closeDetail();
         }
-        
-        if(!WalletPage.currentActionWallet) return;
+
+        if (!WalletPage.currentActionWallet) return;
 
         const isDeposit = type === 'deposit';
-        document.getElementById('walletBalanceModalTitle').innerHTML = isDeposit 
+        document.getElementById('walletBalanceModalTitle').innerHTML = isDeposit
             ? '<i class="fas fa-arrow-down text-success"></i> إيداع رصيد بالمحفظة'
             : '<i class="fas fa-arrow-up text-danger"></i> سحب رصيد من المحفظة';
-        
+
         document.getElementById('walletBalanceOpType').value = type;
         document.getElementById('walletBalanceOpAmount').value = '';
         document.getElementById('walletBalanceOpReason').value = isDeposit ? 'تمويل إضافي' : 'سحب / صرف من المحفظة';
-        
+
         document.getElementById('walletBalanceModalOverlay').style.display = 'flex';
     },
 
     closeBalanceModal: () => {
         document.getElementById('walletBalanceModalOverlay').style.display = 'none';
-        if(WalletPage.currentActionWallet && document.getElementById('walletDetailOverlay').style.display === 'none') {
+        if (WalletPage.currentActionWallet && document.getElementById('walletDetailOverlay').style.display === 'none') {
             WalletPage.openDetail(WalletPage.currentActionWallet.id);
         }
     },
@@ -3686,24 +3798,24 @@ const WalletPage = {
         const type = document.getElementById('walletBalanceOpType').value;
         const w = WalletPage.currentActionWallet;
 
-        if(!amt || amt <= 0) return alert('الرجاء إدخال مبلغ صحيح');
-        if(!w) return;
+        if (!amt || amt <= 0) return alert('الرجاء إدخال مبلغ صحيح');
+        if (!w) return;
 
         let wallets = Storage.get('wallets');
         const idx = wallets.findIndex(x => x.id == w.id);
-        if(idx === -1) return;
+        if (idx === -1) return;
 
-        if(type === 'withdraw' && wallets[idx].funds < amt) {
+        if (type === 'withdraw' && wallets[idx].funds < amt) {
             return alert('الرصيد في المحفظة غير كافٍ لهذه العملية!');
         }
 
-        if(type === 'withdraw') {
+        if (type === 'withdraw') {
             wallets[idx].funds -= amt;
         } else {
             wallets[idx].funds += amt;
         }
 
-        if(!wallets[idx].history) wallets[idx].history = [];
+        if (!wallets[idx].history) wallets[idx].history = [];
         wallets[idx].history.push({
             date: new Date().toLocaleString('ar-SA'),
             op: reason,
@@ -3714,7 +3826,7 @@ const WalletPage = {
         Storage.set('wallets', wallets);
         WalletPage.closeBalanceModal();
         WalletPage.init();
-        if(typeof showToast === 'function') showToast('تمت العملية بنجاح', 'success');
+        if (typeof showToast === 'function') showToast('تمت العملية بنجاح', 'success');
         WalletPage.openDetail(w.id); // Reopen to see changes
     }
 };
@@ -3725,7 +3837,7 @@ if (window.location.pathname.includes('wallets.html')) {
 }
 
 // Add these exports specifically mapped to old code format in Global Actions so original HTML won't break if needed
-if(typeof Actions !== 'undefined') {
+if (typeof Actions !== 'undefined') {
     Actions.addWallet = WalletPage.addWallet;
     Actions.cancelWalletEdit = WalletPage.cancelEdit;
 }
