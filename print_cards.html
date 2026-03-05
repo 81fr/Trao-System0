@@ -421,12 +421,12 @@
                                 <div class="bvc-reflection"></div>
                                 
                                 <!-- Header: Logo on Right, Status Hidden -->
-                                <div class="c-header-row" style="display:flex; justify-content:flex-end; align-items:flex-start;">
+                                <div class="c-header-row" style="display:flex; justify-content:flex-end; align-items:flex-start; height: 45px;">
                                     <span class="bvc-status" style="display:none;">${c.status || '-'}</span>
-                                    <span class="c-wallet-badge">
-                                        <img src="assets/logo.png" style="height:60px; filter: brightness(0) invert(1); object-fit:contain; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;" alt="Logo">
-                                    </span>
                                 </div>
+                                <span class="c-wallet-badge" style="position: absolute; top: 5px; right: 15px; z-index: 10;">
+                                    <img src="assets/logo.png" style="height:55px; filter: brightness(0) invert(1); object-fit:contain; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;" alt="Logo">
+                                </span>
                                 
                                 <!-- Chip Absolute Position: Middle Right -->
                                 <div class="bvc-chip-row" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); z-index: 10;">
@@ -460,7 +460,7 @@
 
                                 <div class="print-qrcode" style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display:flex; justify-content:center; align-items:center; width: 100%; z-index: 20;">
                                     <div><img src="${qrUrl}" alt="QR Code" style="width:25px;height:25px;"></div>
-                                    <div class="barcode-container" style="margin-left:5px;">
+                                    <div class="barcode-container" style="margin-left:15px;">
                                         <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="true" jsbarcode-height="20" jsbarcode-width="1.2" jsbarcode-fontSize="9" jsbarcode-margin="0" jsbarcode-lineColor="#000"></svg>
                                     </div>
                                 </div>
