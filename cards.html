@@ -69,7 +69,12 @@
 
     <main class="main-content">
         <header>
-            <h1><i class="fas fa-credit-card"></i> إدارة البطاقات</h1>
+            <div style="display:flex; align-items:center; gap:15px;">
+                <h1 style="margin:0;"><i class="fas fa-credit-card"></i> إدارة البطاقات</h1>
+                <button onclick="location.href='print_cards.html'" style="background:var(--card); border:1px solid var(--border); color:var(--text-primary); padding:8px 15px; border-radius:10px; cursor:pointer; font-family:inherit; font-weight:600; display:flex; align-items:center; gap:8px; transition:0.3s;">
+                    <i class="fas fa-print" style="color:#00A59B;"></i> طباعة البطاقات
+                </button>
+            </div>
             <div class="user-profile"><span>مرحباً</span>
                 <div class="avatar">م</div>
             </div>
