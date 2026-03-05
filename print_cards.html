@@ -287,30 +287,56 @@
         }
 
         /* Print Media Query */
+        @page {
+            size: 86mm 54mm;
+            margin: 0;
+        }
+
         @media print {
-            body {
+
+            body,
+            html {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 86mm !important;
+                height: auto !important;
                 background: #fff !important;
-                padding: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
 
-            .no-print-bar {
+            .container,
+            .print-container {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 86mm !important;
+                max-width: 86mm !important;
+                min-height: 0 !important;
+                box-shadow: none !important;
+            }
+
+            .no-print-bar,
+            .print-header {
                 display: none !important;
             }
 
-            .print-container {
-                box-shadow: none;
-                margin: 0;
-                padding: 0;
-                width: 100%;
-            }
-
             .cards-grid {
-                gap: 5mm;
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                gap: 0 !important;
             }
 
-            @page {
-                size: A4;
-                margin: 10mm;
+            .card-item-container {
+                margin: 0 !important;
+                display: block;
+            }
+
+            .ind-card-print {
+                margin: 0 !important;
+                page-break-after: always;
+                break-after: page;
+                border-radius: 0;
             }
         }
 
@@ -389,7 +415,7 @@
                     const cleanNum = c.number.replace(/\s/g, '');
 
                     return `
-                        <div class="card-item-container" style="margin-bottom: ${showBack ? '10mm' : '5mm'};">
+                        <div class="card-item-container">
                             <!-- Front of Card -->
                             <div class="ind-card-print">
                                 <div class="bvc-reflection"></div>
@@ -460,7 +486,7 @@
             render();
 
             if (isSinglePrint) {
-                setTimeout(() => { window.print(); }, 1200);
+                set(() => { window.print(); }, 1200);
             }
         });
     </script>
