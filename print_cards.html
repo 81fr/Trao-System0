@@ -337,6 +337,8 @@
                 page-break-after: always;
                 break-after: page;
                 border-radius: 0;
+                height: 54mm !important;
+                overflow: hidden !important;
             }
         }
 
@@ -444,20 +446,22 @@
                                 
                                 <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; padding-right: 15px;">
                                     <!-- Card Number -->
-                                    <div class="c-number" style="font-size:1.6rem; letter-spacing:4px; margin-bottom:0px; text-align:left; width: 100%; white-space: nowrap;">${formattedNum}</div>
+                                    <div class="c-number" style="font-size:1.6rem; letter-spacing:4px; margin-bottom:0px; text-align:left; width: 100%; white-space: nowrap; direction: ltr !important; unicode-bidi: bidi-override; display: inline-block;">${formattedNum}</div>
                                 </div>
                                 
                                 <div class="bvc-footer" style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 25px; padding: 0 15px;">
-                                    <div style="text-align:left;">
-                                        <div style="font-size:1.2rem; font-weight:700; color: #fff; opacity:0.9;">${c.expiry || '-'}</div>
-                                    </div>
+                                    <!-- Name on Right (First element in RTL) -->
                                     <div style="text-align:right;">
                                         <div style="font-size:1.4rem; font-weight:700; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">${c.beneficiary || 'غير محدد'}</div>
+                                    </div>
+                                    <!-- Expiry on Left (Second element in RTL) -->
+                                    <div style="text-align:left;">
+                                        <div style="font-size:1.2rem; font-weight:700; color: #fff; opacity:0.9;">${c.expiry || '-'}</div>
                                     </div>
                                 </div>
 
                                 <!-- White Stripe for Barcode and QR -->
-                                <div class="print-qrcode" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 35px; background-color: #ffffff; display:flex; justify-content:center; align-items:center; gap: 20px; z-index: 20; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+                                <div class="print-qrcode" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 35px; background-color: #ffffff; display:flex; justify-content:center; align-items:center; gap: 40px; z-index: 20; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
                                     <div><img src="${qrUrl}" alt="QR Code" style="width:25px;height:25px;"></div>
                                     <div class="barcode-container" style="margin: 0; display:flex; align-items:center;">
                                         <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="true" jsbarcode-height="20" jsbarcode-width="1.2" jsbarcode-fontSize="10" jsbarcode-margin="0" jsbarcode-lineColor="#000"></svg>
