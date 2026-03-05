@@ -100,12 +100,13 @@
 
         .ind-card-print {
             background: linear-gradient(135deg, #f8fafc, #fff) !important;
-            border-radius: 20px;
-            padding: 30px;
-            width: 90%;
-            max-width: 500px;
+            border-radius: 12px;
+            padding: 15px;
+            width: 85.6mm;
+            height: 53.98mm;
+            box-sizing: border-box;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             position: relative;
             overflow: hidden;
             -webkit-print-color-adjust: exact;
@@ -126,34 +127,34 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 25px;
+            margin-bottom: 15px;
         }
         
         .c-wallet-badge {
             background: rgba(0, 165, 155, 0.1) !important;
             color: #00A59B !important;
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 4px 8px;
+            border-radius: 10px;
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 0.6rem;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
 
         .c-logo-placeholder {
-            opacity: 0.1;
-            font-size: 3rem;
+            opacity: 0.05;
+            font-size: 2rem;
             position: absolute;
-            bottom: -10px;
-            left: -10px;
+            bottom: -5px;
+            left: -5px;
             transform: rotate(-15deg);
         }
 
         .c-number {
-            font-size: 2rem;
+            font-size: 1.1rem;
             font-weight: 800;
-            letter-spacing: 4px;
-            margin-bottom: 25px;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
             font-family: 'Courier New', Courier, monospace;
             text-align: left;
             direction: ltr;
@@ -163,10 +164,10 @@
         .c-details-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 10px;
             background: #f8fafc !important;
-            padding: 20px;
-            border-radius: 12px;
+            padding: 10px;
+            border-radius: 8px;
             border: 1px solid #e2e8f0;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
@@ -175,19 +176,19 @@
         .c-detail-item small {
             display: block;
             color: #64748b !important;
-            font-size: 0.8rem;
-            margin-bottom: 5px;
+            font-size: 0.5rem;
+            margin-bottom: 2px;
         }
 
         .c-detail-item strong {
             display: block;
             color: #0f172a !important;
-            font-size: 1.1rem;
+            font-size: 0.65rem;
             font-weight: 700;
         }
 
         .print-qrcode {
-            margin-top: 30px;
+            margin-top: 10px;
             text-align: center;
         }
 
@@ -205,43 +206,44 @@
             background: #fff !important;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             text-align: center;
-            padding: 40px 30px;
+            padding: 15px;
         }
 
         .back-mag-stripe {
             background: #1e293b !important;
-            height: 50px;
+            height: 10mm;
             width: 100%;
             position: absolute;
-            top: 40px;
+            top: 5mm;
             left: 0;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
 
         .back-instructions {
-            margin-top: 60px;
-            font-size: 0.9rem;
+            margin-top: 20mm;
+            font-size: 0.5rem;
             color: #64748b !important;
-            line-height: 1.6;
-            max-width: 80%;
+            line-height: 1.4;
+            max-width: 90%;
         }
 
         .back-instructions h4 {
             color: #0f172a !important;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
+            margin-bottom: 5px;
+            font-size: 0.6rem;
+            margin-top:0;
         }
         
         .barcode-container {
-            margin-top: 20px;
+            margin-top: 5px;
             text-align: center;
             background: #fff;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 5px;
+            border-radius: 4px;
         }
         
         .barcode-container svg {
@@ -358,11 +360,11 @@
 
                         ${isSinglePrint ? `<div class="print-qrcode" style="display:flex; justify-content:space-around; align-items:center;">
                             <div>
-                                <img src="${qrUrl}" alt="QR Code" style="width:80px;height:80px;">
-                                <div style="font-size:0.7rem; color:#888; margin-top:5px;">امسح للتحقق</div>
+                                <img src="${qrUrl}" alt="QR Code" style="width:40px;height:40px;">
+                                <div style="font-size:0.4rem; color:#888; margin-top:5px;">امسح للتحقق</div>
                             </div>
                             <div class="barcode-container">
-                                <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="true" jsbarcode-height="40" jsbarcode-width="1.5"></svg>
+                                <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="true" jsbarcode-height="25" jsbarcode-width="1"></svg>
                             </div>
                         </div>` : ''}
                     </div>
@@ -375,10 +377,10 @@
                             <h4><i class="fas fa-info-circle" style="color:#00A59B;"></i> تعليمات هامة</h4>
                             <p>هذه البطاقة مخصصة للاستخدام الشخصي للمستفيد الموضح اسمه بالأمام. يمنع نقلها أو رهنها.</p>
                             <p><strong>في حال العثور على هذه البطاقة المفقودة:</strong></p>
-                            <p>الرجاء تسليمها لأقرب فرع لجمعية تراؤف أو الاتصال على الرقم الموحد: <strong>920000000</strong></p>
+                            <p>الرجاء تسليمها لأقرب فرع لجمعية تراؤف أو الاتصال على الرقم الموحد: <strong>8003010083</strong></p>
                         </div>
                         <div class="barcode-container" style="margin-top:30px;">
-                             <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="false" jsbarcode-height="30" jsbarcode-width="1"></svg>
+                             <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="false" jsbarcode-height="20" jsbarcode-width="1"></svg>
                         </div>
                     </div>
                     ` : ''}
