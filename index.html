@@ -517,7 +517,7 @@
         }
 
         .dark-mode #mapContainer {
-            filter: grayscale(0.5) contrast(1.2) brightness(0.8);
+            filter: invert(1) hue-rotate(180deg) brightness(95%) contrast(90%);
         }
 
         .map-marker-pulse {
@@ -1431,8 +1431,8 @@
             const center = [28.4334, 45.9711];
             const map = L.map('mapContainer').setView(center, 12);
 
-            // Dark Mode Tile Layer (CartoDB Dark Matter)
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            // Light Mode Tile Layer (CartoDB Positron)
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; CartoDB',
                 subdomains: 'abcd',
                 maxZoom: 19
