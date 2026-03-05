@@ -200,6 +200,54 @@
             background: #fff;
         }
 
+
+        .ind-card-back {
+            background: #fff !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 30px;
+        }
+
+        .back-mag-stripe {
+            background: #1e293b !important;
+            height: 50px;
+            width: 100%;
+            position: absolute;
+            top: 40px;
+            left: 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .back-instructions {
+            margin-top: 60px;
+            font-size: 0.9rem;
+            color: #64748b !important;
+            line-height: 1.6;
+            max-width: 80%;
+        }
+
+        .back-instructions h4 {
+            color: #0f172a !important;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .barcode-container {
+            margin-top: 20px;
+            text-align: center;
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .barcode-container svg {
+            max-height: 60px;
+        }
+
         /* Print Media Query */
         @media print {
             body {
@@ -221,6 +269,7 @@
             }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
 </head>
 <body>
 
@@ -273,7 +322,12 @@
                 // Mock QR code using an API
                 const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent('TRAOF-'+c.number)}`;
                 
+                
+                // Remove spaces for barcode value
+                const cleanNum = c.number.replace(/\s/g, '');
+                
                 return `
+                    <!-- Front of Card -->
                     <div class="ind-card-print">
                         <i class="fas fa-credit-card c-logo-placeholder"></i>
                         <div class="c-header-row">
@@ -302,13 +356,41 @@
                             </div>
                         </div>
 
-                        ${isSinglePrint ? `<div class="print-qrcode">
-                            <img src="${qrUrl}" alt="QR Code">
-                            <div style="font-size:0.75rem; color:#888; margin-top:5px;">امسح الكود للتحقق مسارياً</div>
+                        ${isSinglePrint ? `<div class="print-qrcode" style="display:flex; justify-content:space-around; align-items:center;">
+                            <div>
+                                <img src="${qrUrl}" alt="QR Code" style="width:80px;height:80px;">
+                                <div style="font-size:0.7rem; color:#888; margin-top:5px;">امسح للتحقق</div>
+                            </div>
+                            <div class="barcode-container">
+                                <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="true" jsbarcode-height="40" jsbarcode-width="1.5"></svg>
+                            </div>
                         </div>` : ''}
                     </div>
+
+                    <!-- Back of Card (Only show when printing a single card for detailed view) -->
+                    ${isSinglePrint ? `
+                    <div class="ind-card-print ind-card-back" style="margin-top:20px;">
+                        <div class="back-mag-stripe"></div>
+                        <div class="back-instructions">
+                            <h4><i class="fas fa-info-circle" style="color:#00A59B;"></i> تعليمات هامة</h4>
+                            <p>هذه البطاقة مخصصة للاستخدام الشخصي للمستفيد الموضح اسمه بالأمام. يمنع نقلها أو رهنها.</p>
+                            <p><strong>في حال العثور على هذه البطاقة المفقودة:</strong></p>
+                            <p>الرجاء تسليمها لأقرب فرع لجمعية تراؤف أو الاتصال على الرقم الموحد: <strong>920000000</strong></p>
+                        </div>
+                        <div class="barcode-container" style="margin-top:30px;">
+                             <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="false" jsbarcode-height="30" jsbarcode-width="1"></svg>
+                        </div>
+                    </div>
+                    ` : ''}
                 `;
+
             }).join('');
+
+            
+            // Initialize Barcodes
+            if (typeof JsBarcode !== 'undefined') {
+                JsBarcode(".barcode").init();
+            }
 
             // Automatically trigger print dialog for single prints after images load
             if (isSinglePrint) {
