@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <title>طباعة بطاقة المستفيد - تراؤف</title>
     <link rel="stylesheet" href="assets/vendor/fontawesome/css/all-svg.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
             --brand-teal: #00A59B;
         }
+
         body {
             font-family: 'Tajawal', sans-serif;
             background-color: #f1f5f9;
@@ -22,13 +24,13 @@
             background: #fff;
             padding: 15px 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
             margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .no-print-bar h2 {
             margin: 0;
             color: var(--brand-teal);
@@ -61,13 +63,14 @@
             background: #e2e8f0;
             color: #475569;
         }
+
         .btn-secondary:hover {
             background: #cbd5e1;
         }
 
         .print-container {
-            width: 210mm; 
-            min-height: 297mm; 
+            width: 210mm;
+            min-height: 297mm;
             margin: 0 auto;
             padding: 15mm;
             box-sizing: border-box;
@@ -84,6 +87,7 @@
         .print-header img {
             max-height: 60px;
         }
+
         .print-header h1 {
             font-size: 1.5rem;
             margin: 10px 0 0 0;
@@ -106,7 +110,7 @@
             height: 53.98mm;
             box-sizing: border-box;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
             position: relative;
             overflow: hidden;
             -webkit-print-color-adjust: exact;
@@ -116,7 +120,9 @@
         .ind-card-print::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0;
+            top: 0;
+            left: 0;
+            right: 0;
             height: 10px;
             background: linear-gradient(90deg, #00A59B, #8CC240) !important;
             -webkit-print-color-adjust: exact;
@@ -129,7 +135,7 @@
             align-items: flex-start;
             margin-bottom: 15px;
         }
-        
+
         .c-wallet-badge {
             background: rgba(0, 165, 155, 0.1) !important;
             color: #00A59B !important;
@@ -235,9 +241,9 @@
             color: #0f172a !important;
             margin-bottom: 5px;
             font-size: 0.6rem;
-            margin-top:0;
+            margin-top: 0;
         }
-        
+
         .barcode-container {
             margin-top: 5px;
             text-align: center;
@@ -245,7 +251,7 @@
             padding: 5px;
             border-radius: 4px;
         }
-        
+
         .barcode-container svg {
             max-height: 60px;
         }
@@ -256,15 +262,18 @@
                 background: #fff !important;
                 padding: 0;
             }
+
             .no-print-bar {
                 display: none !important;
             }
+
             .print-container {
                 box-shadow: none;
                 margin: 0;
                 padding: 0;
                 width: 100%;
             }
+
             @page {
                 size: A4;
                 margin: 10mm;
@@ -273,13 +282,15 @@
     </style>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
 </head>
+
 <body>
 
     <!-- Action Bar -->
     <div class="no-print-bar">
         <h2><i class="fas fa-print"></i> لوحة طباعة بطاقات المستفيدين</h2>
         <div style="display:flex; gap:10px;">
-            <button class="btn btn-secondary" onclick="window.history.back()"><i class="fas fa-arrow-right"></i> عودة</button>
+            <button class="btn btn-secondary" onclick="window.history.back()"><i class="fas fa-arrow-right"></i>
+                عودة</button>
             <button class="btn" onclick="window.print()"><i class="fas fa-file-pdf"></i> استخراج ورقي / PDF</button>
         </div>
     </div>
@@ -299,7 +310,7 @@
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const grid = document.getElementById('printCardsGrid');
+            const grid = ElementById('pr intCardsGrid');
             const urlParams = new URLSearchParams(window.location.search);
             const cardIdFilter = urlParams.get('id');
             const isSinglePrint = cardIdFilter !== null;
@@ -333,7 +344,7 @@
                     <div class="ind-card-print">
                         <i class="fas fa-credit-card c-logo-placeholder"></i>
                         <div class="c-header-row">
-                            <span class="c-wallet-badge"><i class="fas fa-wallet"></i> ${c.wallet || 'محفظة عامة'}</span>
+                            <spanss=et-badge"><i class="fas fa-wallet"></i> ${c.wallet || 'محفظة عامة'}</span>
                             <span style="font-weight:bold; color:${c.status==='نشط'?'#10b981':'#ef4444'} !important;">● ${c.status || '-'}</span>
                         </div>
                         
@@ -363,8 +374,8 @@
                                 <img src="${qrUrl}" alt="QR Code" style="width:40px;height:40px;">
                                 <div style="font-size:0.4rem; color:#888; margin-top:5px;">امسح للتحقق</div>
                             </div>
-                            <div class="barcode-container">
-                                <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="true" jsbarcode-height="25" jsbarcode-width="1"></svg>
+                            <div class="barcode-container" style="margin-left:5px;">
+                                <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="true" jsbarcode-height="35" jsbarcode-width="1.5" jsbarcode-fontSize="14" jsbarcode-margin="0"></svg>
                             </div>
                         </div>` : ''}
                     </div>
@@ -380,7 +391,7 @@
                             <p>الرجاء تسليمها لأقرب فرع لجمعية تراؤف أو الاتصال على الرقم الموحد: <strong>8003010083</strong></p>
                         </div>
                         <div class="barcode-container" style="margin-top:30px;">
-                             <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="false" jsbarcode-height="20" jsbarcode-width="1"></svg>
+                             <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="false" jsbarcode-height="30" jsbarcode-width="1.5" jsbarcode-margin="0"></svg>
                         </div>
                     </div>
                     ` : ''}
@@ -403,4 +414,5 @@
         });
     </script>
 </body>
+
 </html>
