@@ -416,6 +416,31 @@
                     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent('TRAOF-' + c.number)}`;
                     const cleanNum = c.number.replace(/\s/g, '');
 
+                    // Format Name: First and Last Only
+                    let printName = c.beneficiary || 'غير محدد';
+                    if (printName !== 'غير محدد') {
+                        const nameParts = printName.trim().split(/\s+/);
+                        if (nameParts.length > 1) {
+                            printName = `${nameParts[0]} ${nameParts[nameParts.length - 1]}`;
+                        }
+                    }
+
+                    // Format Expiry: MM/YY
+                    let printExpiry = c.expiry || '-';
+                    if (printExpiry.includes('-')) {
+                        const dateParts = printExpiry.split('-');
+                        if (dateParts.length >= 2) {
+                            const year = dateParts[0].length === 4 ? dateParts[0].substring(2) : dateParts[0];
+                            const month = dateParts[1].padStart(2, '0');
+                            printExpiry = `${month}/${year}`;
+                        }
+                    } else if (printExpiry.includes('/')) {
+                        const dateParts = printExpiry.split('/');
+                        if (dateParts.length === 2) {
+                            printExpiry = `${dateParts[0].padStart(2, '0')}/${dateParts[1]}`;
+                        }
+                    }
+
                     return `
                         <div class="card-item-container">
                             <!-- Front of Card -->
@@ -452,11 +477,11 @@
                                 <div class="bvc-footer" style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 25px; padding: 0 15px;">
                                     <!-- Name on Right (First element in RTL) -->
                                     <div style="text-align:right;">
-                                        <div style="font-size:1.4rem; font-weight:700; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">${c.beneficiary || 'غير محدد'}</div>
+                                        <div style="font-size:1.4rem; font-weight:700; color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">${printName}</div>
                                     </div>
                                     <!-- Expiry on Left (Second element in RTL) -->
                                     <div style="text-align:left;">
-                                        <div style="font-size:1.2rem; font-weight:700; color: #fff; opacity:0.9;">${c.expiry || '-'}</div>
+                                        <div style="font-size:1.2rem; font-weight:700; color: #fff; opacity:0.9;">${printExpiry}</div>
                                     </div>
                                 </div>
 
