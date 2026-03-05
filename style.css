@@ -5158,3 +5158,23 @@ body.dark-mode .k-card {
   color: #fff;
   transform: scale(1.05);
 }
+
+/* Card Hint */
+.cv-hint {
+  font-size: 0.75rem;
+  color: #00A59B;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 165, 155, 0.08);
+  padding: 4px 10px;
+  border-radius: 8px;
+  width: fit-content;
+  transition: all 0.3s ease;
+}
+.card-visual:hover .cv-hint {
+  background: #00A59B;
+  color: #fff;
+  transform: scale(1.02);
+}

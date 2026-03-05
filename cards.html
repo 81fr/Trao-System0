@@ -477,7 +477,10 @@
                             </div>
                         </div>
                         <div class="card-visual-bottom">
-                            <span class="cv-id-label"><i class="fas fa-id-card"></i> <strong>الهوية:</strong> ${card.identity || '-'}</span>
+                            <span class="cv-id-label" style="display:flex; flex-direction:column; gap:6px;">
+                                <span><i class="fas fa-id-card"></i> <strong>الهوية:</strong> ${card.identity || '-'}</span>
+                                <span class="cv-hint"><i class="fas fa-mouse-pointer"></i> اضغط للخيارات</span>
+                            </span>
                             <div class="card-visual-actions" onclick="event.stopPropagation()">
                                 <button class="cv-btn-edit" title="تعديل" onclick="Actions.editCard(${card.id})"><i class="fas fa-pen"></i></button>
                                 <button class="cv-btn-del" title="حذف" onclick="Actions.deleteCard(${card.id})"><i class="fas fa-trash"></i></button>
