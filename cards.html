@@ -71,7 +71,8 @@
         <header>
             <div style="display:flex; align-items:center; gap:15px;">
                 <h1 style="margin:0;"><i class="fas fa-credit-card"></i> إدارة البطاقات</h1>
-                <button onclick="location.href='print_cards.html'" style="background:var(--card); border:1px solid var(--border); color:var(--text-primary); padding:8px 15px; border-radius:10px; cursor:pointer; font-family:inherit; font-weight:600; display:flex; align-items:center; gap:8px; transition:0.3s;">
+                <button onclick="location.href='print_cards.html'"
+                    style="background:var(--card); border:1px solid var(--border); color:var(--text-primary); padding:8px 15px; border-radius:10px; cursor:pointer; font-family:inherit; font-weight:600; display:flex; align-items:center; gap:8px; transition:0.3s;">
                     <i class="fas fa-print" style="color:#00A59B;"></i> طباعة البطاقات
                 </button>
             </div>
@@ -277,7 +278,8 @@
                             <div class="cd-op-icon op-ink"><i class="fas fa-exchange-alt"></i></div>
                             <span class="cd-op-label">تحويل<br>رصيد</span>
                         </div>
-                        <div class="cd-op-item" onclick="var cId = CardPage.currentCardId; if(cId) window.location.href='print_cards.html?id='+cId">
+                        <div class="cd-op-item"
+                            onclick="var cId = CardPage.currentCardId; if(cId) window.location.href='print_cards.html?id='+cId">
                             <div class="cd-op-icon op-teal"><i class="fas fa-print"></i></div>
                             <span class="cd-op-label">طباعة<br>البطاقة</span>
                         </div>
@@ -515,7 +517,7 @@
 
                 // Set preview
                 document.getElementById('cdPreview').style.background = gradient;
-                document.getElementById('cdWallet').innerHTML = '<i class="fas fa-wallet"></i> ' + (card.wallet || '-');
+                document.getElementById('cdWallet').innerHTML = '<img src="assets/logo.png" style="height:18px; filter: brightness(0) invert(1);" alt="">';
                 const statusEl = document.getElementById('cdStatus');
                 statusEl.textContent = isActive ? '● نشط' : '● موقوف';
                 statusEl.className = 'cd-status-badge ' + (isActive ? 'active' : 'frozen');
@@ -559,7 +561,7 @@
                     `).join('');
                 }
 
-                
+
                 document.getElementById('cardDetailOverlay').classList.add('show');
 
             },
