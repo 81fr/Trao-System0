@@ -417,41 +417,51 @@
                     return `
                         <div class="card-item-container">
                             <!-- Front of Card -->
-                            <div class="ind-card-print">
+                            <div class="ind-card-print" style="position: relative;">
                                 <div class="bvc-reflection"></div>
-                                <div class="c-header-row">
-                                    <span class="c-wallet-badge"><img src="assets/logo.png" style="height:35px; filter: brightness(0) invert(1);" alt=""></span>
-                                    <span class="bvc-status">${c.status || '-'}</span>
+                                
+                                <!-- Header: Logo on Right, Status Hidden -->
+                                <div class="c-header-row" style="display:flex; justify-content:flex-end; align-items:flex-start;">
+                                    <span class="bvc-status" style="display:none;">${c.status || '-'}</span>
+                                    <span class="c-wallet-badge">
+                                        <img src="assets/logo.png" style="height:60px; filter: brightness(0) invert(1); object-fit:contain; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;" alt="Logo">
+                                    </span>
                                 </div>
-                                <div style="margin-top:auto;">
-                                    <div class="bvc-chip-row" style="margin-bottom:8px;">
-                                        <svg class="bvc-chip" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 75">
-                                            <defs>
-                                                <linearGradient id="chipGrad" x1="0" y1="0" x2="1" y2="1">
-                                                    <stop offset="0%" stop-color="#f5d76e" />
-                                                    <stop offset="100%" stop-color="#d4af37" />
-                                                </linearGradient>
-                                            </defs>
-                                            <rect width="100" height="75" rx="12" fill="url(#chipGrad)" stroke="#c5a017" stroke-width="2" />
-                                            <path d="M30 0v75M70 0v75M0 37.5h30M70 37.5h30M30 20c15 0 15 35 0 35M70 20c-15 0-15 35 0 35" fill="none" stroke="#c5a017" stroke-width="2" opacity="0.8" />
-                                        </svg>
+                                
+                                <!-- Chip Absolute Position: Middle Right -->
+                                <div class="bvc-chip-row" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); z-index: 10;">
+                                    <svg class="bvc-chip" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 75" style="width:50px; height:38px;">
+                                        <defs>
+                                            <linearGradient id="chipGrad" x1="0" y1="0" x2="1" y2="1">
+                                                <stop offset="0%" stop-color="#f5d76e" />
+                                                <stop offset="100%" stop-color="#d4af37" />
+                                            </linearGradient>
+                                        </defs>
+                                        <rect width="100" height="75" rx="12" fill="url(#chipGrad)" stroke="#c5a017" stroke-width="2" />
+                                        <path d="M30 0v75M70 0v75M0 37.5h30M70 37.5h30M30 20c15 0 15 35 0 35M70 20c-15 0-15 35 0 35" fill="none" stroke="#c5a017" stroke-width="2" opacity="0.8" />
+                                    </svg>
+                                </div>
+                                
+                                <div style="flex-grow:1; display:flex; flex-direction:column; justify-content:center; padding-right: 15px;">
+                                    <!-- Card Number -->
+                                    <div class="c-number" style="font-size:1.6rem; letter-spacing:4px; margin-bottom:0px; text-align:left; width: 100%; white-space: nowrap;">${formattedNum}</div>
+                                </div>
+                                
+                                <div class="bvc-footer" style="display:flex; justify-content:space-between; align-items:flex-end;">
+                                    <div style="text-align:left;">
+                                        <small style="opacity:0.8;">تاريخ الانتهاء</small><br>
+                                        <strong style="font-size:1rem;">${c.expiry || '-'}</strong>
                                     </div>
-                                    <div class="c-number">${formattedNum}</div>
-                                    <div class="bvc-footer">
-                                        <div>
-                                            <small>اسم المستفيد</small>
-                                            <strong>${c.beneficiary || 'غير محدد'}</strong>
-                                        </div>
-                                        <div style="text-align:left;">
-                                            <small>تاريخ الانتهاء</small>
-                                            <strong>${c.expiry || '-'}</strong>
-                                        </div>
+                                    <div style="text-align:right;">
+                                        <small style="opacity:0.8;">اسم المستفيد</small><br>
+                                        <strong style="font-size:1rem;">${c.beneficiary || 'غير محدد'}</strong>
                                     </div>
                                 </div>
-                                <div class="print-qrcode" style="display:flex; justify-content:space-around; align-items:center;">
-                                    <div><img src="${qrUrl}" alt="QR Code" style="width:30px;height:30px;"></div>
+
+                                <div class="print-qrcode" style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display:flex; justify-content:center; align-items:center; width: 100%; z-index: 20;">
+                                    <div><img src="${qrUrl}" alt="QR Code" style="width:25px;height:25px;"></div>
                                     <div class="barcode-container" style="margin-left:5px;">
-                                        <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="true" jsbarcode-height="25" jsbarcode-width="1.2" jsbarcode-fontSize="10" jsbarcode-margin="0" jsbarcode-lineColor="#000"></svg>
+                                        <svg class="barcode" jsbarcode-format="CODE128" jsbarcode-value="${cleanNum}" jsbarcode-displayvalue="true" jsbarcode-height="20" jsbarcode-width="1.2" jsbarcode-fontSize="9" jsbarcode-margin="0" jsbarcode-lineColor="#000"></svg>
                                     </div>
                                 </div>
                             </div>
