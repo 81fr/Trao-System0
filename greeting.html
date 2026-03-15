@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تهنئة العيد - تراؤف</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- مكتبات لمعالجة Excel و ZIP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <style>
+        @font-face {
+            font-family: 'SymbioAR+LT-Black';
+            src: url('assets/SymbioAR+LT-Black.otf') format('opentype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body {
+            font-family: 'SymbioAR+LT-Black', 'SymbioAR LT Black', 'Tajawal', sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+
+        .header p {
+            margin: 0;
+            color: #7f8c8d;
+            font-size: 15px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 90%;
+            padding: 15px;
+            border: 2px solid #e0e6ed;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .download-btn {
+            background-color: #2ecc71;
+            display: none;
+        }
+
+        .download-btn:hover {
+            background-color: #27ae60;
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        .batch-btn {
+            background-color: #9b59b6;
+        }
+
+        .batch-btn:hover {
+            background-color: #8e44ad;
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.3);
+        }
+
+        .preview-container {
+            margin: 20px 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(52, 152, 219, 0.2);
+            display: none;
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
+            background: white;
+            border: 3px solid #3498db;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            max-height: 45vh;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .controls {
+            display: none;
+            margin-top: 15px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: right;
+        }
+
+        .controls label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #34495e;
+        }
+
+        .controls input[type="range"] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .controls .font-upload-wrapper {
+            margin-bottom: 15px;
+            text-align: right;
+        }
+
+        .controls .color-picker-wrapper {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .controls input[type="color"] {
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 0;
+            background: none;
+        }
+
+        .controls input[type="file"] {
+            display: none;
+        }
+
+        .controls .font-upload-wrapper label {
+            background-color: #34495e;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-block;
+            font-size: 13px;
+            transition: all 0.3s;
+            margin-top: 5px;
+        }
+
+        .controls .font-upload-wrapper label:hover {
+            background-color: #2c3e50;
+        }
+        
+        #currentFontName {
+            font-size: 12px;
+            color: #27ae60;
+            display: block;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        #loadingMsg {
+            color: #e67e22;
+            font-size: 14px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .divider {
+            margin: 20px 0;
+            border-top: 2px dashed #ecf0f1;
+            position: relative;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 10px;
+            color: #bdc3c7;
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+        }
+
+        .file-upload-wrapper {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px dashed #bdc3c7;
+            margin-bottom: 15px;
+        }
+
+        .file-upload-wrapper input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-wrapper label {
+            color: #34495e;
+            cursor: pointer;
+            display: block;
+            font-weight: bold;
+        }
+
+        .file-upload-wrapper p {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        #batchProgress {
+            background: #ecf0f1;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #2c3e50;
+            display: none;
+            font-weight: bold;
+        }
+
+        .template-selector {
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .template-selector p {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #34495e;
+            font-size: 14px;
+        }
+
+        .templates-grid {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .template-thumb {
+            width: 70px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .template-thumb:hover {
+            transform: scale(1.05);
+        }
+
+        .template-thumb.active {
+            border-color: #3498db;
+            box-shadow: 0 0 10px rgba(52,152,219,0.5);
+        }
+
+        .custom-template-wrapper input[type="file"] {
+            display: none;
+        }
+
+        .custom-template-wrapper label {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-block;
+            font-size: 13px;
+            font-weight: bold;
+            transition: all 0.3s;
+            border: 1px solid #bdc3c7;
+        }
+
+        .custom-template-wrapper label:hover {
+            background-color: #e0e6ed;
+        }
+
+        .photo-settings {
+            display: none;
+            background: #eef2f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: right;
+            border: 1px solid #dcdde1;
+        }
+
+        .photo-settings label {
+            font-size: 13px;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .photo-settings input[type="range"] {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>إنشاء بطاقة التهنئة</h1>
+            <p>يمكنك إنشاء بطاقة مفردة أو تحميل أسماء موظفين من ملف Excel</p>
+        </div>
+
+        <div id="loadingMsg">جاري تحميل صورة التهنئة...</div>
+
+        <!-- اختيار النموذج -->
+        <div class="template-selector">
+            <p>اختر تصميم المعايدة:</p>
+            <div class="templates-grid" style="max-height: 250px; overflow-y: auto; padding: 5px;">
+                <img src="assets/greeting.png" class="template-thumb active" data-src="assets/greeting.png" alt="التصميم الأساسي 1">
+                <img src="assets/greeting2.png" class="template-thumb" data-src="assets/greeting2.png" alt="التصميم الأساسي 2">
+                <img src="assets/greeting3.png" class="template-thumb" data-src="assets/greeting3.png" alt="التصميم الأساسي 3">
+                <img src="assets/greeting4.png" class="template-thumb" data-src="assets/greeting4.png" alt="التصميم الأساسي 4">
+                <img src="assets/greeting5.png" class="template-thumb" data-src="assets/greeting5.png" alt="التصميم الأساسي 5">
+                <img src="assets/greeting6.png" class="template-thumb" data-src="assets/greeting6.png" alt="التصميم الأساسي 6">
+                <img src="assets/greeting7.png" class="template-thumb" data-src="assets/greeting7.png" alt="التصميم الأساسي 7">
+                <img src="assets/greeting8.png" class="template-thumb" data-src="assets/greeting8.png" alt="التصميم الأساسي 8">
+                <img src="assets/greeting9.png" class="template-thumb" data-src="assets/greeting9.png" alt="التصميم الأساسي 9">
+            </div>
+            
+            <div class="custom-template-wrapper">
+                <input type="file" id="customTemplateInput" accept="image/*">
+                <label for="customTemplateInput">🖼️ إضافة نموذج خاص بك</label>
+            </div>
+
+            <div class="custom-template-wrapper" style="margin-top: 10px;">
+                <input type="file" id="userPhotoInput" accept="image/*">
+                <label for="userPhotoInput" style="background-color: #3498db; color: white; border-color: #2980b9;">👤 إضافة صورة شخصية (دائرية)</label>
+            </div>
+            
+            <div class="photo-settings" id="photoSettingsPanel">
+                <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: bold; color: #2980b9;">إعدادات الصورة الشخصية:</p>
+                <label>حجم الصورة</label>
+                <input type="range" id="photoSize" min="10" max="400" value="100">
+                
+                <label>الموقع الأفقي (يمين/يسار)</label>
+                <input type="range" id="photoX" min="0" max="100" value="50">
+                
+                <label>الموقع العمودي (أعلى/أسفل)</label>
+                <input type="range" id="photoY" min="0" max="100" value="35">
+            </div>
+        </div>
+
+        <!-- إنشاء بطاقة مفردة -->
+        <div class="input-group">
+            <input type="text" id="employeeName" placeholder="الاسم الكريم (مثال: محمد عبدالله)" autocomplete="off">
+        </div>
+        <button id="generateBtn" disabled>معاينة البطاقة</button>
+        <button id="downloadBtn" class="download-btn" style="margin-bottom: 20px;">تحميل بطاقة الاسم</button>
+
+        <div class="preview-container" id="previewContainer">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div class="divider"><span>أو تحميل جماعي</span></div>
+
+        <!-- التحميل الجماعي عن طريق إكسل -->
+        <div class="file-upload-wrapper">
+            <input type="file" id="excelInput" accept=".xlsx, .xls">
+            <label for="excelInput">📂 اختر ملف Excel (اضغط هنا)</label>
+            <p>يجب أن تكون الأسماء في العمود الأول للصفحة الأولى داخل الملف.</p>
+        </div>
+
+        <div id="batchProgress">جاري تجهيز الصور... <span id="progressCount">0</span>/<span id="totalCount">0</span>
+        </div>
+        <button id="batchDownloadBtn" class="batch-btn" style="display: none;" disabled>تحميل كل بطاقات القسم
+            (ZIP)</button>
+
+        <!-- إعدادات التنسيق -->
+        <div class="controls" id="controlsPanel">
+            <p style="font-size: 12px; color: #7f8c8d; margin-bottom: 10px; text-align: center;">الإعدادات أدناه تطبق
+                على الصور المرفوعة جماعياً أيضاً</p>
+                
+            <div class="font-upload-wrapper">
+                <label style="color: #34495e; font-size: 14px; margin-bottom: 5px; background: none; padding: 0;">الخط المستخدم:</label>
+                <input type="file" id="fontInput" accept=".ttf, .otf, .woff, .woff2">
+                <label for="fontInput">🔤 رفع خط خاص بك (.ttf / .otf)</label>
+                <span id="currentFontName">SymbioAR+LT-Black (الأساسي)</span>
+            </div>
+            
+            <label>حجم الخط</label>
+            <input type="range" id="fontSize" min="20" max="150" value="50">
+            
+            <div class="color-picker-wrapper">
+                <label for="colorInput" style="margin: 0; padding-top: 5px;">لون النص:</label>
+                <input type="color" id="colorInput" value="#ffffff">
+            </div>
+
+            <label>الموقع العمودي (أعلى/أسفل)</label>
+            <input type="range" id="posY" min="0" max="100" value="75">
+            
+            <label>الموقع الأفقي (يمين/يسار)</label>
+            <input type="range" id="posX" min="0" max="100" value="50">
+        </div>
+
+        <div style="margin-top: 30px; font-size: 13px; color: #7f8c8d; padding-top: 15px; border-top: 1px solid #eee;">
+            صنع بكل حب بواسطة فيصل ❤️
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const generateBtn = document.getElementById('generateBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const nameInput = document.getElementById('employeeName');
+        const previewContainer = document.getElementById('previewContainer');
+        const loadingMsg = document.getElementById('loadingMsg');
+
+        const controlsPanel = document.getElementById('controlsPanel');
+        const fontSizeSlider = document.getElementById('fontSize');
+        const posYSlider = document.getElementById('posY');
+        const posXSlider = document.getElementById('posX');
+
+        // Excel & Batch download elements
+        const excelInput = document.getElementById('excelInput');
+        const batchDownloadBtn = document.getElementById('batchDownloadBtn');
+        const batchProgress = document.getElementById('batchProgress');
+        const progressCount = document.getElementById('progressCount');
+        const totalCount = document.getElementById('totalCount');
+        
+        const colorInput = document.getElementById('colorInput');
+
+        // نستخدم الحجم الأصلي للصورة بدلاً من تكبيرها برمجياً لتجنب التشويش
+        const scaleMultiplier = 1;
+
+        let bgImage = new Image();
+        let imageLoaded = false;
+        let fontLoaded = false;
+        let employeeNamesList = [];
+        
+        // المتغيرات للصورة الشخصية
+        let userPhotoImg = new Image();
+        let isUserPhotoLoaded = false;
+        
+        const userPhotoInput = document.getElementById('userPhotoInput');
+        const photoSettingsPanel = document.getElementById('photoSettingsPanel');
+        const photoSizeSlider = document.getElementById('photoSize');
+        const photoXSlider = document.getElementById('photoX');
+        const photoYSlider = document.getElementById('photoY');
+        
+        let activeFontFamily = 'SymbioAR+LT-Black';
+
+        // تحميل الخط للتأكد أنه متاح للكانفاس
+        const customFont = new FontFace('SymbioAR+LT-Black', 'url(assets/SymbioAR+LT-Black.otf)');
+        customFont.load().then(function (loadedFace) {
+            document.fonts.add(loadedFace);
+            fontLoaded = true;
+            if (imageLoaded && nameInput.value.trim()) {
+                drawCard();
+            }
+        }).catch(function (error) {
+            console.error('خطأ في تحميل الخط:', error);
+            fontLoaded = true;
+        });
+
+        // منطق رفع الخطوط المخصصة
+        fontInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const fontData = event.target.result;
+                    // تكوين اسم فريد للخط لتجنب التعارض
+                    const newFontFamily = 'CustomFont_' + Date.now();
+                    
+                    const newCustomFont = new FontFace(newFontFamily, fontData);
+                    newCustomFont.load().then(function(loadedFace) {
+                        document.fonts.add(loadedFace);
+                        activeFontFamily = newFontFamily;
+                        currentFontName.textContent = file.name;
+                        currentFontName.style.color = '#e67e22';
+                        
+                        // إعادة رسم البطاقة بالخط الجديد
+                        if (nameInput.value.trim()) {
+                            drawCard();
+                        }
+                    }).catch(function(error) {
+                        alert('حدث خطأ أثناء تحميل الخط. تأكد من أنه بصيغة صحيحة (TTF/OTF).');
+                        console.error('Font load error:', error);
+                    });
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        });
+
+        // --- Template Selection Logic --- //
+        const templateThumbs = document.querySelectorAll('.template-thumb');
+        const customTemplateInput = document.getElementById('customTemplateInput');
+
+        function loadTemplate(src) {
+            loadingMsg.style.display = 'block';
+            generateBtn.disabled = true;
+            batchDownloadBtn.disabled = true;
+            imageLoaded = false;
+            
+            bgImage.src = src;
+        }
+
+        templateThumbs.forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                templateThumbs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                loadTemplate(this.getAttribute('data-src'));
+            });
+        });
+
+        customTemplateInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                templateThumbs.forEach(t => t.classList.remove('active'));
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    loadTemplate(event.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // تحميل الصورة الافتراضية الأولى
+        loadTemplate('assets/greeting.png');
+
+        // منطق الصورة الشخصية
+        userPhotoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    userPhotoImg.src = event.target.result;
+                    userPhotoImg.onload = function() {
+                        isUserPhotoLoaded = true;
+                        photoSettingsPanel.style.display = 'block';
+                        // نرسم البطاقة فوراً (حتى لو لم يكتب اسمه، لتظهر الصورة)
+                        if (nameInput.value.trim() || previewContainer.style.display === 'block') {
+                            drawCard(nameInput.value.trim() || ' ');
+                        } else {
+                            drawCard(' ');
+                        }
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        bgImage.onload = () => {
+            imageLoaded = true;
+            loadingMsg.style.display = 'none';
+            generateBtn.disabled = false;
+
+            // Allow batch if excel was loaded before image
+            if (employeeNamesList.length > 0) {
+                batchDownloadBtn.disabled = false;
+            }
+
+            setupCanvas();
+            controlsPanel.style.display = 'block'; // Show settings always to be able to set them early
+        };
+        bgImage.onerror = () => {
+            loadingMsg.textContent = 'حدث خطأ أثناء تحميل صورة التهنئة. تأكد من وجود الصورة.';
+            loadingMsg.style.color = '#e74c3c';
+        };
+
+        function setupCanvas() {
+            // نجعل الحجم الداخلي للكانفاس ضخم جداً للحفاظ على الدقة
+            canvas.width = bgImage.width * scaleMultiplier;
+            canvas.height = bgImage.height * scaleMultiplier;
+
+            // لكن نعرضه للمستخدم بحجم منطقي (مع ضبط الـ CSS للحد الأقصى للارتفاع)
+            canvas.style.width = bgImage.width + 'px';
+
+            // نقوم بتهيئة الصورة
+            ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+        }
+
+        // --- Single Image Logic --- //
+        function drawCard(nameParam = null) {
+            if (!imageLoaded) return;
+            // ننتظر تحميل الخط المخصص لتجنب استخدام الخط الافتراضي بالخطأ
+            if (!fontLoaded) {
+                setTimeout(() => drawCard(nameParam), 100);
+                return;
+            }
+
+            const name = nameParam || nameInput.value.trim();
+            if (!name && !nameParam) return;
+
+            // رسم الصورة الخلفية بملء مساحة الكانفاس المضروبة
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+
+            // رسم الصورة الشخصية إن وجدت
+            if (isUserPhotoLoaded) {
+                const pSize = photoSizeSlider.value * scaleMultiplier;
+                // حساب الموقع (القيم نسبة مئوية)
+                const pX = canvas.width * (photoXSlider.value / 100);
+                const pY = canvas.height * (photoYSlider.value / 100);
+                
+                ctx.save();
+                
+                // إضافة ظل للصورة الشخصية
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+                ctx.shadowBlur = 15 * scaleMultiplier;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 5 * scaleMultiplier;
+
+                // رسم المسار الدائري
+                ctx.beginPath();
+                ctx.arc(pX, pY, pSize, 0, Math.PI * 2, true);
+                ctx.closePath();
+                
+                // لون الخلفية والإطار تحت الظل
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+
+                // إزالة الظل من المعالجات التالية
+                ctx.shadowColor = 'transparent';
+                
+                // اقتصاص الكانفاس بداخل الدائرة
+                ctx.clip();
+                
+                // حساب اقتصاص الصورة لملء الدائرة تماماً (Object Cover)
+                const aspectRatio = userPhotoImg.width / userPhotoImg.height;
+                let drawWidth, drawHeight;
+                if (aspectRatio > 1) { // صورة عرضية
+                    drawHeight = pSize * 2;
+                    drawWidth = drawHeight * aspectRatio;
+                } else { // صورة طولية أو مربعة
+                    drawWidth = pSize * 2;
+                    drawHeight = drawWidth / aspectRatio;
+                }
+                
+                // رسم الصورة مقصوصة ومركزة
+                ctx.drawImage(userPhotoImg, pX - drawWidth/2, pY - drawHeight/2, drawWidth, drawHeight);
+                ctx.restore();
+                
+                // رسم إطار حول الصورة الشخصية
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(pX, pY, pSize, 0, Math.PI * 2, true);
+                ctx.lineWidth = 4 * scaleMultiplier;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // إعدادات النص (يجب ضرب حجم الخط في المعامل)
+            const fontSize = fontSizeSlider.value * scaleMultiplier;
+            ctx.font = `bold ${fontSize}px '${activeFontFamily}', 'Tajawal', Arial, sans-serif`;
+            ctx.fillStyle = colorInput.value; // استخدام اللون المُختار من المستخدم
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // تحسين جودة رسم النص للكانفاس
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            // إضافة ظل بسيط للنص ليكون أوضح (نضرب القيم لكي تتناسب مع الحجم الجديد)
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 10 * scaleMultiplier;
+            ctx.shadowOffsetX = 2 * scaleMultiplier;
+            ctx.shadowOffsetY = 2 * scaleMultiplier;
+
+            // حساب الموقع 
+            const x = canvas.width * (posXSlider.value / 100);
+            const y = (canvas.height * (posYSlider.value / 100));
+
+            // رسم النص
+            ctx.fillText(name, x, y);
+
+            // إظهار النتائج للبطاقة المنفردة
+            if (!nameParam) {
+                previewContainer.style.display = 'block';
+                downloadBtn.style.display = 'block';
+            }
+        }
+
+        generateBtn.addEventListener('click', () => {
+            if (!nameInput.value.trim()) {
+                alert('الرجاء إدخال اسم لمعاينة البطاقة');
+                return;
+            }
+            drawCard();
+        });
+
+        // تحديث المباشر عند تغيير الإعدادات
+        fontSizeSlider.addEventListener('input', () => {
+            if (nameInput.value.trim()) drawCard();
+        });
+        posYSlider.addEventListener('input', () => {
+            if (nameInput.value.trim()) drawCard();
+        });
+        posXSlider.addEventListener('input', () => {
+            if (nameInput.value.trim()) drawCard();
+        });
+        colorInput.addEventListener('input', () => {
+            if (nameInput.value.trim() && previewContainer.style.display === 'block') drawCard();
+        });
+        
+        // تحديث المباشر لصورة الموظف
+        photoSizeSlider.addEventListener('input', () => {
+            if (isUserPhotoLoaded && previewContainer.style.display === 'block') drawCard(nameInput.value.trim() || ' ');
+        });
+        photoXSlider.addEventListener('input', () => {
+            if (isUserPhotoLoaded && previewContainer.style.display === 'block') drawCard(nameInput.value.trim() || ' ');
+        });
+        photoYSlider.addEventListener('input', () => {
+            if (isUserPhotoLoaded && previewContainer.style.display === 'block') drawCard(nameInput.value.trim() || ' ');
+        });
+        nameInput.addEventListener('input', function () {
+            if (previewContainer.style.display === 'block' && imageLoaded) {
+                drawCard();
+            }
+        });
+        nameInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && imageLoaded) {
+                if (nameInput.value.trim()) drawCard();
+            }
+        });
+
+        downloadBtn.addEventListener('click', function () {
+            const link = document.createElement('a');
+            const sanitizedName = nameInput.value.trim().replace(/\s+/g, '-');
+            link.download = `معايدة-${sanitizedName || 'تراؤف'}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 1.0);
+            link.click();
+        });
+
+        // --- Batch Logic (Excel) --- //
+        excelInput.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    try {
+                        const data = evt.target.result;
+                        const workbook = XLSX.read(data, { type: 'binary' });
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        const jsonStr = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                        employeeNamesList = [];
+                        for (let i = 0; i < jsonStr.length; i++) {
+                            const row = jsonStr[i];
+                            if (row && row.length > 0 && typeof row[0] === 'string' && row[0].trim() !== '') {
+                                employeeNamesList.push(row[0].trim());
+                            }
+                        }
+
+                        if (employeeNamesList.length > 0) {
+                            batchDownloadBtn.style.display = 'block';
+                            batchDownloadBtn.innerHTML = `تنزيل عدد (${employeeNamesList.length}) بطاقة ZIP`;
+                            if (imageLoaded) {
+                                batchDownloadBtn.disabled = false;
+                            }
+                            alert(`تم قراءة ${employeeNamesList.length} اسم بنجاح. يمكنك الآن تعديل إعدادات الخط قبل النقر على تحميل الكل.`);
+                        } else {
+                            batchDownloadBtn.style.display = 'none';
+                            alert('لم يتم العثور على أسماء في الملف. يرجى التأكد من أن الأسماء في العمود الأول.');
+                        }
+                    } catch (err) {
+                        alert('حدث خطأ أثناء قراءة ملف Excel.');
+                        console.error(err);
+                    }
+                };
+                reader.readAsBinaryString(file);
+            }
+        });
+
+        batchDownloadBtn.addEventListener('click', async function () {
+            if (!imageLoaded || employeeNamesList.length === 0) return;
+
+            // تعطيل الأزرار أثناء التحميل
+            batchDownloadBtn.disabled = true;
+            generateBtn.disabled = true;
+
+            batchProgress.style.display = 'block';
+            totalCount.textContent = employeeNamesList.length;
+
+            const zip = new JSZip();
+            const folder = zip.folder("معايدات_الموظفين");
+
+            for (let i = 0; i < employeeNamesList.length; i++) {
+                const name = employeeNamesList[i];
+
+                // رسم البطاقة بالاسم الحالي
+                drawCard(name);
+
+                // تحويل الكانفاس لصورة بأعلى جودة
+                const dataURL = canvas.toDataURL('image/jpeg', 1.0);
+                const base64Data = dataURL.replace(/^data:image\/(png|jpeg);base64,/, "");
+
+                const safeName = name.replace(/\s+/g, '-');
+                folder.file(`معايدة-${safeName}.jpg`, base64Data, { base64: true });
+
+                progressCount.textContent = i + 1;
+
+                // السماح للمتصفح بتحديث الواجهة (تأخير خفيف جداً)
+                await new Promise(resolve => setTimeout(resolve, 30));
+            }
+
+            batchProgress.innerHTML = 'جاري ضغط الملفات وتحضير ملف ZIP...';
+
+            zip.generateAsync({ type: "blob" }).then(function (content) {
+                saveAs(content, "معايدات_الموظفين.zip");
+                batchProgress.style.display = 'none';
+                batchProgress.innerHTML = 'جاري تجهيز الصور... <span id="progressCount">0</span>/<span id="totalCount">0</span>';
+
+                // إعادة تمكين الأزرار
+                batchDownloadBtn.disabled = false;
+                generateBtn.disabled = false;
+
+                // إعادة عرض البطاقة الأخيرة أو تفريغ الكانفاس
+                if (nameInput.value.trim()) {
+                    drawCard();
+                } else {
+                    setupCanvas();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
